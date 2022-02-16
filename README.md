@@ -14,6 +14,8 @@ inspired by mods like Roughly Enough Items / Just Enough Items.
 It's configurable and bundles some api, so other mods can be compatible with it
 
 ## Video
+https://user-images.githubusercontent.com/39821509/154287702-29546608-3312-4ac6-a6d7-7cb621b86d2d.mp4
+
 
 ## Download:
 - [Modrinth](https://modrinth.com/mod/polydex)
