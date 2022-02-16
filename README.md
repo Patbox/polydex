@@ -11,12 +11,13 @@ about targeted block or entity similarly to mods like WTHIT/HWYLA/WAILA.
 It also adds simple way of checking recipes of items with chest gui interface
 inspired by mods like Roughly Enough Items / Just Enough Items.
 
-It's configurable and bundles some api, so other mods can be compatible with it
+It's configurable and bundles some api, so other mods can be compatible with it.
+To use it, use modrinth maven™.
 
 ## Video
 https://user-images.githubusercontent.com/39821509/154287702-29546608-3312-4ac6-a6d7-7cb621b86d2d.mp4
 
-
 ## Download:
 - [Modrinth](https://modrinth.com/mod/polydex)
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/polydex)
 - [Github Releases](https://github.com/Patbox/polydex/releases)
