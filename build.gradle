@@ -1,0 +1,169 @@
+plugins {
+	id 'fabric-loom' version '0.11-SNAPSHOT'
+	id 'maven-publish'
+	id "com.modrinth.minotaur" version "1.2.1"
+	id 'com.matthewprenger.cursegradle' version '1.4.0'
+}
+import com.modrinth.minotaur.TaskModrinthUpload
+import com.modrinth.minotaur.request.VersionType
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = project.archives_base_name + "-" + project.minecraft_version
+version = project.mod_version
+group = project.maven_group
+
+loom {
+	accessWidenerPath = file("src/main/resources/polydex.accesswidener")
+}
+
+repositories {
+	maven { url = "https://maven.fabricmc.net/" }
+	maven { url = "https://maven.nucleoid.xyz/" }
+	maven { url = 'https://jitpack.io' }
+	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+	maven { url 'https://maven.blamejared.com' }
+	maven { url "https://maven.shedaniel.me" }
+
+	maven {
+		name = "TerraformersMC"
+		url = "https://maven.terraformersmc.com/"
+	}
+
+	maven {
+		url = "https://maven.jamieswhiteshirt.com/libs-release/"
+		content {
+			includeGroup 'com.jamieswhiteshirt'
+		}
+	}
+
+	maven {
+		name = 'Ladysnake Mods'
+		url = 'https://ladysnake.jfrog.io/artifactory/mods'
+	}
+
+	maven {
+		url "https://www.cursemaven.com"
+		content {
+			includeGroup "curse.maven"
+		}
+	}
+
+	maven { url = 'https://api.modrinth.com/maven' }
+}
+
+dependencies {
+	//to change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Server side stuff
+	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
+	modImplementation include("eu.pb4:hologram-api:${project.hologram_version}")
+	modImplementation include("eu.pb4:placeholder-api:${project.placeholder_version}")
+	modImplementation include("eu.pb4:player-data-api:${project.player_data_version}")
+	modImplementation include("eu.pb4:sidebar-api:${project.sidebar_version}")
+	modImplementation include("fr.catcore:server-translations-api:${project.stapi_version}")
+	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
+	modImplementation include('xyz.nucleoid:more-codecs:0.2.1+1.18')
+
+	//modLocalRuntime 'maven.modrinth:goml-reserved:1.5.0-beta.1'
+	//modLocalRuntime 'maven.modrinth:polymer-ports-waystones:2.4.1-polymerport.2'
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching('fabric.mod.json') {
+		expand "version": project.version
+	}
+}
+
+// ensure that the encoding is set to UTF-8, no matter what the system default is
+// this fixes some edge cases with special characters not displaying correctly
+// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
+}
+
+// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+// if it is present.
+// If you remove this task, sources will not be generated.
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier = "sources"
+	from sourceSets.main.allSource
+}
+
+jar {
+	from "LICENSE"
+}
+
+// configure the maven publication
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			// add all the jars that should be included when publishing to maven
+			artifact(remapJar) {
+				builtBy remapJar
+			}
+			artifact(sourcesJar) {
+				builtBy remapSourcesJar
+			}
+		}
+	}
+
+	// select the repositories you want to publish to
+	repositories {
+		// uncomment to publish to the local maven
+		// mavenLocal()
+	}
+}
+
+
+curseforge {
+	if (System.getenv("CURSEFORGE")) {
+		apiKey = System.getenv("CURSEFORGE")
+
+		project {
+			id = ""
+			releaseType = "release"
+			changelog = System.getenv("CHANGELOG")
+			changelogType = "markdown"
+			addGameVersion ((String) project.minecraft_version)
+			addGameVersion "Fabric"
+			mainArtifact(remapJar)
+
+			afterEvaluate {
+				uploadTask.dependsOn("remapJar")
+			}
+		}
+	}
+
+	options {
+		forgeGradleIntegration = false
+	}
+}
+
+task publishModrinth (type: TaskModrinthUpload){
+	onlyIf {
+		System.getenv("MODRINTH")
+	}
+
+	token = System.getenv("MODRINTH")
+	projectId = ''
+	versionNumber = version
+	versionType = VersionType.RELEASE
+	changelog = System.getenv("CHANGELOG")
+	// On fabric, use 'remapJar' instead of 'jar'
+	uploadFile = remapJar
+	addGameVersion((String) project.minecraft_version)
+	addLoader('fabric')
+}
+
+remapJar {
+	finalizedBy publishModrinth
+	finalizedBy project.tasks.curseforge
+}

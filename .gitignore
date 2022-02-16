@@ -1,0 +1,44 @@
+# gradle
+
+.gradle/
+build/
+out/
+classes/
+
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# fabric
+
+run/
+/run2/logs/2020-09-23-1.log.gz
+/run2/logs/2020-09-23-2.log.gz
+/run2/logs/2020-09-23-3.log.gz
+/run2/logs/2020-09-27-1.log.gz
+/run2/logs/2020-09-27-2.log.gz
+/run2/logs/debug.log
+/run2/logs/debug-1.log.gz
+/run2/logs/debug-2.log.gz
+/run2/logs/debug-3.log.gz
+/run2/logs/debug-4.log.gz
+/run2/config/getoffmylawn.json5
+/run2/config/fabric/indigo-renderer.properties
+/logs/latest.log
+/run2/logs/latest.log
+/run2/.mixin.out/audit/mixin_implementation_report.csv
+/run2/.mixin.out/audit/mixin_implementation_report.txt
+/run2/config/modmenu.json
+/run2/options.txt
+/run2/servers.dat

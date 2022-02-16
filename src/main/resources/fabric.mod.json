@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "polydex",
+  "version": "${version}",
+  "name": "Polydex",
+  "description": "Target block/entity tooltip and recipes in one ui mod for servers!",
+  "authors": [
+    "Patbox"
+  ],
+  "contact": {
+    "homepage": "https://pb4.eu",
+    "sources": "https://github.com/Patbox/polydex"
+  },
+  "license": "LGPLv3",
+  "environment": "*",
+  "icon": "data/polydex/icon.png",
+  "entrypoints": {
+    "main": [
+      "eu.pb4.polydex.impl.PolydexInitializer"
+    ]
+  },
+  "mixins": [
+    "polydex.mixins.json"
+  ],
+  "accessWidener": "polydex.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.12.6",
+    "fabric": ">=0.46.1",
+    "minecraft": ">=1.18.1"
+  }
+}
