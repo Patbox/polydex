@@ -31,7 +31,7 @@ public final class AbstractCookingRecipeView<T extends AbstractCookingRecipe> im
     @Override
     public void renderLayer(ItemEntry entry, T recipe, ServerPlayerEntity player, Layer layer, Runnable returnCallback) {
         layer.setSlot(20, getIngredientDisplay(recipe.getIngredients().get(0)));
-        layer.setSlot(22, new GuiElementBuilder(Items.BLAZE_ROD).setName(new TranslatableText("name.polydex.view.cooking_time", new LiteralText("" +  (recipe.getCookTime() / 20d) + "s").formatted(Formatting.WHITE)).formatted(Formatting.GOLD)));
+        layer.setSlot(22, new GuiElementBuilder(Items.BLAZE_POWDER).setName(new TranslatableText("name.polydex.view.cooking_time", new LiteralText("" +  (recipe.getCookTime() / 20d) + "s").formatted(Formatting.WHITE)).formatted(Formatting.GOLD)));
         layer.setSlot(31, new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(new TranslatableText("name.polydex.view.experience", new LiteralText("" +  recipe.getExperience()).append(new TranslatableText("name.polydex.view.experience.points")).formatted(Formatting.WHITE)).formatted(Formatting.GREEN)));
         layer.setSlot(24, recipe.getOutput());
     }
