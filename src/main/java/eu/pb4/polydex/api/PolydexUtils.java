@@ -55,17 +55,6 @@ public class PolydexUtils {
         }
     }
 
-    /*public static boolean openPageViews(ServerPlayerEntity player, Item item, @Nullable Runnable closeCallback) {
-        var recipes = PolydexUtils.getViews(player.getWorld().getRecipeManager(), item);
-
-        if (recipes.size() > 0) {
-            new EntryViewerGui(player, item, recipes, closeCallback).open();
-            return true;
-        }
-
-        return false;
-    }*/
-
     public static GuiElementInterface getIngredientDisplay(Ingredient ingredient) {
         ItemStack[] stacks = PolydexUtils.readIngredient(ingredient);
         return getIngredientDisplay(stacks);

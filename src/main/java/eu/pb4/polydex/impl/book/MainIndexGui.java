@@ -16,24 +16,25 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.Locale;
+
 
 public class MainIndexGui extends LayeredGui {
     private final ItemLayer mainLayer;
     private final NamespaceLayer indexLayer;
     private final LayerView indexLayerView;
     private PolydexImpl.PackedEntries entries;
-    private String namespace;
     private boolean showAll;
 
-    public MainIndexGui(ServerPlayerEntity player, boolean showAll, String namespace, int pageItem, int pageSub) {
+    public MainIndexGui(ServerPlayerEntity player, boolean showAll, int pageItem, int pageSub) {
         super(ScreenHandlerType.GENERIC_9X6, player,  false);
         this.showAll = showAll;
 
         this.mainLayer = new ItemLayer(6);
         this.indexLayer = new NamespaceLayer(6);
 
-        this.entries = PolydexImpl.BY_NAMESPACE.containsKey(namespace) ? PolydexImpl.BY_NAMESPACE.get(namespace).entries() : PolydexImpl.ITEM_ENTRIES;
-        this.namespace = namespace;
+        this.entries = PolydexImpl.ITEM_ENTRIES;
         this.mainLayer.setPage(pageItem);
         this.indexLayer.setPage(pageSub);
         this.addLayer(this.mainLayer, 0, 0).setZIndex(1);
@@ -53,10 +54,6 @@ public class MainIndexGui extends LayeredGui {
             return MathHelper.ceil(((double) MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size()) / this.pageSize);
         }
 
-        public static int getPageCount(boolean all) {
-            return MathHelper.ceil(((double) PolydexImpl.ITEM_ENTRIES.get(all).size()) / EntryViewerGui.PAGE_SIZE);
-        }
-
         @Override
         protected GuiElement getElement(int id) {
             if (id < MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size()) {
@@ -64,7 +61,7 @@ public class MainIndexGui extends LayeredGui {
 
                 return GuiElementBuilder.from(item.stack())
                         .setCallback((x, y, z) -> {
-                            if (item.pages().size() > 0) {
+                            if (item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) {
                                 MainIndexGui.this.close();
                                 new EntryViewerGui(player, item, MainIndexGui.this::open).open();
                                 GuiUtils.playClickSound(this.player);
@@ -108,13 +105,14 @@ public class MainIndexGui extends LayeredGui {
     }
 
     public class NamespaceLayer extends PagedLayer {
+        private Type type = Type.NAMESPACES;
         public NamespaceLayer(int height) {
             super(MainIndexGui.this.getPlayer(), height, 9, true);
         }
 
         @Override
         public int getPageAmount() {
-            return MathHelper.ceil(((double) PolydexImpl.NAMESPACED_ENTRIES.size() + 1) / this.pageSize);
+            return MathHelper.ceil(((double) this.type.entries.size() + 1) / this.pageSize);
         }
 
         @Override
@@ -124,7 +122,6 @@ public class MainIndexGui extends LayeredGui {
                         .setName(new TranslatableText("text.polydex.display_all_items"))
                         .hideFlags()
                         .setCallback((x, y, z) -> {
-                            MainIndexGui.this.namespace = "";
                             MainIndexGui.this.entries = PolydexImpl.ITEM_ENTRIES;
                             MainIndexGui.this.indexLayer.updateDisplay();
                             MainIndexGui.this.mainLayer.setPage(0);
@@ -139,14 +136,13 @@ public class MainIndexGui extends LayeredGui {
                 return builder.build();
             }
 
-            if (id < PolydexImpl.NAMESPACED_ENTRIES.size() + 1) {
-                var item = PolydexImpl.NAMESPACED_ENTRIES.get(id - 1);
+            if (id < this.type.entries.size() + 1) {
+                var item = this.type.entries.get(id - 1);
 
                 var builder = GuiElementBuilder.from(item.icon())
                         .setName(item.display())
                         .hideFlags()
                         .setCallback((x, y, z) -> {
-                            MainIndexGui.this.namespace = item.namespace();
                             MainIndexGui.this.entries = item.entries();
                             MainIndexGui.this.indexLayer.updateDisplay();
                             MainIndexGui.this.mainLayer.setPage(0);
@@ -154,7 +150,7 @@ public class MainIndexGui extends LayeredGui {
                             MainIndexGui.this.indexLayerView.setZIndex(0);
                         });
 
-                if (item.namespace().equals(MainIndexGui.this.namespace)) {
+                if (item.entries() == MainIndexGui.this.entries) {
                     builder.enchant(Enchantments.LURE, 1);
                 }
 
@@ -167,6 +163,14 @@ public class MainIndexGui extends LayeredGui {
         @Override
         protected GuiElement getNavElement(int id) {
             return switch (id) {
+                case 0 -> new GuiElementBuilder(Items.BOOK)
+                        .setName(new TranslatableText( "text.polydex.category." + this.type.name().toLowerCase(Locale.ROOT)))
+                        .setCallback((x, y, z) -> {
+                            GuiUtils.playClickSound(this.player);
+                            this.type = this.type.getNext();
+                            this.updateDisplay();
+                        })
+                        .build();
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
                 case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
                         .setName(new TranslatableText("text.polydex.view.pages",
@@ -182,9 +186,21 @@ public class MainIndexGui extends LayeredGui {
                 default -> GuiUtils.FILLER;
             };
         }
-    }
 
-    /*private void reopen() {
-        new MainIndexGui(this.getPlayer(), this.showAll, this.namespace, this.mainLayer.page, this.indexLayer.page).open();
-    }*/
+
+        private enum Type {
+            NAMESPACES(PolydexImpl.NAMESPACED_ENTRIES),
+            ITEM_GROUP(PolydexImpl.ITEM_GROUP_ENTRIES),
+            ;
+            public final List<PolydexImpl.NamespacedEntry> entries;
+
+            Type(List<PolydexImpl.NamespacedEntry> list) {
+                this.entries = list;
+            }
+
+            public Type getNext() {
+                return Type.values()[(this.ordinal() + 1) % Type.values().length];
+            }
+        }
+    }
 }

@@ -21,6 +21,8 @@
   "text.polydex.sidebar.output": "Output: %s",
   "text.polydex.sidebar.taken": "Taken: %s",
   "text.polydex.display_all_items": "Everything",
+  "text.polydex.category.namespaces": "By source",
+  "text.polydex.category.item_group": "By group",
   "text.polydex.empty": "Empty",
   "test.polydex.close": "Close",
   "text.polydex.button.select_displayed": "Select displayed items...",

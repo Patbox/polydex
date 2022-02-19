@@ -17,6 +17,7 @@ import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
@@ -54,7 +55,11 @@ public class PolydexImpl {
     public static final Map<Item, Function<Item, @Nullable Collection<ItemEntry>>> ITEM_ENTRY_BUILDERS = new HashMap<>();
     public static final PackedEntries ITEM_ENTRIES = PackedEntries.create();
     public static final Map<String, NamespacedEntry> BY_NAMESPACE = new HashMap<>();
+    public static final Map<ItemGroup, NamespacedEntry> BY_ITEMGROUP = new HashMap<>();
+
     public static final List<NamespacedEntry> NAMESPACED_ENTRIES = new ArrayList<>();
+    public static final List<NamespacedEntry> ITEM_GROUP_ENTRIES = new ArrayList<>();
+
     public static final Logger LOGGER = LogManager.getLogger("Polydex");
     public static final List<Consumer<DisplayBuilder>> DISPLAY_BUILDER_CONSUMERS = new ArrayList<>();
     public static final Map<Identifier, List<CustomView.ViewData>> CUSTOM_PAGES = new HashMap<>();
@@ -75,8 +80,10 @@ public class PolydexImpl {
     public static void updateCaches(MinecraftServer server) {
         ITEM_ENTRIES.clear();
         BY_NAMESPACE.clear();
+        BY_ITEMGROUP.clear();
         BY_NAMESPACE.put("minecraft", new NamespacedEntry("minecraft", new LiteralText("Minecraft (Vanilla)"), Items.GRASS_BLOCK.getDefaultStack(), PackedEntries.create()));
         NAMESPACED_ENTRIES.clear();
+        ITEM_GROUP_ENTRIES.clear();
 
         for (var item : Registry.ITEM) {
             if (item == Items.AIR) {
@@ -108,12 +115,17 @@ public class PolydexImpl {
 
                 ITEM_ENTRIES.add(entry);
                 BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), NamespacedEntry::ofMod).entries.add(entry);
+                if (entry.item().getGroup() != null) {
+                    BY_ITEMGROUP.computeIfAbsent(entry.item().getGroup(), NamespacedEntry::ofItemGroup).entries.add(entry);
+                }
             }
 
         }
 
         NAMESPACED_ENTRIES.addAll(BY_NAMESPACE.values());
         NAMESPACED_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
+        ITEM_GROUP_ENTRIES.addAll(BY_ITEMGROUP.values());
+        ITEM_GROUP_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
         config = PolydexConfig.loadOrCreateConfig();
     }
 
@@ -256,13 +268,9 @@ public class PolydexImpl {
 
                     var result = CustomView.ViewData.CODEC.parse(JsonOps.INSTANCE, json);
 
-                    result.result().ifPresent(viewData -> {
-                        CUSTOM_PAGES.computeIfAbsent(viewData.entryId(), (e) -> new ArrayList<>()).add(viewData);
-                    });
+                    result.result().ifPresent(viewData -> CUSTOM_PAGES.computeIfAbsent(viewData.entryId(), (e) -> new ArrayList<>()).add(viewData));
 
-                    result.error().ifPresent(error -> {
-                        LOGGER.error("Failed to parse page at {}: {}", path, error.toString());
-                    });
+                    result.error().ifPresent(error -> LOGGER.error("Failed to parse page at {}: {}", path, error.toString()));
                 }
             } catch (Exception e) {
                 LOGGER.error("Failed to read page at {}", path, e);
@@ -339,6 +347,10 @@ public class PolydexImpl {
             }
 
             return new NamespacedEntry(namespace, new LiteralText(namespace), icon, entries);
+        }
+
+        public static NamespacedEntry ofItemGroup(ItemGroup group) {
+            return new NamespacedEntry(group.getName(), group.getDisplayName(), group.getIcon().copy(), PackedEntries.create());
         }
     }
 }

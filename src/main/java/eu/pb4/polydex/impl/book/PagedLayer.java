@@ -54,7 +54,7 @@ public abstract class PagedLayer extends Layer implements PageAware {
 
     @Override
     public void setPage(int page) {
-        this.page = Math.min(page, this.getPageAmount() - 1);
+        this.page = page % Math.max(this.getPageAmount(), 1);
         this.updateDisplay();
     }
 

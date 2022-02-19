@@ -32,7 +32,7 @@ public class Commands {
                 .then(literal("pages")
                         .requires(Permissions.require("polydex.pages", 0))
                         .then(argument("number", IntegerArgumentType.integer(1))
-                                .executes((ctx) -> Commands.openIndex(ctx, (IntegerArgumentType.getInteger(ctx, "number") - 1) % MainIndexGui.ItemLayer.getPageCount(true)))
+                                .executes((ctx) -> Commands.openIndex(ctx, (IntegerArgumentType.getInteger(ctx, "number") - 1)))
                         )
                 )
                 .then(literal("reload")
@@ -50,7 +50,7 @@ public class Commands {
     }
 
     private static int openIndex(CommandContext<ServerCommandSource> context, int page) throws CommandSyntaxException {
-        new MainIndexGui(context.getSource().getPlayer(), true, "", page, 0).open();
+        new MainIndexGui(context.getSource().getPlayer(), true, page, 0).open();
         return 1;
     }
 

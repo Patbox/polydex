@@ -16,7 +16,7 @@ import net.minecraft.util.collection.DefaultedList;
 public final class CraftingRecipeView implements ItemPageView<CraftingRecipe> {
     private static GuiElement CRAFTING_TABLE = new GuiElement(Items.CRAFTING_TABLE.getDefaultStack(), GuiElement.EMPTY_CALLBACK);
     private static GuiElement CRAFTING = new GuiElementBuilder(Items.CRAFTING_TABLE)
-            .setName(new TranslatableText("block.minecraft.crafting_table").append(" / ").append(new TranslatableText("name.polydex.recipe.player_crafting")))
+            .setName(new TranslatableText("block.minecraft.crafting_table").append(" / ").append(new TranslatableText("text.polydex.recipe.player_crafting")))
             .build();
 
     @Override

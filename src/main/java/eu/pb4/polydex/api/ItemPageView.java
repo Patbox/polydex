@@ -20,6 +20,11 @@ public interface ItemPageView<T> {
         return new PageEntry<>(this, entry);
     }
 
+    default boolean canDisplay(ItemEntry entry, T object, ServerPlayerEntity player) {
+        return true;
+    }
+
+
     static <T extends Recipe<?>> void registerRecipe(RecipeType<T> recipeType, ItemPageView<T> view) {
         PolydexImpl.RECIPE_VIEWS.put(recipeType, (ItemPageView<Recipe<?>>) view);
     }
@@ -27,5 +32,4 @@ public interface ItemPageView<T> {
     static void register(BiFunction<MinecraftServer, ItemEntry, @Nullable Collection<PageEntry<?>>> viewBuilder) {
         PolydexImpl.VIEWS.add(viewBuilder);
     }
-
 }

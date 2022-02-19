@@ -12,4 +12,8 @@ public record PageEntry<T>(ItemPageView<T> view, T object) {
     public void renderLayer(ItemEntry entry, Layer layer, ServerPlayerEntity player, Runnable returnCallback) {
         this.view.renderLayer(entry, this.object, player, layer, returnCallback);
     }
+
+    public boolean canDisplay(ItemEntry entry, ServerPlayerEntity player) {
+        return this.view.canDisplay(entry, this.object, player);
+    }
 }
