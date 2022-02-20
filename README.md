@@ -1,17 +1,17 @@
 # Polydex
 Polydex is a mod allowing you to see player-friendly information about 
-blocks and items on servers. It designed for survival-like, vanilla client 
+blocks and items on servers. It is designed for survival-like, vanilla client 
 compatible servers using [Polymer](https://github.com/Patbox/polymer/) mods 
-or [PolyMC](https://github.com/TheEpicBlock/PolyMc), through it can be used 
+or [PolyMC](https://github.com/TheEpicBlock/PolyMc), though it can be used 
 in modded or vanilla-content setting!
 
-It can display tooltip (as a bossbar or sidebar) with basic information 
+It can display a tooltip (as a bossbar or sidebar) with basic information 
 about targeted block or entity similarly to mods like WTHIT/HWYLA/WAILA.
 
-It also adds simple way of checking recipes of items with chest gui interface
-inspired by mods like Roughly Enough Items / Just Enough Items.
+It also adds a simple way of checking recipes of items with chest gui interface
+inspired by mods like Roughly Enough Items (REI)/ Just Enough Items (JEI).
 
-It's configurable and bundles some api, so other mods can be compatible with it.
+It's configurable and bundles some API, so other mods can be compatible with it.
 To use it, use modrinth maven™.
 
 ## Video
@@ -20,4 +20,4 @@ https://user-images.githubusercontent.com/39821509/154287702-29546608-3312-4ac6-
 ## Download:
 - [Modrinth](https://modrinth.com/mod/polydex)
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/polydex)
-- [Github Releases](https://github.com/Patbox/polydex/releases)
+- [GitHub Releases](https://github.com/Patbox/polydex/releases)
