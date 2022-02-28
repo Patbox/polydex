@@ -197,10 +197,10 @@ public class PolydexImpl {
                     var effects = new ArrayList<Text>();
 
                     if (livingEntity.isOnFire()) {
-                        effects.add(new LiteralText("\uD83D\uDD25" + (livingEntity.isFreezing() ? " " : "")).formatted(Formatting.GOLD));
+                        effects.add(new LiteralText("\uD83D\uDD25" + (livingEntity.isFrozen() ? " " : "")).formatted(Formatting.GOLD));
                     }
 
-                    if (livingEntity.isFreezing()) {
+                    if (livingEntity.isFrozen()) {
                         effects.add(new LiteralText("❄").formatted(Formatting.AQUA));
                     }
 
@@ -306,7 +306,7 @@ public class PolydexImpl {
         }
 
         public static NamespacedEntry ofMod(String namespace, PackedEntries entries) {
-            ItemStack icon = Registry.ITEM.getEntries().stream().filter((e) -> e.getKey().getValue().getNamespace().equals(namespace)).findFirst().get().getValue().getDefaultStack();
+            ItemStack icon = Registry.ITEM.getEntrySet().stream().filter((e) -> e.getKey().getValue().getNamespace().equals(namespace)).findFirst().get().getValue().getDefaultStack();
 
             for (var mod : FabricLoader.getInstance().getAllMods()) {
                 try {
