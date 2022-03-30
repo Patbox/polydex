@@ -13,13 +13,14 @@ import net.minecraft.text.LiteralText;
 import java.util.UUID;
 
 public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
+    private static final UUID ID = new UUID(0x706F6C79646578l, 0l);
     private final PolydexTarget target;
     private final boolean forceDisplay;
     private boolean isHidden = true;
     private boolean isEntity = false;
 
     public BossbarTargetDisplay(PolydexTarget target, boolean forceDisplay) {
-        super(UUID.randomUUID(), LiteralText.EMPTY, Color.WHITE, Style.PROGRESS);
+        super(ID, LiteralText.EMPTY, Color.WHITE, Style.PROGRESS);
         this.setPercent(0);
         this.target = target;
         this.forceDisplay = forceDisplay;
@@ -48,19 +49,21 @@ public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
 
     @Override
     public void hideDisplay() {
-        if (this.forceDisplay) {
-            this.setName(LiteralText.EMPTY);
-            this.setPercent(0);
-            this.setColor(Color.WHITE);
-            this.isEntity = false;
+        if (!this.isHidden) {
+            if (this.forceDisplay) {
+                this.setName(LiteralText.EMPTY);
+                this.setPercent(0);
+                this.setColor(Color.WHITE);
+                this.isEntity = false;
 
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
-        } else {
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.remove(this.getUuid()));
+                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
+                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
+                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
+            } else {
+                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.remove(this.getUuid()));
+            }
+            this.isHidden = true;
         }
-        this.isHidden = true;
     }
 
     @Override
@@ -80,7 +83,9 @@ public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
             } else {
                 this.setColor(Color.WHITE);
             }
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
+            if (!this.isHidden || this.forceDisplay) {
+                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
+            }
         }
 
         float percent = 0;
@@ -94,8 +99,10 @@ public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
         this.setName(PolydexUtils.mergeText(DisplayBuilder.buildText(this.target), PolydexUtils.DEFAULT_SEPARATOR));
         this.setPercent(percent);
 
-        this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
-        this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
+        if (!this.isHidden || this.forceDisplay) {
+            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
+            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
+        }
     }
 
     @Override

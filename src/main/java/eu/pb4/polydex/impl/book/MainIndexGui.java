@@ -60,12 +60,18 @@ public class MainIndexGui extends LayeredGui {
                 var item = MainIndexGui.this.entries.get(MainIndexGui.this.showAll).get(id);
 
                 return GuiElementBuilder.from(item.stack())
-                        .setCallback((x, y, z) -> {
-                            if (item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) {
+                        .setCallback((x, type, z) -> {
+                            if (player.isCreative() && type.isMiddle) {
+                                var cursor = this.player.currentScreenHandler.getCursorStack();
+                                if (cursor.isItemEqual(item.stack()) && cursor.getCount() < cursor.getMaxCount()) {
+                                    cursor.increment(1);
+                                } else {
+                                    this.player.currentScreenHandler.setCursorStack(item.stack().copy());
+                                }
+                            } else if (item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) {
                                 MainIndexGui.this.close();
                                 new EntryViewerGui(player, item, MainIndexGui.this::open).open();
                                 GuiUtils.playClickSound(this.player);
-
                             }
                         })
                         .build();
