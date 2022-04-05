@@ -91,9 +91,9 @@ public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
         float percent = 0;
 
         if (entity instanceof LivingEntity livingEntity && PolydexImpl.config.displayEntityHealth) {
-            percent = livingEntity.getHealth() / livingEntity.getMaxHealth();
+            percent = Math.min(livingEntity.getHealth() / livingEntity.getMaxHealth(), 1);
         } else if (PolydexImpl.config.displayMiningProgress && this.target.isMining()) {
-            percent = this.target.getBreakingProgress();
+            percent = Math.min(this.target.getBreakingProgress(), 1);
         }
 
         this.setName(PolydexUtils.mergeText(DisplayBuilder.buildText(this.target), PolydexUtils.DEFAULT_SEPARATOR));

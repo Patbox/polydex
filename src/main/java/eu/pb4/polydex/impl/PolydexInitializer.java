@@ -74,7 +74,6 @@ public class PolydexInitializer implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(Commands::register);
         ServerLifecycleEvents.SERVER_STARTED.register(PolydexImpl::updateCaches);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, manager, b) -> PolydexImpl.updateCaches(server));
-
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
 
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {

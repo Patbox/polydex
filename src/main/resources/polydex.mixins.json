@@ -4,8 +4,9 @@
   "package": "eu.pb4.polydex.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "BrewingRecipeRegistryAccessor",
     "BrewingRecipeAccessor",
+    "BrewingRecipeRegistryAccessor",
+    "MinecraftServerMixin",
     "ServerPlayerInteractionManagerMixin",
     "ServerPlayNetworkHandlerMixin",
     "SmithingRecipeAccessor",

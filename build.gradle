@@ -154,7 +154,6 @@ if (System.getenv("MODRINTH")) {
 		token = System.getenv("MODRINTH")
 		projectId = 'm5NB7FJE'
 		versionNumber = version
-		versionType = "release"
 		changelog = System.getenv("CHANGELOG")
 		// On fabric, use 'remapJar' instead of 'jar'
 		uploadFile = remapJar

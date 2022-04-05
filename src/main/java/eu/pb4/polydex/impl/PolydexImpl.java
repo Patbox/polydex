@@ -43,14 +43,13 @@ import xyz.nucleoid.codecs.MoreCodecs;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class PolydexImpl {
     public static final Map<Identifier, Function<PolydexTarget, TargetDisplay>> DISPLAYS = new HashMap<>();
     public static final HashMap<RecipeType<?>, ItemPageView<Recipe<?>>> RECIPE_VIEWS = new HashMap<>();
-    public static final List<BiFunction<MinecraftServer, ItemEntry, @Nullable Collection<PageEntry<?>>>> VIEWS = new ArrayList<>();
+    public static final List<ItemPageView.PageEntryCreator> VIEWS = new ArrayList<>();
     public static final String ID = "polydex";
     public static final Map<Item, Function<Item, @Nullable Collection<ItemEntry>>> ITEM_ENTRY_BUILDERS = new HashMap<>();
     public static final PackedEntries ITEM_ENTRIES = PackedEntries.create();
@@ -104,9 +103,11 @@ public class PolydexImpl {
                 entries.add(ItemEntry.of(item));
             }
 
+            var recipes = server.getRecipeManager().values();
+
             for (var entry : entries) {
                 for (var viewBuilder : VIEWS) {
-                    var pageEntries = viewBuilder.apply(server, entry);
+                    var pageEntries = viewBuilder.createEntries(server, entry, recipes);
 
                     if (pageEntries != null) {
                         entry.pages().addAll(pageEntries);
@@ -118,6 +119,7 @@ public class PolydexImpl {
                 if (entry.item().getGroup() != null) {
                     BY_ITEMGROUP.computeIfAbsent(entry.item().getGroup(), NamespacedEntry::ofItemGroup).entries.add(entry);
                 }
+                PolydexServerInterface.updateTimeReference(server);
             }
 
         }
@@ -129,9 +131,9 @@ public class PolydexImpl {
         config = PolydexConfig.loadOrCreateConfig();
     }
 
-    public static Collection<PageEntry<?>> buildRecipes(MinecraftServer server, ItemEntry entry) {
+    public static Collection<PageEntry<?>> buildRecipes(MinecraftServer server, ItemEntry entry, Collection<Recipe<?>> recipes) {
         var list = new ArrayList<PageEntry<?>>();
-        for (var recipe : server.getRecipeManager().values()) {
+        for (var recipe : recipes) {
             var view = PolydexImpl.RECIPE_VIEWS.get(recipe.getType());
             if (view != null && recipe.getOutput().getItem() == entry.item()) {
                 list.add(new PageEntry<>(view, recipe));
@@ -188,7 +190,7 @@ public class PolydexImpl {
             if (entity instanceof LivingEntity livingEntity) {
                 if (PolydexImpl.config.displayEntityHealth) {
                     displayBuilder.setComponent(DisplayBuilder.HEALTH, new LiteralText("").append(new LiteralText("♥ ").formatted(Formatting.RED))
-                            .append("" + MathHelper.ceil(livingEntity.getHealth()))
+                            .append("" + Math.min(MathHelper.ceil(livingEntity.getHealth()), MathHelper.ceil(livingEntity.getMaxHealth())))
                             .append(new LiteralText("/").formatted(Formatting.GRAY))
                             .append("" + MathHelper.ceil(livingEntity.getMaxHealth())));
                 }

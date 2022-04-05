@@ -4,6 +4,7 @@ import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,6 +31,15 @@ public interface ItemPageView<T> {
     }
 
     static void register(BiFunction<MinecraftServer, ItemEntry, @Nullable Collection<PageEntry<?>>> viewBuilder) {
+        PolydexImpl.VIEWS.add(((server, itemEntry, recipeManager) -> viewBuilder.apply(server, itemEntry)));
+    }
+
+    static void register(PageEntryCreator viewBuilder) {
         PolydexImpl.VIEWS.add(viewBuilder);
+    }
+
+    @FunctionalInterface
+    interface PageEntryCreator {
+        @Nullable Collection<PageEntry<?>> createEntries(MinecraftServer server, ItemEntry itemEntry, Collection<Recipe<?>> recipes);
     }
 }
