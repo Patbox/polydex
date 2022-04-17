@@ -308,7 +308,15 @@ public class PolydexImpl {
         }
 
         public static NamespacedEntry ofMod(String namespace, PackedEntries entries) {
-            ItemStack icon = Registry.ITEM.getEntrySet().stream().filter((e) -> e.getKey().getValue().getNamespace().equals(namespace)).findFirst().get().getValue().getDefaultStack();
+            ItemStack icon = Items.BOOK.getDefaultStack();
+
+            {
+                var id = Registry.ITEM.getIds().stream().filter((idx) -> idx.getNamespace().equals(namespace)).findFirst();
+
+                if (id.isPresent()) {
+                    icon = Registry.ITEM.get(id.get()).getDefaultStack();
+                }
+            }
 
             for (var mod : FabricLoader.getInstance().getAllMods()) {
                 try {
