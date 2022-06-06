@@ -8,19 +8,18 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class GuiUtils {
     public static final GuiElement EMPTY = new GuiElement(ItemStack.EMPTY, GuiElementInterface.EMPTY_CALLBACK);
     public static final GuiElement FILLER = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
-            .setName(new LiteralText(""))
+            .setName(Text.empty())
             .hideFlags().build();
 
     public static GuiElement backButton(ServerPlayerEntity player, Runnable callback, boolean back) {
         return new GuiElementBuilder(Items.BARRIER)
-                .setName(new TranslatableText(back ? "gui.back" : "test.polydex.close").formatted(Formatting.RED))
+                .setName(Text.translatable(back ? "gui.back" : "test.polydex.close").formatted(Formatting.RED))
                 .hideFlags()
                 .setCallback((x, y, z) -> {
                     playClickSound(player);
@@ -34,7 +33,7 @@ public class GuiUtils {
 
     public static GuiElement nextPage(ServerPlayerEntity player, PageAware gui) {
         return new GuiElementBuilder(Items.PLAYER_HEAD)
-                .setName(new TranslatableText("spectatorMenu.next_page").formatted(Formatting.WHITE))
+                .setName(Text.translatable("spectatorMenu.next_page").formatted(Formatting.WHITE))
                 .hideFlags()
                 .setSkullOwner(GuiTextures.GUI_NEXT_PAGE)
                 .setCallback((x, y, z) -> {
@@ -45,7 +44,7 @@ public class GuiUtils {
 
     public static GuiElement previousPage(ServerPlayerEntity player, PageAware gui) {
         return new GuiElementBuilder(Items.PLAYER_HEAD)
-                .setName(new TranslatableText("spectatorMenu.previous_page").formatted(Formatting.WHITE))
+                .setName(Text.translatable("spectatorMenu.previous_page").formatted(Formatting.WHITE))
                 .hideFlags()
                 .setSkullOwner(GuiTextures.GUI_PREVIOUS_PAGE)
                 .setCallback((x, y, z) -> {

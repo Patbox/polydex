@@ -7,18 +7,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import eu.pb4.polydex.api.TargetDisplay;
 import eu.pb4.polydex.impl.book.MainIndexGui;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class Commands {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean isDedicated) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(literal("polydex")
                 .executes((ctx) -> Commands.openIndex(ctx, 0))
                 .then(literal("display")
@@ -45,7 +47,7 @@ public class Commands {
 
     private static int reload(CommandContext<ServerCommandSource> context) {
         PolydexImpl.config = PolydexConfig.loadOrCreateConfig();
-        context.getSource().sendFeedback(new TranslatableText("text.polydex.config_reloaded"), false);
+        context.getSource().sendFeedback(Text.translatable("text.polydex.config_reloaded"), false);
         return 1;
     }
 
@@ -67,10 +69,10 @@ public class Commands {
 
         if (PolydexImpl.DISPLAYS.containsKey(id)) {
             TargetDisplay.set(context.getSource().getPlayer(), id);
-            context.getSource().sendFeedback(new TranslatableText("text.polydex.changed_style", id.toString()), false);
+            context.getSource().sendFeedback(Text.translatable("text.polydex.changed_style", id.toString()), false);
             return 1;
         } else {
-            context.getSource().sendFeedback(new TranslatableText("text.polydex.invalid_style", id.toString()).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(Text.translatable("text.polydex.invalid_style", id.toString()).formatted(Formatting.RED), false);
             return 0;
         }
     }

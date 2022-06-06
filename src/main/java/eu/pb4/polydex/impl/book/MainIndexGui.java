@@ -5,16 +5,13 @@ import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.LayerView;
 import eu.pb4.sgui.api.gui.layered.LayeredGui;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +25,7 @@ public class MainIndexGui extends LayeredGui {
     private boolean showAll;
 
     public MainIndexGui(ServerPlayerEntity player, boolean showAll, int pageItem, int pageSub) {
-        super(ScreenHandlerType.GENERIC_9X6, player,  false);
+        super(ScreenHandlerType.GENERIC_9X6, player, false);
         this.showAll = showAll;
 
         this.mainLayer = new ItemLayer(6);
@@ -41,7 +38,7 @@ public class MainIndexGui extends LayeredGui {
         this.indexLayerView = this.addLayer(this.indexLayer, 0, 0);
         this.indexLayerView.setZIndex(0);
 
-        this.setTitle(new TranslatableText("text.polydex.index_title"));
+        this.setTitle(Text.translatable("text.polydex.index_title"));
     }
 
     public class ItemLayer extends PagedLayer {
@@ -84,23 +81,23 @@ public class MainIndexGui extends LayeredGui {
         protected GuiElement getNavElement(int id) {
             return switch (id) {
                 case 0 -> new GuiElementBuilder(MainIndexGui.this.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
-                        .setName(new TranslatableText("text.polydex.button.see_" + (MainIndexGui.this.showAll ? "limited" : "everything")))
+                        .setName(Text.translatable("text.polydex.button.see_" + (MainIndexGui.this.showAll ? "limited" : "everything")))
                         .setCallback((x, y, z) -> {
                             MainIndexGui.this.showAll = !MainIndexGui.this.showAll;
                             this.setPage(this.getPage());
                             GuiUtils.playClickSound(this.player);
                         }).build();
                 case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
-                        .setName(new TranslatableText("text.polydex.button.select_displayed").formatted(Formatting.WHITE))
+                        .setName(Text.translatable("text.polydex.button.select_displayed").formatted(Formatting.WHITE))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
                             MainIndexGui.this.indexLayerView.setZIndex(2);
                         }).build();
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
                 case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
-                        .setName(new TranslatableText("text.polydex.view.pages",
-                                        new LiteralText("" + (this.page + 1)).formatted(Formatting.WHITE),
-                                        new LiteralText("" + this.getPageAmount()).formatted(Formatting.WHITE)
+                        .setName(Text.translatable("text.polydex.view.pages",
+                                        Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
+                                        Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                                 ).formatted(Formatting.AQUA)
                         ).build() : GuiUtils.FILLER;
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : GuiUtils.FILLER;
@@ -112,6 +109,7 @@ public class MainIndexGui extends LayeredGui {
 
     public class NamespaceLayer extends PagedLayer {
         private Type type = Type.NAMESPACES;
+
         public NamespaceLayer(int height) {
             super(MainIndexGui.this.getPlayer(), height, 9, true);
         }
@@ -125,7 +123,7 @@ public class MainIndexGui extends LayeredGui {
         protected GuiElement getElement(int id) {
             if (id == 0) {
                 var builder = new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
-                        .setName(new TranslatableText("text.polydex.display_all_items"))
+                        .setName(Text.translatable("text.polydex.display_all_items"))
                         .hideFlags()
                         .setCallback((x, y, z) -> {
                             MainIndexGui.this.entries = PolydexImpl.ITEM_ENTRIES;
@@ -170,7 +168,7 @@ public class MainIndexGui extends LayeredGui {
         protected GuiElement getNavElement(int id) {
             return switch (id) {
                 case 0 -> new GuiElementBuilder(Items.BOOK)
-                        .setName(new TranslatableText( "text.polydex.category." + this.type.name().toLowerCase(Locale.ROOT)))
+                        .setName(Text.translatable("text.polydex.category." + this.type.name().toLowerCase(Locale.ROOT)))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
                             this.type = this.type.getNext();
@@ -179,9 +177,9 @@ public class MainIndexGui extends LayeredGui {
                         .build();
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
                 case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
-                        .setName(new TranslatableText("text.polydex.view.pages",
-                                        new LiteralText("" + (this.page + 1)).formatted(Formatting.WHITE),
-                                        new LiteralText("" + this.getPageAmount()).formatted(Formatting.WHITE)
+                        .setName(Text.translatable("text.polydex.view.pages",
+                                        Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
+                                        Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                                 ).formatted(Formatting.AQUA)
                         ).build() : GuiUtils.FILLER;
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : GuiUtils.FILLER;

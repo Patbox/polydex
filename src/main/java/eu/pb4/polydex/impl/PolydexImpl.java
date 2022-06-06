@@ -5,7 +5,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import eu.pb4.placeholders.TextParser;
+import eu.pb4.placeholders.api.TextParserUtils;
 import eu.pb4.polydex.api.*;
 import eu.pb4.polydex.impl.book.view.CustomView;
 import eu.pb4.polydex.impl.book.view.PotionRecipeView;
@@ -14,6 +14,7 @@ import eu.pb4.polydex.mixin.BrewingRecipeRegistryAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
@@ -27,9 +28,7 @@ import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
@@ -63,7 +62,7 @@ public class PolydexImpl {
     public static final List<Consumer<DisplayBuilder>> DISPLAY_BUILDER_CONSUMERS = new ArrayList<>();
     public static final Map<Identifier, List<CustomView.ViewData>> CUSTOM_PAGES = new HashMap<>();
     public static Codec<Text> TEXT = Codec.either(Codec.STRING, MoreCodecs.TEXT)
-            .xmap(either -> either.map(TextParser::parseSafe, Function.identity()), Either::right);
+            .xmap(either -> either.map(TextParserUtils::formatTextSafe, Function.identity()), Either::right);
 
 
     public static PolydexConfig config = new PolydexConfig();
@@ -80,9 +79,21 @@ public class PolydexImpl {
         ITEM_ENTRIES.clear();
         BY_NAMESPACE.clear();
         BY_ITEMGROUP.clear();
-        BY_NAMESPACE.put("minecraft", new NamespacedEntry("minecraft", new LiteralText("Minecraft (Vanilla)"), Items.GRASS_BLOCK.getDefaultStack(), PackedEntries.create()));
+        BY_NAMESPACE.put("minecraft", new NamespacedEntry("minecraft", Text.literal("Minecraft (Vanilla)"), Items.GRASS_BLOCK.getDefaultStack(), PackedEntries.create()));
         NAMESPACED_ENTRIES.clear();
         ITEM_GROUP_ENTRIES.clear();
+
+        var map = new HashMap<Item, Collection<Recipe<?>>>();
+
+        for (var item : Registry.ITEM) {
+            map.put(item, new ArrayList<>());
+        }
+
+        var recipes = server.getRecipeManager().values();
+
+        for (var recipe : recipes) {
+            map.get(recipe.getOutput().getItem()).add(recipe);
+        }
 
         for (var item : Registry.ITEM) {
             if (item == Items.AIR) {
@@ -103,11 +114,9 @@ public class PolydexImpl {
                 entries.add(ItemEntry.of(item));
             }
 
-            var recipes = server.getRecipeManager().values();
-
             for (var entry : entries) {
                 for (var viewBuilder : VIEWS) {
-                    var pageEntries = viewBuilder.createEntries(server, entry, recipes);
+                    var pageEntries = viewBuilder.createEntries(server, entry, map.get(item));
 
                     if (pageEntries != null) {
                         entry.pages().addAll(pageEntries);
@@ -135,7 +144,7 @@ public class PolydexImpl {
         var list = new ArrayList<PageEntry<?>>();
         for (var recipe : recipes) {
             var view = PolydexImpl.RECIPE_VIEWS.get(recipe.getType());
-            if (view != null && recipe.getOutput().getItem() == entry.item()) {
+            if (view != null) {
                 list.add(new PageEntry<>(view, recipe));
             }
         }
@@ -189,9 +198,9 @@ public class PolydexImpl {
 
             if (entity instanceof LivingEntity livingEntity) {
                 if (PolydexImpl.config.displayEntityHealth) {
-                    displayBuilder.setComponent(DisplayBuilder.HEALTH, new LiteralText("").append(new LiteralText("♥ ").formatted(Formatting.RED))
+                    displayBuilder.setComponent(DisplayBuilder.HEALTH, Text.literal("").append(Text.literal("♥ ").formatted(Formatting.RED))
                             .append("" + Math.min(MathHelper.ceil(livingEntity.getHealth()), MathHelper.ceil(livingEntity.getMaxHealth())))
-                            .append(new LiteralText("/").formatted(Formatting.GRAY))
+                            .append(Text.literal("/").formatted(Formatting.GRAY))
                             .append("" + MathHelper.ceil(livingEntity.getMaxHealth())));
                 }
 
@@ -199,15 +208,15 @@ public class PolydexImpl {
                     var effects = new ArrayList<Text>();
 
                     if (livingEntity.isOnFire()) {
-                        effects.add(new LiteralText("\uD83D\uDD25" + (livingEntity.isFrozen() ? " " : "")).formatted(Formatting.GOLD));
+                        effects.add(Text.literal("\uD83D\uDD25" + (livingEntity.isFrozen() ? " " : "")).formatted(Formatting.GOLD));
                     }
 
                     if (livingEntity.isFrozen()) {
-                        effects.add(new LiteralText("❄").formatted(Formatting.AQUA));
+                        effects.add(Text.literal("❄").formatted(Formatting.AQUA));
                     }
 
                     for (var effect : livingEntity.getStatusEffects()) {
-                        effects.add(new LiteralText("⚗").setStyle(net.minecraft.text.Style.EMPTY.withColor(effect.getEffectType().getColor())));
+                        effects.add(Text.literal("⚗").setStyle(net.minecraft.text.Style.EMPTY.withColor(effect.getEffectType().getColor())));
                     }
 
                     if (!effects.isEmpty()) {
@@ -228,9 +237,9 @@ public class PolydexImpl {
             }
 
             if (PolydexImpl.config.displayCantMine && (!target.getPlayer().canHarvest(target.getBlockState()) || target.getBlockState().calcBlockBreakingDelta(target.getPlayer(), target.getPlayer().world, target.getTargetPos()) <= 0)) {
-                var text = new LiteralText("⛏").formatted(Formatting.DARK_RED);
+                var text = Text.literal("⛏").formatted(Formatting.DARK_RED);
                 if (!displayBuilder.isSmall()) {
-                    text.append(" ").append(new TranslatableText("text.polydex.cant_mine").formatted(Formatting.RED));
+                    text.append(" ").append(Text.translatable("text.polydex.cant_mine").formatted(Formatting.RED));
                 }
                 displayBuilder.setComponent(DisplayBuilder.EFFECTS, text);
             }
@@ -242,8 +251,8 @@ public class PolydexImpl {
             }
 
             if (PolydexImpl.config.displayMiningProgress && target.isMining()) {
-                displayBuilder.setComponent(DisplayBuilder.PROGRESS, new LiteralText("" + (int) (target.getBreakingProgress() * 100))
-                        .append(new LiteralText("%").formatted(Formatting.GRAY)));
+                displayBuilder.setComponent(DisplayBuilder.PROGRESS, Text.literal("" + (int) (target.getBreakingProgress() * 100))
+                        .append(Text.literal("%").formatted(Formatting.GRAY)));
             }
         }
     }
@@ -260,22 +269,21 @@ public class PolydexImpl {
 
     public static void onReload(ResourceManager manager) {
         CUSTOM_PAGES.clear();
-        var resources = manager.findResources("polydex_page", path -> path.endsWith(".json"));
+        var resources = manager.findResources("polydex_page", path -> path.getPath().endsWith(".json"));
 
-        for (Identifier path : resources) {
+        for (var resource : resources.entrySet()) {
             try {
-                var resource = manager.getResource(path);
-                try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
+                try (var reader = new BufferedReader(new InputStreamReader(resource.getValue().getInputStream()))) {
                     var json = JsonParser.parseReader(reader);
 
                     var result = CustomView.ViewData.CODEC.parse(JsonOps.INSTANCE, json);
 
                     result.result().ifPresent(viewData -> CUSTOM_PAGES.computeIfAbsent(viewData.entryId(), (e) -> new ArrayList<>()).add(viewData));
 
-                    result.error().ifPresent(error -> LOGGER.error("Failed to parse page at {}: {}", path, error.toString()));
+                    result.error().ifPresent(error -> LOGGER.error("Failed to parse page at {}: {}", resource.getKey(), error.toString()));
                 }
             } catch (Exception e) {
-                LOGGER.error("Failed to read page at {}", path, e);
+                LOGGER.error("Failed to read page at {}", resource.getKey(), e);
             }
         }
     }
@@ -325,18 +333,18 @@ public class PolydexImpl {
                         var obj = val.getAsObject();
                         Text display;
                         if (obj.containsKey("name")) {
-                            display = TextParser.parse(obj.get("name").getAsString());
+                            display = TextParserUtils.formatText(obj.get("name").getAsString());
                         } else {
-                            display = new LiteralText(mod.getMetadata().getName());
+                            display = Text.literal(mod.getMetadata().getName());
                         }
 
                         if (obj.containsKey("icon")) {
                             try {
-                                var itemStringReader = (new ItemStringReader(new StringReader(obj.get("icon").getAsString()), true)).consume();
+                                var itemStringReader = (ItemStringReader.item(CommandRegistryWrapper.of(Registry.ITEM), new StringReader(obj.get("icon").getAsString())));
 
-                                icon = itemStringReader.getItem().getDefaultStack();
-                                if (itemStringReader.getNbt() != null) {
-                                    icon.setNbt(itemStringReader.getNbt());
+                                icon = itemStringReader.item().value().getDefaultStack();
+                                if (itemStringReader.nbt() != null) {
+                                    icon.setNbt(itemStringReader.nbt());
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -352,11 +360,11 @@ public class PolydexImpl {
 
             for (var mod : FabricLoader.getInstance().getAllMods()) {
                 if (mod.getMetadata().getId().equals(namespace)) {
-                    return new NamespacedEntry(namespace, new LiteralText(mod.getMetadata().getName()), icon, entries);
+                    return new NamespacedEntry(namespace, Text.literal(mod.getMetadata().getName()), icon, entries);
                 }
             }
 
-            return new NamespacedEntry(namespace, new LiteralText(namespace), icon, entries);
+            return new NamespacedEntry(namespace, Text.literal(namespace), icon, entries);
         }
 
         public static NamespacedEntry ofItemGroup(ItemGroup group) {

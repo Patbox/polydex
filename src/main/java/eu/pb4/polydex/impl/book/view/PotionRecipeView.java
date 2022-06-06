@@ -14,7 +14,7 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import static eu.pb4.polydex.api.PolydexUtils.getIngredientDisplay;
 
@@ -48,7 +48,7 @@ public abstract class PotionRecipeView<T> implements ItemPageView<BrewingRecipeR
         var out = toStack(entry, access.getOutput());
 
         layer.setSlot(12, getIngredientDisplay(access.getIngredient()));
-        layer.setSlot(21, new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(LiteralText.EMPTY));
+        layer.setSlot(21, new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.empty()));
         layer.setSlot(30, base);
         layer.setSlot(23, out);
 

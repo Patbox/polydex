@@ -8,7 +8,7 @@ import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.network.packet.s2c.play.BossBarS2CPacket;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.UUID;
 
@@ -20,7 +20,7 @@ public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
     private boolean isEntity = false;
 
     public BossbarTargetDisplay(PolydexTarget target, boolean forceDisplay) {
-        super(ID, LiteralText.EMPTY, Color.WHITE, Style.PROGRESS);
+        super(ID, Text.empty(), Color.WHITE, Style.PROGRESS);
         this.setPercent(0);
         this.target = target;
         this.forceDisplay = forceDisplay;
@@ -51,7 +51,7 @@ public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
     public void hideDisplay() {
         if (!this.isHidden) {
             if (this.forceDisplay) {
-                this.setName(LiteralText.EMPTY);
+                this.setName(Text.empty());
                 this.setPercent(0);
                 this.setColor(Color.WHITE);
                 this.isEntity = false;

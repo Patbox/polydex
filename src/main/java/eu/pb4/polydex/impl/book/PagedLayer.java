@@ -4,23 +4,21 @@ import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public abstract class PagedLayer extends Layer implements PageAware {
-    private final boolean withNavigation;
     public final int pageSize;
     public final ServerPlayerEntity player;
+    private final boolean withNavigation;
     protected int page = 0;
 
     public PagedLayer(ServerPlayerEntity player, int height, int width, boolean withNavigation) {
         super(height, width);
         this.withNavigation = withNavigation;
         this.player = player;
-        this.pageSize = this.withNavigation ?  (height - 1) * width : height * width;
+        this.pageSize = this.withNavigation ? (height - 1) * width : height * width;
     }
 
 
@@ -64,9 +62,9 @@ public abstract class PagedLayer extends Layer implements PageAware {
         return switch (id) {
             case 2 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
             case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
-                    .setName(new TranslatableText("text.polydex.view.pages",
-                                    new LiteralText("" + (this.page + 1)).formatted(Formatting.WHITE),
-                                    new LiteralText("" + this.getPageAmount()).formatted(Formatting.WHITE)
+                    .setName(Text.translatable("text.polydex.view.pages",
+                                    Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
+                                    Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                             ).formatted(Formatting.AQUA)
                     ).build() : GuiUtils.FILLER;
             case 6 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : GuiUtils.FILLER;

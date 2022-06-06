@@ -9,7 +9,7 @@ import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.SmithingRecipe;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import static eu.pb4.polydex.api.PolydexUtils.getIngredientDisplay;
 
@@ -23,7 +23,7 @@ public final class SmithingRecipeView implements ItemPageView<SmithingRecipe> {
     public void renderLayer(ItemEntry entry, SmithingRecipe recipe, ServerPlayerEntity player, Layer layer, Runnable returnCallback) {
         var access = (SmithingRecipeAccessor) recipe;
         layer.setSlot(20, getIngredientDisplay(access.getBase()));
-        layer.setSlot(21, new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(LiteralText.EMPTY));
+        layer.setSlot(21, new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.empty()));
         layer.setSlot(22, getIngredientDisplay(access.getAddition()));
         layer.setSlot(24, recipe.getOutput());
     }

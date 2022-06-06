@@ -2,17 +2,13 @@ package eu.pb4.polydex.impl.book;
 
 import eu.pb4.polydex.api.ItemEntry;
 import eu.pb4.polydex.api.PageEntry;
-import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import eu.pb4.sgui.api.gui.layered.LayeredGui;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +16,7 @@ import java.util.List;
 
 public final class EntryViewerGui extends LayeredGui implements PageAware {
     public static final int PAGE_SIZE = 9 * 5;
-    
+
     protected final Runnable closeCallback;
     private final Layer displayLayer;
     private final ItemEntry entry;
@@ -34,7 +30,7 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         this.pages = entry.getVisiblePages(player);
         this.displayLayer = new Layer(5, 9);
         this.addLayer(this.displayLayer, 0, 0);
-        this.setTitle(new TranslatableText("text.polydex.recipes_title", this.entry.stack().getName()));
+        this.setTitle(Text.translatable("text.polydex.recipes_title", this.entry.stack().getName()));
 
         var filler = GuiUtils.FILLER;
 
@@ -54,7 +50,7 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         }, this.closeCallback != null));
         this.updateDisplay();
     }
-    
+
 
     @Override
     public void onClose() {
@@ -63,7 +59,7 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
 
     protected void updateDisplay() {
         var pageEntry = this.pages.get(this.page);
-        var fill = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(new LiteralText("")).build();
+        var fill = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.empty()).build();
         for (int i = 0, size = this.displayLayer.getSize(); i < size; i++) {
             this.displayLayer.setSlot(i, fill);
         }
@@ -72,9 +68,9 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         if (this.pages.size() > 1) {
             this.setSlot(PAGE_SIZE + 4, new GuiElementBuilder(Items.BOOK)
                     .setName(
-                            new TranslatableText("text.polydex.view.pages",
-                                    new LiteralText("" + (this.page + 1)).formatted(Formatting.WHITE),
-                                    new LiteralText("" + this.getPageAmount()).formatted(Formatting.WHITE)
+                            Text.translatable("text.polydex.view.pages",
+                                    Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
+                                    Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                             ).formatted(Formatting.AQUA)
                     )
             );

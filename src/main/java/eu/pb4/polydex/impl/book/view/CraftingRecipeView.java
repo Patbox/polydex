@@ -10,13 +10,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.*;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 
 public final class CraftingRecipeView implements ItemPageView<CraftingRecipe> {
     private static GuiElement CRAFTING_TABLE = new GuiElement(Items.CRAFTING_TABLE.getDefaultStack(), GuiElement.EMPTY_CALLBACK);
     private static GuiElement CRAFTING = new GuiElementBuilder(Items.CRAFTING_TABLE)
-            .setName(new TranslatableText("block.minecraft.crafting_table").append(" / ").append(new TranslatableText("text.polydex.recipe.player_crafting")))
+            .setName(Text.translatable("block.minecraft.crafting_table").append(" / ").append(Text.translatable("text.polydex.recipe.player_crafting")))
             .build();
 
     @Override

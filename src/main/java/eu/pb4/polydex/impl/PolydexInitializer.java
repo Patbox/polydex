@@ -1,38 +1,27 @@
 package eu.pb4.polydex.impl;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
-import eu.pb4.polydex.api.*;
+import eu.pb4.polydex.api.DisplayBuilder;
+import eu.pb4.polydex.api.ItemEntry;
+import eu.pb4.polydex.api.ItemPageView;
+import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.impl.book.view.AbstractCookingRecipeView;
+import eu.pb4.polydex.impl.book.view.CraftingRecipeView;
+import eu.pb4.polydex.impl.book.view.SmithingRecipeView;
+import eu.pb4.polydex.impl.book.view.StonecuttingRecipeView;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.SidebarTargetDisplay;
-import eu.pb4.polydex.impl.book.view.CraftingRecipeView;
-import eu.pb4.polydex.impl.book.view.AbstractCookingRecipeView;
-import eu.pb4.polydex.impl.book.view.SmithingRecipeView;
-import eu.pb4.polydex.impl.book.view.StonecuttingRecipeView;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.RecipeType;
-import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collection;
-import java.util.function.BiFunction;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 

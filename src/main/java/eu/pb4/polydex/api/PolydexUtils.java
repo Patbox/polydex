@@ -5,20 +5,17 @@ import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 import java.util.Collection;
 
 public class PolydexUtils {
-    public static final Text DEFAULT_SEPARATOR = new LiteralText(" | ").formatted(Formatting.DARK_GRAY);
-    public static final Text SPACE_SEPARATOR = new LiteralText(" ");
+    public static final Text DEFAULT_SEPARATOR = Text.literal(" | ").formatted(Formatting.DARK_GRAY);
+    public static final Text SPACE_SEPARATOR = Text.literal(" ");
 
     public static Text mergeText(Collection<Text> texts, Text separator) {
-        var out = new LiteralText("");
+        var out = Text.literal("");
 
         var iterator = texts.iterator();
 
@@ -34,7 +31,7 @@ public class PolydexUtils {
     }
 
     public static Text mergeText(Collection<Text> texts) {
-        var out = new LiteralText("");
+        var out = Text.literal("");
 
         var iterator = texts.iterator();
 
@@ -47,11 +44,11 @@ public class PolydexUtils {
 
     public static Text createText(ItemStack stack) {
         if (stack.isEmpty()) {
-            return new TranslatableText("text.polydex.empty");
+            return Text.translatable("text.polydex.empty");
         } else if (stack.getCount() == 1) {
             return stack.getName();
         } else {
-            return new LiteralText("" + stack.getCount() + " × ").append(stack.getName());
+            return Text.literal("" + stack.getCount() + " × ").append(stack.getName());
         }
     }
 
