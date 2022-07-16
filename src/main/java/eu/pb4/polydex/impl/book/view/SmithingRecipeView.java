@@ -2,6 +2,7 @@ package eu.pb4.polydex.impl.book.view;
 
 import eu.pb4.polydex.api.ItemEntry;
 import eu.pb4.polydex.api.ItemPageView;
+import eu.pb4.polydex.api.PolydexUiElements;
 import eu.pb4.polydex.mixin.SmithingRecipeAccessor;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
@@ -16,7 +17,7 @@ import static eu.pb4.polydex.api.PolydexUtils.getIngredientDisplay;
 public final class SmithingRecipeView implements ItemPageView<SmithingRecipe> {
     @Override
     public GuiElement getIcon(ItemEntry entry, SmithingRecipe recipe, ServerPlayerEntity player, Runnable returnCallback) {
-        return new GuiElement(Items.SMITHING_TABLE.getDefaultStack(), GuiElement.EMPTY_CALLBACK);
+        return PolydexUiElements.SMITING_RECIPE_ICON;
     }
 
     @Override

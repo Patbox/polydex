@@ -2,6 +2,7 @@ package eu.pb4.polydex.impl.book.view;
 
 import eu.pb4.polydex.api.ItemEntry;
 import eu.pb4.polydex.api.ItemPageView;
+import eu.pb4.polydex.api.PolydexUiElements;
 import eu.pb4.polydex.mixin.BrewingRecipeAccessor;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
@@ -38,7 +39,7 @@ public abstract class PotionRecipeView<T> implements ItemPageView<BrewingRecipeR
 
     @Override
     public GuiElement getIcon(ItemEntry entry, BrewingRecipeRegistry.Recipe<T> object, ServerPlayerEntity player, Runnable returnCallback) {
-        return new GuiElement(Items.BREWING_STAND.getDefaultStack(), GuiElementInterface.EMPTY_CALLBACK);
+        return PolydexUiElements.POTION_RECIPE_ICON;
     }
 
     @Override

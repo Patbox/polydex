@@ -1,7 +1,7 @@
 {
   "text.polydex.index_title": "Items",
-  "text.polydex.recipes_title": "%s",
-  "text.polydex.recipes_title_old": "Recipes of: %s",
+  "text.polydex.recipes_title_output": "Recipes of: %s",
+  "text.polydex.recipes_title_input": "Uses of: %s",
   "text.polydex.view.pages": "Page %s out of %s",
   "text.polydex.view.cooking_time": "Cooking time: %s",
   "text.polydex.view.experience": "Experience: %s",

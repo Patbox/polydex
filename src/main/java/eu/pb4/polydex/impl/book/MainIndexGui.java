@@ -65,9 +65,11 @@ public class MainIndexGui extends LayeredGui {
                                 } else {
                                     this.player.currentScreenHandler.setCursorStack(item.stack().copy());
                                 }
-                            } else if (item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) {
-                                MainIndexGui.this.close();
-                                new EntryViewerGui(player, item, MainIndexGui.this::open).open();
+                            } else if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
+                                MainIndexGui.this.close(false);
+                                new EntryViewerGui(player, item, type.isRight, () -> {
+                                    MainIndexGui.this.open();
+                                }).open();
                                 GuiUtils.playClickSound(this.player);
                             }
                         })

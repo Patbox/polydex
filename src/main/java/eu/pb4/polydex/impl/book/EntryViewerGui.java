@@ -21,16 +21,18 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
     private final Layer displayLayer;
     private final ItemEntry entry;
     private final List<PageEntry<?>> pages;
+    private final boolean ingredientsView;
     protected int page = 0;
 
-    public EntryViewerGui(ServerPlayerEntity player, ItemEntry entry, @Nullable Runnable closeCallback) {
+    public EntryViewerGui(ServerPlayerEntity player, ItemEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
         super(ScreenHandlerType.GENERIC_9X6, player, false);
         this.closeCallback = closeCallback;
         this.entry = entry;
-        this.pages = entry.getVisiblePages(player);
+        this.ingredientsView = ingredients;
+        this.pages = ingredients ? entry.getVisibleIngredientPages(player) : entry.getVisiblePages(player);
         this.displayLayer = new Layer(5, 9);
         this.addLayer(this.displayLayer, 0, 0);
-        this.setTitle(Text.translatable("text.polydex.recipes_title", this.entry.stack().getName()));
+        this.setTitle(Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", this.entry.stack().getName()));
 
         var filler = GuiUtils.FILLER;
 
@@ -43,18 +45,13 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         this.setSlot(PAGE_SIZE + 6, filler);
         this.setSlot(PAGE_SIZE + 7, filler);
         this.setSlot(PAGE_SIZE + 8, GuiUtils.backButton(this.getPlayer(), () -> {
-            this.close();
             if (this.closeCallback != null) {
                 this.closeCallback.run();
+            } else {
+                this.close();
             }
         }, this.closeCallback != null));
         this.updateDisplay();
-    }
-
-
-    @Override
-    public void onClose() {
-
     }
 
     protected void updateDisplay() {
@@ -78,7 +75,7 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
     }
 
     private void reopen() {
-        new EntryViewerGui(this.getPlayer(), this.entry, this.closeCallback).open();
+        new EntryViewerGui(this.getPlayer(), this.entry, this.ingredientsView, this.closeCallback).open();
     }
 
     public int getPage() {

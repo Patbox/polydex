@@ -13,6 +13,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.List;
+
 import static eu.pb4.polydex.api.PolydexUtils.getIngredientDisplay;
 
 public final class AbstractCookingRecipeView<T extends AbstractCookingRecipe> implements ItemPageView<T> {

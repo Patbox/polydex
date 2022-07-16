@@ -59,7 +59,7 @@ public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
         if (creator != null) {
             this.polydex_display = creator.apply(this.polydex_target);
         } else {
-            this.polydex_display = new BossbarTargetDisplay(this.polydex_target, false);
+            this.polydex_display = new BossbarTargetDisplay(this.polydex_target, BossbarTargetDisplay.DisplayMode.TARGET);
         }
 
     }

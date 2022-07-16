@@ -3,6 +3,7 @@ package eu.pb4.polydex.api;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.layered.Layer;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
@@ -11,6 +12,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.BiFunction;
 
 public interface ItemPageView<T> {
@@ -25,6 +27,13 @@ public interface ItemPageView<T> {
         return true;
     }
 
+    default List<Ingredient> getIngredients(T object) {
+        if (object instanceof Recipe<?> recipe) {
+            return recipe.getIngredients();
+        }
+
+        return List.of();
+    }
 
     static <T extends Recipe<?>> void registerRecipe(RecipeType<T> recipeType, ItemPageView<T> view) {
         PolydexImpl.RECIPE_VIEWS.put(recipeType, (ItemPageView<Recipe<?>>) view);

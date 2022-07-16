@@ -32,6 +32,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
@@ -90,10 +91,13 @@ public class PolydexImpl {
         }
 
         var recipes = server.getRecipeManager().values();
+        PolydexServerInterface.updateTimeReference(server);
 
         for (var recipe : recipes) {
             map.get(recipe.getOutput().getItem()).add(recipe);
+            PolydexServerInterface.updateTimeReference(server);
         }
+        PolydexServerInterface.updateTimeReference(server);
 
         for (var item : Registry.ITEM) {
             if (item == Items.AIR) {
@@ -111,8 +115,17 @@ public class PolydexImpl {
                     entries.addAll(custom);
                 }
             } else {
-                entries.add(ItemEntry.of(item));
+                if (item.getGroup() != null) {
+                    item.appendStacks(item.getGroup(), new DefaultedList<>(new ArrayList<>(), ItemStack.EMPTY) {
+                        @Override
+                        public boolean add(ItemStack stack) {
+                            entries.add(ItemEntry.of(item, stack));
+                            return super.add(stack);
+                        }
+                    });
+                }
             }
+            PolydexServerInterface.updateTimeReference(server);
 
             for (var entry : entries) {
                 for (var viewBuilder : VIEWS) {
@@ -122,15 +135,44 @@ public class PolydexImpl {
                         entry.pages().addAll(pageEntries);
                     }
                 }
+            }
 
+            for (var entry : entries) {
                 ITEM_ENTRIES.add(entry);
-                BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), NamespacedEntry::ofMod).entries.add(entry);
+
+                var icon = item.getGroup().getIcon();
+
+                BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), (x) -> NamespacedEntry.ofMod(x, icon)).entries.add(entry);
                 if (entry.item().getGroup() != null) {
                     BY_ITEMGROUP.computeIfAbsent(entry.item().getGroup(), NamespacedEntry::ofItemGroup).entries.add(entry);
                 }
                 PolydexServerInterface.updateTimeReference(server);
             }
+        }
 
+        var copy = new ArrayList<>(ITEM_ENTRIES.all);
+        for (var entry : ITEM_ENTRIES.all) {
+            for (var page : entry.pages()) {
+                for (var entry2 : copy) {
+                    for (var ingredient : page.getIngredients()) {
+                        if (ingredient.test(entry2.stack())) {
+                            entry2.ingredients().add(page);
+                            break;
+                        }
+                    }
+                }
+                PolydexServerInterface.updateTimeReference(server);
+            }
+        }
+
+        ITEM_ENTRIES.recalculateEmpty();
+
+        for (var x : BY_NAMESPACE.values()) {
+            x.entries.recalculateEmpty();
+        }
+
+        for (var x : BY_ITEMGROUP.values()) {
+            x.entries.recalculateEmpty();
         }
 
         NAMESPACED_ENTRIES.addAll(BY_NAMESPACE.values());
@@ -304,8 +346,17 @@ public class PolydexImpl {
 
         public void add(ItemEntry entry) {
             this.all.add(entry);
-            if (!entry.pages().isEmpty()) {
+            if (!entry.pages().isEmpty() || !entry.ingredients().isEmpty()) {
                 this.nonEmpty.add(entry);
+            }
+        }
+
+        public void recalculateEmpty() {
+            this.nonEmpty.clear();
+            for (var entry : this.all) {
+                if (!entry.pages().isEmpty() || !entry.ingredients().isEmpty()) {
+                    this.nonEmpty.add(entry);
+                }
             }
         }
     }
@@ -313,6 +364,10 @@ public class PolydexImpl {
     public record NamespacedEntry(String namespace, Text display, ItemStack icon, PackedEntries entries) {
         public static NamespacedEntry ofMod(String namespace) {
             return ofMod(namespace, PackedEntries.create());
+        }
+
+        public static NamespacedEntry ofMod(String namespace, ItemStack defaultIcon) {
+            return ofMod(namespace, PackedEntries.create(), defaultIcon);
         }
 
         public static NamespacedEntry ofMod(String namespace, PackedEntries entries) {
@@ -326,6 +381,10 @@ public class PolydexImpl {
                 }
             }
 
+            return ofMod(namespace, entries, icon);
+        }
+        public static NamespacedEntry ofMod(String namespace, PackedEntries entries, ItemStack defaultIcon) {
+            var icon = defaultIcon;
             for (var mod : FabricLoader.getInstance().getAllMods()) {
                 try {
                     var val = mod.getMetadata().getCustomValue("polydex:entry/" + namespace);

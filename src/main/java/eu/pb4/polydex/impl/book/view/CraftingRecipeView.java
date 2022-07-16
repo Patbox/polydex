@@ -1,6 +1,7 @@
 package eu.pb4.polydex.impl.book.view;
 
 import eu.pb4.polydex.api.ItemEntry;
+import eu.pb4.polydex.api.PolydexUiElements;
 import eu.pb4.polydex.api.PolydexUtils;
 import eu.pb4.polydex.api.ItemPageView;
 import eu.pb4.sgui.api.elements.GuiElement;
@@ -14,10 +15,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 
 public final class CraftingRecipeView implements ItemPageView<CraftingRecipe> {
-    private static GuiElement CRAFTING_TABLE = new GuiElement(Items.CRAFTING_TABLE.getDefaultStack(), GuiElement.EMPTY_CALLBACK);
-    private static GuiElement CRAFTING = new GuiElementBuilder(Items.CRAFTING_TABLE)
-            .setName(Text.translatable("block.minecraft.crafting_table").append(" / ").append(Text.translatable("text.polydex.recipe.player_crafting")))
-            .build();
+    private static GuiElement CRAFTING_TABLE = PolydexUiElements.CRAFTING_TABLE_RECIPE_ICON;
+    private static GuiElement CRAFTING = PolydexUiElements.CRAFTING_RECIPE_ICON;
 
     @Override
     public GuiElement getIcon(ItemEntry entry, CraftingRecipe recipe, ServerPlayerEntity player, Runnable returnCallback) {

@@ -36,6 +36,7 @@ public class PolydexInitializer implements ModInitializer {
         TargetDisplay.register(id("disabled"), NoopTargetDisplay::create);
         TargetDisplay.register(id("bossbar"), BossbarTargetDisplay::targetted);
         TargetDisplay.register(id("bossbar_always"), BossbarTargetDisplay::always);
+        TargetDisplay.register(id("bossbar_sneak"), BossbarTargetDisplay::sneaking);
         TargetDisplay.register(id("sidebar"), SidebarTargetDisplay::new);
 
         ItemPageView.register(PolydexImpl::buildRecipes);
