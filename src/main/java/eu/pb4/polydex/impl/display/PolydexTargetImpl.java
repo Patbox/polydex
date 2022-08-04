@@ -59,7 +59,7 @@ public final class PolydexTargetImpl implements PolydexTarget {
             Vec3d max = min.add(vec3d2.x * maxDistance, vec3d2.y * maxDistance, vec3d2.z * maxDistance);
 
             Box box = player.getBoundingBox().stretch(vec3d2.multiply(maxDistance)).expand(1.0D, 1.0D, 1.0D);
-            var hitResult = ProjectileUtil.raycast(this.handler.player, min, max, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), sqrdDist);
+            var hitResult = ProjectileUtil.raycast(this.handler.player, min, max, box, (entityx) -> !entityx.isSpectator() && entityx.canHit(), sqrdDist);
 
             if (hitResult != null) {
                 this.hitResult = hitResult;

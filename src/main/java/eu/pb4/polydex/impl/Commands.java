@@ -52,7 +52,12 @@ public class Commands {
     }
 
     private static int openIndex(CommandContext<ServerCommandSource> context, int page) throws CommandSyntaxException {
-        new MainIndexGui(context.getSource().getPlayer(), true, page, 0).open();
+        try {
+            new MainIndexGui(context.getSource().getPlayer(), true, page, 0).open();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
+        }
         return 1;
     }
 
