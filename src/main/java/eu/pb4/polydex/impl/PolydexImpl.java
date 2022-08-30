@@ -94,7 +94,9 @@ public class PolydexImpl {
         PolydexServerInterface.updateTimeReference(server);
 
         for (var recipe : recipes) {
-            map.get(recipe.getOutput().getItem()).add(recipe);
+            if (recipe.getOutput() != null) {
+                map.get(recipe.getOutput().getItem()).add(recipe);
+            }
             PolydexServerInterface.updateTimeReference(server);
         }
         PolydexServerInterface.updateTimeReference(server);
