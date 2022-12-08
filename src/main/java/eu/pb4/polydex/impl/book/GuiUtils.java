@@ -18,7 +18,7 @@ public class GuiUtils {
             .hideFlags().build();
 
     public static GuiElement backButton(ServerPlayerEntity player, Runnable callback, boolean back) {
-        return new GuiElementBuilder(Items.BARRIER)
+        return new GuiElementBuilder(Items.STRUCTURE_VOID)
                 .setName(Text.translatable(back ? "gui.back" : "test.polydex.close").formatted(Formatting.RED))
                 .hideFlags()
                 .setCallback((x, y, z) -> {
@@ -28,7 +28,7 @@ public class GuiUtils {
     }
 
     public static final void playClickSound(ServerPlayerEntity player) {
-        player.playSound(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, 1, 1);
+        player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 1, 1);
     }
 
     public static GuiElement nextPage(ServerPlayerEntity player, PageAware gui) {

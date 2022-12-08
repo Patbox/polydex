@@ -66,7 +66,8 @@ dependencies {
 	modImplementation include("eu.pb4:sidebar-api:${project.sidebar_version}")
 	modImplementation include("fr.catcore:server-translations-api:${project.stapi_version}")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
-	modImplementation include('xyz.nucleoid:more-codecs:0.2.1+1.18')
+
+	modCompileOnly "eu.pb4:polymer-core:${project.polymer_version}"
 
 	//modLocalRuntime 'maven.modrinth:goml-reserved:1.5.0-beta.1'
 	//modLocalRuntime 'maven.modrinth:polymer-ports-waystones:2.4.1-polymerport.2'

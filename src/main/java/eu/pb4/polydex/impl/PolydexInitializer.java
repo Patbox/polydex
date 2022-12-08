@@ -51,10 +51,6 @@ public class PolydexInitializer implements ModInitializer {
         ItemPageView.registerRecipe(RecipeType.STONECUTTING, new StonecuttingRecipeView());
         ItemPageView.register(PolydexImpl::addCustomPages);
 
-        ItemEntry.registerBuilder(Items.POTION, PolydexImpl::potionBuilder);
-        ItemEntry.registerBuilder(Items.SPLASH_POTION, PolydexImpl::potionBuilder);
-        ItemEntry.registerBuilder(Items.LINGERING_POTION, PolydexImpl::potionBuilder);
-
         DisplayBuilder.register(PolydexImpl::defaultBuilder);
     }
 

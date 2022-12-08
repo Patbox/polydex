@@ -66,7 +66,7 @@ public class MainIndexGui extends LayeredGui {
                                     this.player.currentScreenHandler.setCursorStack(item.stack().copy());
                                 }
                             } else if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
-                                MainIndexGui.this.close(false);
+                                MainIndexGui.this.close(true);
                                 new EntryViewerGui(player, item, type.isRight, () -> {
                                     MainIndexGui.this.open();
                                 }).open();

@@ -13,8 +13,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
-import net.minecraft.util.math.MathHelper;
-import xyz.nucleoid.codecs.MoreCodecs;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +62,7 @@ public final class CustomView implements ItemPageView<CustomView.ViewData> {
         public static Codec<ViewData> CODEC = RecordCodecBuilder.create(
                 (instance) -> instance.group(
                         Identifier.CODEC.fieldOf("entry").forGetter(ViewData::entryId),
-                        MoreCodecs.ITEM_STACK.fieldOf("icon").forGetter(ViewData::icon),
+                        PolydexImpl.ITEM_STACK_CODEC.fieldOf("icon").forGetter(ViewData::icon),
                         PolydexImpl.TEXT.optionalFieldOf("name").forGetter(ViewData::name),
                         Codec.list(PolydexImpl.TEXT).optionalFieldOf("lore", List.of()).forGetter(ViewData::lore),
                         Codec.list(ItemData.CODEC).optionalFieldOf("elements", List.of()).forGetter(ViewData::elements)
@@ -77,7 +75,7 @@ public final class CustomView implements ItemPageView<CustomView.ViewData> {
                 (instance) -> instance.group(
                         Codec.INT.fieldOf("x").forGetter(ItemData::x),
                         Codec.INT.fieldOf("y").forGetter(ItemData::y),
-                        MoreCodecs.ITEM_STACK.fieldOf("icon").forGetter(ItemData::icon),
+                        PolydexImpl.ITEM_STACK_CODEC.fieldOf("icon").forGetter(ItemData::icon),
                         PolydexImpl.TEXT.optionalFieldOf("name").forGetter(ItemData::name),
                         Codec.list(PolydexImpl.TEXT).optionalFieldOf("lore", List.of()).forGetter(ItemData::lore)
                 ).apply(instance, ItemData::new)

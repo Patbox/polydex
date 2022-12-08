@@ -3,9 +3,10 @@ package eu.pb4.polydex.api;
 import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -62,11 +63,15 @@ public record ItemEntry(Identifier identifier, Item item, ItemStack stack, List<
     }
 
     public static ItemEntry of(Item item) {
-        return new ItemEntry(Registry.ITEM.getId(item), item, item.getDefaultStack(), new ArrayList<>(), new ArrayList<>());
+        return new ItemEntry(Registries.ITEM.getId(item), item, item.getDefaultStack(), new ArrayList<>(), new ArrayList<>());
+    }
+
+    public static ItemEntry of(ItemStack stack) {
+        return new ItemEntry(Registries.ITEM.getId(stack.getItem()), stack.getItem(), stack, new ArrayList<>(), new ArrayList<>());
     }
 
     public static ItemEntry of(Item item, ItemStack stack) {
-        return new ItemEntry(Registry.ITEM.getId(item),item, stack, new ArrayList<>(), new ArrayList<>());
+        return new ItemEntry(Registries.ITEM.getId(item),item, stack, new ArrayList<>(), new ArrayList<>());
     }
 
     public static ItemEntry of(Identifier identifier, Item item, ItemStack stack) {
