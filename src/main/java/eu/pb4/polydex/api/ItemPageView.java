@@ -3,10 +3,8 @@ package eu.pb4.polydex.api;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.layered.Layer;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.*;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
@@ -35,8 +33,13 @@ public interface ItemPageView<T> {
         return List.of();
     }
 
+    static <T extends Recipe<?>> void registerRecipeViewer(Class<T> recipeClass, ItemPageView<T> view) {
+        PolydexImpl.RECIPE_VIEWS.put(recipeClass, (ItemPageView<Recipe<?>>) view);
+    }
+
+    @Deprecated
     static <T extends Recipe<?>> void registerRecipe(RecipeType<T> recipeType, ItemPageView<T> view) {
-        PolydexImpl.RECIPE_VIEWS.put(recipeType, (ItemPageView<Recipe<?>>) view);
+        PolydexImpl.RECIPE_TYPE_VIEWS.put(recipeType, (ItemPageView<Recipe<?>>) view);
     }
 
     static void register(BiFunction<MinecraftServer, ItemEntry, @Nullable Collection<PageEntry<?>>> viewBuilder) {

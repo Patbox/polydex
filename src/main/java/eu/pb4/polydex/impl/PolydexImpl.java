@@ -11,12 +11,15 @@ import eu.pb4.polydex.impl.book.view.CustomView;
 import eu.pb4.polydex.impl.book.view.PotionRecipeView;
 import eu.pb4.polydex.mixin.BrewingRecipeAccessor;
 import eu.pb4.polydex.mixin.BrewingRecipeRegistryAccessor;
+import eu.pb4.polydex.mixin.ItemStackSetAccessor;
 import eu.pb4.polymer.core.impl.InternalServerRegistry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
+import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.registry.Registries;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
@@ -48,7 +51,9 @@ public class PolydexImpl {
             x -> x.left().isPresent() ? Registries.ITEM.get(x.left().get()).getDefaultStack() : x.right().get(), x -> x.hasNbt() || x.getCount() != 1 ? Either.right(x) : Either.left(Registries.ITEM.getId(x.getItem())));
 
     public static final Map<Identifier, Function<PolydexTarget, TargetDisplay>> DISPLAYS = new HashMap<>();
-    public static final HashMap<RecipeType<?>, ItemPageView<Recipe<?>>> RECIPE_VIEWS = new HashMap<>();
+    public static final HashMap<Class<?>, ItemPageView<Recipe<?>>> RECIPE_VIEWS = new HashMap<>();
+    @Deprecated
+    public static final HashMap<RecipeType<?>, ItemPageView<Recipe<?>>> RECIPE_TYPE_VIEWS = new HashMap<>();
     public static final List<ItemPageView.PageEntryCreator> VIEWS = new ArrayList<>();
     public static final String ID = "polydex";
     public static final Map<Item, Function<Item, @Nullable Collection<ItemEntry>>> ITEM_ENTRY_BUILDERS = new HashMap<>();
@@ -58,6 +63,8 @@ public class PolydexImpl {
 
     public static final List<NamespacedEntry> NAMESPACED_ENTRIES = new ArrayList<>();
     public static final List<NamespacedEntry> ITEM_GROUP_ENTRIES = new ArrayList<>();
+
+    public static final Map<ItemStack, ItemEntry> STACK_TO_ENTRY = new Object2ObjectOpenCustomHashMap<>(ItemStackSetAccessor.getHASH_STRATEGY());
 
     public static final Logger LOGGER = LogManager.getLogger("Polydex");
     public static final List<Consumer<DisplayBuilder>> DISPLAY_BUILDER_CONSUMERS = new ArrayList<>();
@@ -76,10 +83,15 @@ public class PolydexImpl {
         return new Identifier(ID, path);
     }
 
+    public static ItemEntry getEntry(ItemStack stack) {
+        return STACK_TO_ENTRY.get(stack);
+    }
+
     public static void updateCaches(MinecraftServer server) {
         ITEM_ENTRIES.clear();
         BY_NAMESPACE.clear();
         BY_ITEMGROUP.clear();
+        STACK_TO_ENTRY.clear();
         BY_NAMESPACE.put("minecraft", new NamespacedEntry("minecraft", Text.literal("Minecraft (Vanilla)"), Items.GRASS_BLOCK.getDefaultStack(), PackedEntries.create()));
         NAMESPACED_ENTRIES.clear();
         ITEM_GROUP_ENTRIES.clear();
@@ -94,8 +106,8 @@ public class PolydexImpl {
         PolydexServerInterface.updateTimeReference(server);
 
         for (var recipe : recipes) {
-            if (recipe.getOutput() != null) {
-                map.get(recipe.getOutput().getItem()).add(recipe);
+            if (recipe.getOutput(server.getRegistryManager()) != null) {
+                map.get(recipe.getOutput(server.getRegistryManager()).getItem()).add(recipe);
             }
             PolydexServerInterface.updateTimeReference(server);
         }
@@ -104,8 +116,7 @@ public class PolydexImpl {
         var entries = new ObjectLinkedOpenHashSet<ItemEntry>();
 
         try {
-            ItemGroups.updateDisplayParameters(server.getOverworld().getEnabledFeatures(), false);
-
+            ItemGroups.updateDisplayContext(server.getOverworld().getEnabledFeatures(), false, server.getRegistryManager());
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -167,7 +178,7 @@ public class PolydexImpl {
 
         for (var entry : entries) {
             ITEM_ENTRIES.add(entry);
-
+            STACK_TO_ENTRY.put(entry.stack().copy(), entry);
             BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), (x) -> NamespacedEntry.ofMod(x, entry.stack().copy())).entries.add(entry);
             PolydexServerInterface.updateTimeReference(server);
         }
@@ -208,9 +219,25 @@ public class PolydexImpl {
     public static Collection<PageEntry<?>> buildRecipes(MinecraftServer server, ItemEntry entry, Collection<Recipe<?>> recipes) {
         var list = new ArrayList<PageEntry<?>>();
         for (var recipe : recipes) {
-            var view = PolydexImpl.RECIPE_VIEWS.get(recipe.getType());
-            if (view != null) {
-                list.add(new PageEntry<>(view, recipe));
+            boolean continueSearch = true;
+
+            var baseClass = (Class<?>) recipe.getClass();
+
+            while (continueSearch && baseClass != Object.class) {
+                var view = PolydexImpl.RECIPE_VIEWS.get(baseClass);
+                if (view != null) {
+                    list.add(new PageEntry<>(view, recipe));
+                    continueSearch = false;
+                    break;
+                }
+                baseClass = baseClass.getSuperclass();
+            }
+
+            if (continueSearch) {
+                var view = PolydexImpl.RECIPE_TYPE_VIEWS.get(recipe.getType());
+                if (view != null) {
+                    list.add(new PageEntry<>(view, recipe));
+                }
             }
         }
 

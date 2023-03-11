@@ -42,7 +42,7 @@ public final class CraftingRecipeView implements ItemPageView<CraftingRecipe> {
         }
 
 
-        layer.setSlot(24, new GuiElement(recipe.getOutput(), GuiElement.EMPTY_CALLBACK));
+        layer.setSlot(24, new GuiElement(recipe.getOutput(player.server.getRegistryManager()), GuiElement.EMPTY_CALLBACK));
 
     }
 }

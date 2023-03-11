@@ -36,6 +36,6 @@ public final class AbstractCookingRecipeView<T extends AbstractCookingRecipe> im
         if (recipe.getExperience() != 0) {
             layer.setSlot(31, new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Text.translatable("text.polydex.view.experience", Text.literal("" + recipe.getExperience()).append(Text.translatable("text.polydex.view.experience.points")).formatted(Formatting.WHITE)).formatted(Formatting.GREEN)));
         }
-        layer.setSlot(24, recipe.getOutput());
+        layer.setSlot(24, recipe.getOutput(player.server.getRegistryManager()));
     }
 }

@@ -1,13 +1,14 @@
 package eu.pb4.polydex.impl;
 
 import eu.pb4.polydex.api.DisplayBuilder;
-import eu.pb4.polydex.api.ItemEntry;
 import eu.pb4.polydex.api.ItemPageView;
 import eu.pb4.polydex.api.TargetDisplay;
-import eu.pb4.polydex.impl.book.view.AbstractCookingRecipeView;
-import eu.pb4.polydex.impl.book.view.CraftingRecipeView;
-import eu.pb4.polydex.impl.book.view.SmithingRecipeView;
-import eu.pb4.polydex.impl.book.view.StonecuttingRecipeView;
+import eu.pb4.polydex.impl.book.view.*;
+import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipeView;
+import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipeView;
+import eu.pb4.polydex.impl.book.view.smithing.LegacySmithingRecipeView;
+import eu.pb4.polydex.impl.book.view.smithing.SmithingTransformRecipeView;
+import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipeView;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.SidebarTargetDisplay;
@@ -18,7 +19,7 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.*;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -42,13 +43,17 @@ public class PolydexInitializer implements ModInitializer {
         ItemPageView.register(PolydexImpl::buildRecipes);
         ItemPageView.register(PolydexImpl::potionRecipe);
 
-        ItemPageView.registerRecipe(RecipeType.CRAFTING, new CraftingRecipeView());
-        ItemPageView.registerRecipe(RecipeType.BLASTING, new AbstractCookingRecipeView(Items.BLAST_FURNACE));
-        ItemPageView.registerRecipe(RecipeType.SMELTING, new AbstractCookingRecipeView(Items.FURNACE));
-        ItemPageView.registerRecipe(RecipeType.CAMPFIRE_COOKING, new AbstractCookingRecipeView(Items.CAMPFIRE));
-        ItemPageView.registerRecipe(RecipeType.SMOKING, new AbstractCookingRecipeView(Items.SMOKER));
-        ItemPageView.registerRecipe(RecipeType.SMITHING, new SmithingRecipeView());
-        ItemPageView.registerRecipe(RecipeType.STONECUTTING, new StonecuttingRecipeView());
+        ItemPageView.registerRecipeViewer(ShapedRecipe.class, new ShapedCraftingRecipeView());
+        ItemPageView.registerRecipeViewer(ShapelessRecipe.class, new ShapelessCraftingRecipeView());
+        ItemPageView.registerRecipeViewer(BlastingRecipe.class, new AbstractCookingRecipeView(Items.BLAST_FURNACE));
+        ItemPageView.registerRecipeViewer(SmeltingRecipe.class, new AbstractCookingRecipeView(Items.FURNACE));
+        ItemPageView.registerRecipeViewer(CampfireCookingRecipe.class, new AbstractCookingRecipeView(Items.CAMPFIRE));
+        ItemPageView.registerRecipeViewer(SmokingRecipe.class, new AbstractCookingRecipeView(Items.SMOKER));
+        ItemPageView.registerRecipeViewer(LegacySmithingRecipe.class, new LegacySmithingRecipeView());
+        ItemPageView.registerRecipeViewer(SmithingTrimRecipe.class, new SmithingTrimRecipeView());
+        ItemPageView.registerRecipeViewer(SmithingTransformRecipe.class, new SmithingTransformRecipeView());
+        ItemPageView.registerRecipeViewer(StonecuttingRecipe.class, new StonecuttingRecipeView());
+
         ItemPageView.register(PolydexImpl::addCustomPages);
 
         DisplayBuilder.register(PolydexImpl::defaultBuilder);

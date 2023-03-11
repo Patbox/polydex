@@ -6,10 +6,13 @@
   "mixins": [
     "BrewingRecipeAccessor",
     "BrewingRecipeRegistryAccessor",
+    "ItemStackSetAccessor",
+    "LegacySmithingRecipeAccessor",
     "MinecraftServerMixin",
     "ServerPlayerInteractionManagerMixin",
     "ServerPlayNetworkHandlerMixin",
-    "SmithingRecipeAccessor",
+    "SmithingTransformRecipeAccessor",
+    "SmithingTrimRecipeAccessor",
     "SPIMAccessor"
   ],
   "injectors": {

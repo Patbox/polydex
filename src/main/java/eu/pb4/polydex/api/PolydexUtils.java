@@ -1,12 +1,19 @@
 package eu.pb4.polydex.api;
 
+import eu.pb4.polydex.impl.IngredientGuiElement;
+import eu.pb4.polydex.impl.PolydexImpl;
+import eu.pb4.polydex.impl.book.EntryViewerGui;
+import eu.pb4.polydex.impl.book.GuiUtils;
+import eu.pb4.polydex.impl.book.MainIndexGui;
 import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -52,13 +59,46 @@ public class PolydexUtils {
         }
     }
 
+    @Nullable
+    public static ItemEntry getItemEntryFor(ItemStack stack) {
+        return PolydexImpl.getEntry(stack);
+    }
+
+    public static boolean openRecipeListUi(ServerPlayerEntity player, ItemStack stack, Runnable closeCallback) {
+        var entry = getItemEntryFor(stack);
+        if (entry == null) {
+            return false;
+        }
+
+        if (entry.getVisiblePagesSize(player) > 0) {
+            new EntryViewerGui(player, entry, false, closeCallback).open();
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean openUsagesListUi(ServerPlayerEntity player, ItemStack stack, Runnable closeCallback) {
+        var entry = getItemEntryFor(stack);
+        if (entry == null) {
+            return false;
+        }
+
+        if (entry.getVisibleIngredientPagesSize(player) > 0) {
+            new EntryViewerGui(player, entry, true, closeCallback).open();
+            return true;
+        }
+
+        return false;
+    }
+
     public static GuiElementInterface getIngredientDisplay(Ingredient ingredient) {
         ItemStack[] stacks = PolydexUtils.readIngredient(ingredient);
         return getIngredientDisplay(stacks);
     }
 
     public static GuiElementInterface getIngredientDisplay(ItemStack[] stacks) {
-        return stacks.length > 0 ? new AnimatedGuiElement(stacks, 20, false, GuiElement.EMPTY_CALLBACK) : new GuiElement(ItemStack.EMPTY, GuiElement.EMPTY_CALLBACK);
+        return stacks.length > 0 ? new IngredientGuiElement(stacks) : new GuiElement(ItemStack.EMPTY, GuiElement.EMPTY_CALLBACK);
     }
 
     public static ItemStack[] readIngredient(Ingredient ingredient) {
