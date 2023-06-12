@@ -47,7 +47,7 @@ public class Commands {
 
     private static int reload(CommandContext<ServerCommandSource> context) {
         PolydexImpl.config = PolydexConfig.loadOrCreateConfig();
-        context.getSource().sendFeedback(Text.translatable("text.polydex.config_reloaded"), false);
+        context.getSource().sendFeedback(() -> Text.translatable("text.polydex.config_reloaded"), false);
         return 1;
     }
 
@@ -63,7 +63,7 @@ public class Commands {
 
     private static int about(CommandContext<ServerCommandSource> context) {
         for (var text : context.getSource().getEntity() instanceof ServerPlayerEntity ? GenericModInfo.getAboutFull() : GenericModInfo.getAboutConsole()) {
-            context.getSource().sendFeedback(text, false);
+            context.getSource().sendFeedback(() -> text, false);
         }
 
         return 1;
@@ -74,10 +74,10 @@ public class Commands {
 
         if (PolydexImpl.DISPLAYS.containsKey(id)) {
             TargetDisplay.set(context.getSource().getPlayer(), id);
-            context.getSource().sendFeedback(Text.translatable("text.polydex.changed_style", id.toString()), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.polydex.changed_style", id.toString()), false);
             return 1;
         } else {
-            context.getSource().sendFeedback(Text.translatable("text.polydex.invalid_style", id.toString()).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.polydex.invalid_style", id.toString()).formatted(Formatting.RED), false);
             return 0;
         }
     }

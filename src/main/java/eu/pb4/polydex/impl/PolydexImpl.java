@@ -317,7 +317,7 @@ public class PolydexImpl {
                 displayBuilder.setComponent(DisplayBuilder.NAME, target.getBlockState().getBlock().getName());
             }
 
-            if (PolydexImpl.config.displayCantMine && (!target.getPlayer().canHarvest(target.getBlockState()) || target.getBlockState().calcBlockBreakingDelta(target.getPlayer(), target.getPlayer().world, target.getTargetPos()) <= 0)) {
+            if (PolydexImpl.config.displayCantMine && (!target.getPlayer().canHarvest(target.getBlockState()) || target.getBlockState().calcBlockBreakingDelta(target.getPlayer(), target.getPlayer().getWorld(), target.getTargetPos()) <= 0)) {
                 var text = Text.literal("⛏").formatted(Formatting.DARK_RED);
                 if (!displayBuilder.isSmall()) {
                     text.append(" ").append(Text.translatable("text.polydex.cant_mine").formatted(Formatting.RED));
