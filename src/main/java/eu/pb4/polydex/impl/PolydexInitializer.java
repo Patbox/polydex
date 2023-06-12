@@ -6,7 +6,6 @@ import eu.pb4.polydex.api.TargetDisplay;
 import eu.pb4.polydex.impl.book.view.*;
 import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipeView;
 import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipeView;
-import eu.pb4.polydex.impl.book.view.smithing.LegacySmithingRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTransformRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipeView;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
@@ -49,7 +48,6 @@ public class PolydexInitializer implements ModInitializer {
         ItemPageView.registerRecipeViewer(SmeltingRecipe.class, new AbstractCookingRecipeView(Items.FURNACE));
         ItemPageView.registerRecipeViewer(CampfireCookingRecipe.class, new AbstractCookingRecipeView(Items.CAMPFIRE));
         ItemPageView.registerRecipeViewer(SmokingRecipe.class, new AbstractCookingRecipeView(Items.SMOKER));
-        ItemPageView.registerRecipeViewer(LegacySmithingRecipe.class, new LegacySmithingRecipeView());
         ItemPageView.registerRecipeViewer(SmithingTrimRecipe.class, new SmithingTrimRecipeView());
         ItemPageView.registerRecipeViewer(SmithingTransformRecipe.class, new SmithingTransformRecipeView());
         ItemPageView.registerRecipeViewer(StonecuttingRecipe.class, new StonecuttingRecipeView());

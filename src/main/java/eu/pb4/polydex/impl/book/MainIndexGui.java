@@ -6,6 +6,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.LayerView;
 import eu.pb4.sgui.api.gui.layered.LayeredGui;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -60,7 +61,7 @@ public class MainIndexGui extends LayeredGui {
                         .setCallback((x, type, z) -> {
                             if (player.isCreative() && type.isMiddle) {
                                 var cursor = this.player.currentScreenHandler.getCursorStack();
-                                if (cursor.isItemEqual(item.stack()) && cursor.getCount() < cursor.getMaxCount()) {
+                                if (ItemStack.areItemsEqual(cursor, item.stack()) && cursor.getCount() < cursor.getMaxCount()) {
                                     cursor.increment(1);
                                 } else {
                                     this.player.currentScreenHandler.setCursorStack(item.stack().copy());

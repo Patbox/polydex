@@ -69,9 +69,9 @@ public final class PolydexTargetImpl implements PolydexTarget {
 
         if (this.hitResult.getType() == HitResult.Type.BLOCK) {
             var result = (BlockHitResult) this.hitResult;
-            this.cachedBlockState = this.handler.player.world.getBlockState(result.getBlockPos());
+            this.cachedBlockState = this.handler.player.getWorld().getBlockState(result.getBlockPos());
             if (this.cachedBlockState.hasBlockEntity()) {
-                this.cachedBlockEntity = this.handler.player.world.getBlockEntity(result.getBlockPos());
+                this.cachedBlockEntity = this.handler.player.getWorld().getBlockEntity(result.getBlockPos());
             } else {
                 this.cachedBlockEntity = null;
             }
@@ -99,7 +99,7 @@ public final class PolydexTargetImpl implements PolydexTarget {
             }
 
             this.currentBreakingProgress = Math.min(
-                    this.currentBreakingProgress + state.calcBlockBreakingDelta(this.getPlayer(), this.getPlayer().world, inter.getFailedMiningPos()),
+                    this.currentBreakingProgress + state.calcBlockBreakingDelta(this.getPlayer(), this.getPlayer().getWorld(), inter.getFailedMiningPos()),
                     1
             );
         } else {
@@ -114,7 +114,7 @@ public final class PolydexTargetImpl implements PolydexTarget {
 
             if (inter.isMining()) {
                 this.currentBreakingProgress = Math.min(
-                        this.currentBreakingProgress + state.calcBlockBreakingDelta(this.getPlayer(), this.getPlayer().world, inter.getMiningPos()),
+                        this.currentBreakingProgress + state.calcBlockBreakingDelta(this.getPlayer(), this.getPlayer().getWorld(), inter.getMiningPos()),
                         1
                 );
             }
