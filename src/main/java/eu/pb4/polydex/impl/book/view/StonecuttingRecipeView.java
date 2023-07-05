@@ -1,28 +1,27 @@
 package eu.pb4.polydex.impl.book.view;
 
-import eu.pb4.polydex.api.ItemEntry;
-import eu.pb4.polydex.api.ItemPageView;
-import eu.pb4.polydex.api.PolydexUiElements;
-import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.polydex.api.recipe.ItemEntry;
+import eu.pb4.polydex.api.PageView;
+import eu.pb4.polydex.api.recipe.PageBuilder;
+import eu.pb4.polydex.api.recipe.PageIcons;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.layered.Layer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.StonecuttingRecipe;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import static eu.pb4.polydex.api.PolydexUtils.getIngredientDisplay;
 
-public final class StonecuttingRecipeView implements ItemPageView<StonecuttingRecipe> {
+public final class StonecuttingRecipeView implements PageView<StonecuttingRecipe> {
     @Override
-    public GuiElement getIcon(ItemEntry entry, StonecuttingRecipe recipe, ServerPlayerEntity player, Runnable returnCallback) {
-        return PolydexUiElements.STONECUTTING_RECIPE_ICON;
+    public ItemStack getIcon(ItemEntry entry, StonecuttingRecipe recipe, ServerPlayerEntity player) {
+        return PageIcons.STONECUTTING_RECIPE_ICON;
     }
 
     @Override
-    public void renderLayer(ItemEntry entry, StonecuttingRecipe recipe, ServerPlayerEntity player, Layer layer, Runnable returnCallback) {
-        layer.setSlot(20, getIngredientDisplay(recipe.getIngredients().get(0)));
-        layer.setSlot(22, new GuiElementBuilder(Items.ARROW).setName(Text.empty()));
-        layer.setSlot(24, new GuiElement(recipe.getOutput(player.server.getRegistryManager()), GuiElement.EMPTY_CALLBACK));
+    public void createPage(ItemEntry entry, StonecuttingRecipe recipe, ServerPlayerEntity player, PageBuilder builder) {
+        builder.setIngredient(2, 2, recipe.getIngredients().get(0));
+        builder.set(4, 2, new GuiElementBuilder(Items.ARROW).setName(Text.empty()));
+        builder.setOutput(5, 2, recipe.getOutput(player.server.getRegistryManager()));
     }
 }

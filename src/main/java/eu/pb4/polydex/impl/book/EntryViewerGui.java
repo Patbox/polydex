@@ -1,7 +1,8 @@
 package eu.pb4.polydex.impl.book;
 
-import eu.pb4.polydex.api.ItemEntry;
-import eu.pb4.polydex.api.PageEntry;
+import eu.pb4.polydex.api.recipe.ItemEntry;
+import eu.pb4.polydex.api.recipe.PageData;
+import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import eu.pb4.sgui.api.gui.layered.LayeredGui;
@@ -18,19 +19,19 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
     public static final int PAGE_SIZE = 9 * 5;
 
     protected final Runnable closeCallback;
-    private final Layer displayLayer;
+    private final LayerBuilder displayLayer;
     private final ItemEntry entry;
-    private final List<PageEntry<?>> pages;
+    private final List<PageData<?>> pages;
     private final boolean ingredientsView;
     protected int page = 0;
 
     public EntryViewerGui(ServerPlayerEntity player, ItemEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
-        super(ScreenHandlerType.GENERIC_9X6, player, false);
+        super(ScreenHandlerType.GENERIC_9X6, player, true);
         this.closeCallback = closeCallback;
         this.entry = entry;
         this.ingredientsView = ingredients;
         this.pages = ingredients ? entry.getVisibleIngredientPages(player) : entry.getVisiblePages(player);
-        this.displayLayer = new Layer(5, 9);
+        this.displayLayer = new LayerBuilder(player, entry);
         this.addLayer(this.displayLayer, 0, 0);
         this.setTitle(Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", this.entry.stack().getName()));
 
@@ -54,14 +55,23 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         this.updateDisplay();
     }
 
-    protected void updateDisplay() {
-        var pageEntry = this.pages.get(this.page);
-        var fill = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.empty()).build();
-        for (int i = 0, size = this.displayLayer.getSize(); i < size; i++) {
-            this.displayLayer.setSlot(i, fill);
+    @Override
+    public void onTick() {
+        if (!PolydexImpl.isReady()) {
+            this.close();
+            return;
         }
-        pageEntry.renderLayer(this.entry, this.displayLayer, this.getPlayer(), this::reopen);
-        this.setSlot(PAGE_SIZE, pageEntry.getIcon(this.entry, this.getPlayer(), this::reopen));
+        super.onTick();
+    }
+
+    protected void updateDisplay() {
+        if (!PolydexImpl.isReady()) {
+            return;
+        }
+        var pageEntry = this.pages.get(this.page);
+        this.displayLayer.clear();
+        pageEntry.createPage(this.entry, this.displayLayer, this.getPlayer());
+        this.setSlot(PAGE_SIZE, pageEntry.getIcon(this.entry, this.getPlayer()));
         if (this.pages.size() > 1) {
             this.setSlot(PAGE_SIZE + 4, new GuiElementBuilder(Items.BOOK)
                     .setName(
@@ -72,10 +82,6 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
                     )
             );
         }
-    }
-
-    private void reopen() {
-        new EntryViewerGui(this.getPlayer(), this.entry, this.ingredientsView, this.closeCallback).open();
     }
 
     public int getPage() {

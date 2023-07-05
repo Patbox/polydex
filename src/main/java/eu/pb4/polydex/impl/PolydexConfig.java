@@ -18,7 +18,7 @@ public class PolydexConfig {
             .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
             .create();
 
-    public Identifier defaultDisplay = id("bossbar");
+    public Identifier defaultDisplay = id("disabled");
     public boolean defaultAlwaysShowDisplay = false;
     public boolean displayEnabled = true;
     public int displayUpdateRate = 4;

@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api;
+package eu.pb4.polydex.api.hover;
 
 import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
@@ -8,7 +8,7 @@ import net.minecraft.util.InvalidIdentifierException;
 
 import java.util.function.Function;
 
-public interface TargetDisplay {
+public interface HoverDisplay {
     void showDisplay();
     void hideDisplay();
     void onBreakingStateUpdate();
@@ -18,7 +18,7 @@ public interface TargetDisplay {
     boolean isSmall();
     void remove();
 
-    static TargetDisplay get(ServerPlayerEntity player) {
+    static HoverDisplay get(ServerPlayerEntity player) {
         return ((PlayerInterface) player.networkHandler).polydex_getDisplay();
     }
 
@@ -26,11 +26,11 @@ public interface TargetDisplay {
         if (PolydexImpl.DISPLAYS.containsKey(identifier)) {
             ((PlayerInterface) player.networkHandler).polydex_setDisplay(identifier, PolydexImpl.DISPLAYS.get(identifier));
         } else {
-            throw new InvalidIdentifierException("TargetDisplay " + identifier + " doesn't exist!");
+            throw new InvalidIdentifierException("HoverDisplay " + identifier + " doesn't exist!");
         }
     }
 
-    static void register(Identifier identifier, Function<PolydexTarget, TargetDisplay> constructor) {
+    static void register(Identifier identifier, Function<PolydexTarget, HoverDisplay> constructor) {
         PolydexImpl.DISPLAYS.put(identifier, constructor);
     }
 

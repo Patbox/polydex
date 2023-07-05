@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api;
+package eu.pb4.polydex.api.hover;
 
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
-public interface DisplayBuilder {
+public interface HoverDisplayBuilder {
     ComponentType NAME = ComponentType.of(id("name"), true);
     ComponentType HEALTH = ComponentType.of(id("health"), true);
     ComponentType EFFECTS = ComponentType.of(id("effects"), true);
@@ -22,7 +22,7 @@ public interface DisplayBuilder {
     ComponentType PROGRESS = ComponentType.of(id("progress"), true);
 
     boolean isSmall();
-    TargetDisplay.Type getDisplayType();
+    HoverDisplay.Type getDisplayType();
     PolydexTarget getTarget();
     void setComponent(ComponentType identifier, Text text);
     Text getComponent(ComponentType identifier);
@@ -32,14 +32,14 @@ public interface DisplayBuilder {
 
 
 
-    static void register(Consumer<DisplayBuilder> consumer) {
+    static void register(Consumer<HoverDisplayBuilder> consumer) {
         PolydexImpl.DISPLAY_BUILDER_CONSUMERS.add(consumer);
     }
 
-    static DisplayBuilder build(PolydexTarget target) {
+    static HoverDisplayBuilder build(PolydexTarget target) {
         var builder = ((PolydexTargetImpl) target).getDisplayBuilder();
         builder.clear();
-        if (builder.getDisplayType() != TargetDisplay.Type.NONE) {
+        if (builder.getDisplayType() != HoverDisplay.Type.NONE) {
             for (var consumer : PolydexImpl.DISPLAY_BUILDER_CONSUMERS) {
                 consumer.accept(builder);
             }

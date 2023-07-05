@@ -1,34 +1,45 @@
 package eu.pb4.polydex.impl.book.view.smithing;
 
-import eu.pb4.polydex.api.ItemEntry;
-import eu.pb4.polydex.api.ItemPageView;
-import eu.pb4.polydex.api.PolydexUiElements;
-import eu.pb4.sgui.api.elements.GuiElement;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.layered.Layer;
+import eu.pb4.polydex.api.recipe.ItemEntry;
+import eu.pb4.polydex.api.PageView;
+import eu.pb4.polydex.api.recipe.PageBuilder;
+import eu.pb4.polydex.api.recipe.PageIcons;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.SmithingRecipe;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
-import static eu.pb4.polydex.api.PolydexUtils.getIngredientDisplay;
+import java.util.List;
 
-public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> implements ItemPageView<T> {
+
+public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> implements PageView<T> {
     @Override
-    public GuiElement getIcon(ItemEntry entry, T recipe, ServerPlayerEntity player, Runnable returnCallback) {
-        return PolydexUiElements.SMITING_RECIPE_ICON;
+    public ItemStack getIcon(ItemEntry entry, T recipe, ServerPlayerEntity player) {
+        return PageIcons.SMITING_RECIPE_ICON;
     }
 
     @Override
-    public void renderLayer(ItemEntry entry, T recipe, ServerPlayerEntity player, Layer layer, Runnable returnCallback) {
-        layer.setSlot(20, getIngredientDisplay(this.getBase(recipe)));
-        layer.setSlot(21, getIngredientDisplay(this.getTemplate(recipe)));
-        layer.setSlot(22, getIngredientDisplay(this.getAddition(recipe)));
-        layer.setSlot(24, recipe.getOutput(player.server.getRegistryManager()));
+    public void createPage(ItemEntry entry, T recipe, ServerPlayerEntity player, PageBuilder builder) {
+        builder.setIngredient(2, 2,this.getTemplate(recipe));
+        builder.setIngredient(3, 2, this.getBaseItem(entry, recipe));
+        builder.setIngredient(4, 2, this.getAddition(recipe));
+        builder.setOutput(6, 2, this.getOutput(entry, player, recipe));
     }
 
-    protected abstract ItemStack[] getTemplate(T recipe);
-    protected abstract ItemStack[] getAddition(T recipe);
-    protected abstract ItemStack[] getBase(T recipe);
+    protected ItemStack[] getOutput(ItemEntry entry, ServerPlayerEntity player, T recipe) {
+        return new ItemStack[] { recipe.getOutput(player.server.getRegistryManager()) };
+    }
+
+    @Override
+    public List<Ingredient> getIngredients(T object) {
+        return List.of(getBase(object), getTemplate(object), getAddition(object));
+    }
+
+    protected Ingredient getBaseItem(ItemEntry entry, T recipe) {
+        return getBase(recipe);
+    }
+
+    protected abstract Ingredient getTemplate(T recipe);
+    protected abstract Ingredient getAddition(T recipe);
+    protected abstract Ingredient getBase(T recipe);
 }

@@ -1,7 +1,7 @@
 package eu.pb4.polydex.impl.display;
 
-import eu.pb4.polydex.api.PolydexTarget;
-import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.api.hover.PolydexTarget;
+import eu.pb4.polydex.api.hover.HoverDisplay;
 import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.mixin.SPIMAccessor;
@@ -176,7 +176,7 @@ public final class PolydexTargetImpl implements PolydexTarget {
         return (SPIMAccessor) this.handler.player.interactionManager;
     }
 
-    public TargetDisplay getDisplay() {
+    public HoverDisplay getDisplay() {
         return ((PlayerInterface) this.handler).polydex_getDisplay();
     }
 }

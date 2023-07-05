@@ -1,13 +1,13 @@
 package eu.pb4.polydex.impl.display;
 
-import eu.pb4.polydex.api.DisplayBuilder;
-import eu.pb4.polydex.api.PolydexTarget;
-import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.api.hover.HoverDisplay;
+import eu.pb4.polydex.api.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.hover.PolydexTarget;
 import net.minecraft.text.Text;
 
 import java.util.*;
 
-public class DisplayImpl implements DisplayBuilder {
+public class DisplayImpl implements HoverDisplayBuilder {
     private final PolydexTargetImpl target;
     private Map<ComponentType, Text> components = new HashMap<>();
 
@@ -21,7 +21,7 @@ public class DisplayImpl implements DisplayBuilder {
     }
 
     @Override
-    public TargetDisplay.Type getDisplayType() {
+    public HoverDisplay.Type getDisplayType() {
         return this.target.getDisplay().getType();
     }
 

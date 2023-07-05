@@ -7,7 +7,6 @@
     "BrewingRecipeAccessor",
     "BrewingRecipeRegistryAccessor",
     "ItemStackSetAccessor",
-    "MinecraftServerMixin",
     "ServerPlayerInteractionManagerMixin",
     "ServerPlayNetworkHandlerMixin",
     "SmithingTransformRecipeAccessor",

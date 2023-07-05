@@ -62,7 +62,7 @@ public abstract class PagedLayer extends Layer implements PageAware {
         return switch (id) {
             case 2 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
             case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
-                    .setName(Text.translatable("text.polydex.view.pages",
+                    .setName(Text.translatable("text.polydex.view.recipeOutput",
                                     Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
                                     Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                             ).formatted(Formatting.AQUA)

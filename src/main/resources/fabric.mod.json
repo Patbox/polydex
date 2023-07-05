@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "polydex",
+  "id": "polydex2",
   "version": "${version}",
   "name": "Polydex",
   "description": "Target block/entity tooltip and recipes in one ui mod for servers!",
@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "eu.pb4.polydex.impl.PolydexInitializer"
+    ],
+    "preLaunch": [
+      "eu.pb4.polydex.impl.CardboardWarning"
     ]
   },
   "mixins": [

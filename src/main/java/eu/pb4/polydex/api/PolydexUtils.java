@@ -1,18 +1,14 @@
 package eu.pb4.polydex.api;
 
-import eu.pb4.polydex.impl.IngredientGuiElement;
+import eu.pb4.polydex.api.recipe.ItemEntry;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.EntryViewerGui;
-import eu.pb4.polydex.impl.book.GuiUtils;
-import eu.pb4.polydex.impl.book.MainIndexGui;
-import eu.pb4.sgui.api.elements.AnimatedGuiElement;
-import eu.pb4.sgui.api.elements.GuiElement;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -20,6 +16,10 @@ import java.util.Collection;
 public class PolydexUtils {
     public static final Text DEFAULT_SEPARATOR = Text.literal(" | ").formatted(Formatting.DARK_GRAY);
     public static final Text SPACE_SEPARATOR = Text.literal(" ");
+
+    public static Identifier fromRecipe(Recipe<?> recipe) {
+        return new Identifier(recipe.getId().getNamespace(), "recipe/" + recipe.getId().getPath());
+    }
 
     public static Text mergeText(Collection<Text> texts, Text separator) {
         var out = Text.literal("");
@@ -59,12 +59,20 @@ public class PolydexUtils {
         }
     }
 
+    public static boolean isReady() {
+        return PolydexImpl.isReady();
+    }
+
     @Nullable
     public static ItemEntry getItemEntryFor(ItemStack stack) {
         return PolydexImpl.getEntry(stack);
     }
 
     public static boolean openRecipeListUi(ServerPlayerEntity player, ItemStack stack, Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
         var entry = getItemEntryFor(stack);
         if (entry == null) {
             return false;
@@ -79,6 +87,10 @@ public class PolydexUtils {
     }
 
     public static boolean openUsagesListUi(ServerPlayerEntity player, ItemStack stack, Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
         var entry = getItemEntryFor(stack);
         if (entry == null) {
             return false;
@@ -90,23 +102,5 @@ public class PolydexUtils {
         }
 
         return false;
-    }
-
-    public static GuiElementInterface getIngredientDisplay(Ingredient ingredient) {
-        ItemStack[] stacks = PolydexUtils.readIngredient(ingredient);
-        return getIngredientDisplay(stacks);
-    }
-
-    public static GuiElementInterface getIngredientDisplay(ItemStack[] stacks) {
-        return stacks.length > 0 ? new IngredientGuiElement(stacks) : new GuiElement(ItemStack.EMPTY, GuiElement.EMPTY_CALLBACK);
-    }
-
-    public static ItemStack[] readIngredient(Ingredient ingredient) {
-        ItemStack[] stacks = ingredient.getMatchingStacks();
-        if (stacks.length > 0) {
-            return stacks;
-        } else {
-            return new ItemStack[]{};
-        }
     }
 }

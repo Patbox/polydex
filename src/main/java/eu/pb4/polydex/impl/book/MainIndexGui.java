@@ -1,5 +1,6 @@
 package eu.pb4.polydex.impl.book;
 
+import eu.pb4.polydex.api.PolydexUtils;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
@@ -26,20 +27,29 @@ public class MainIndexGui extends LayeredGui {
     private boolean showAll;
 
     public MainIndexGui(ServerPlayerEntity player, boolean showAll, int pageItem, int pageSub) {
-        super(ScreenHandlerType.GENERIC_9X6, player, false);
+        super(ScreenHandlerType.GENERIC_9X6, player, true);
         this.showAll = showAll;
 
         this.mainLayer = new ItemLayer(6);
-        this.indexLayer = new NamespaceLayer(6);
+        this.indexLayer = new NamespaceLayer(4);
 
         this.entries = PolydexImpl.ITEM_ENTRIES;
         this.mainLayer.setPage(pageItem);
         this.indexLayer.setPage(pageSub);
         this.addLayer(this.mainLayer, 0, 0).setZIndex(1);
-        this.indexLayerView = this.addLayer(this.indexLayer, 0, 0);
+        this.indexLayerView = this.addLayer(this.indexLayer, 0, 6);
         this.indexLayerView.setZIndex(0);
 
         this.setTitle(Text.translatable("text.polydex.index_title"));
+    }
+
+    @Override
+    public void onTick() {
+        if (!PolydexImpl.isReady()) {
+            this.close();
+            return;
+        }
+        super.onTick();
     }
 
     public class ItemLayer extends PagedLayer {
@@ -59,14 +69,14 @@ public class MainIndexGui extends LayeredGui {
 
                 return GuiElementBuilder.from(item.stack())
                         .setCallback((x, type, z) -> {
-                            if (player.isCreative() && type.isMiddle) {
+                            /*if (player.isCreative() && type.isMiddle) {
                                 var cursor = this.player.currentScreenHandler.getCursorStack();
                                 if (ItemStack.areItemsEqual(cursor, item.stack()) && cursor.getCount() < cursor.getMaxCount()) {
                                     cursor.increment(1);
                                 } else {
                                     this.player.currentScreenHandler.setCursorStack(item.stack().copy());
                                 }
-                            } else if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
+                            } else */if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
                                 MainIndexGui.this.close(true);
                                 new EntryViewerGui(player, item, type.isRight, () -> {
                                     MainIndexGui.this.open();
@@ -90,12 +100,22 @@ public class MainIndexGui extends LayeredGui {
                             this.setPage(this.getPage());
                             GuiUtils.playClickSound(this.player);
                         }).build();
-                case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
+
+                case 1 -> new GuiElementBuilder(Items.BOOK)
+                        .setName(Text.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.type.name().toLowerCase(Locale.ROOT)))
+                        .setCallback((x, y, z) -> {
+                            GuiUtils.playClickSound(this.player);
+                            MainIndexGui.this.indexLayer.type = MainIndexGui.this.indexLayer.type.getNext();
+                            MainIndexGui.this.indexLayer.updateDisplay();
+                            this.updateDisplay();
+                        })
+                        .build();
+                /*case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .setName(Text.translatable("text.polydex.button.select_displayed").formatted(Formatting.WHITE))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
                             MainIndexGui.this.indexLayerView.setZIndex(2);
-                        }).build();
+                        }).build();*/
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
                 case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
                         .setName(Text.translatable("text.polydex.view.pages",
@@ -111,7 +131,7 @@ public class MainIndexGui extends LayeredGui {
     }
 
     public class NamespaceLayer extends PagedLayer {
-        private Type type = Type.NAMESPACES;
+        private Type type = Type.INVENTORY;
 
         public NamespaceLayer(int height) {
             super(MainIndexGui.this.getPlayer(), height, 9, true);
@@ -119,7 +139,36 @@ public class MainIndexGui extends LayeredGui {
 
         @Override
         public int getPageAmount() {
-            return MathHelper.ceil(((double) this.type.entries.size() + 1) / this.pageSize);
+            return this.type == Type.INVENTORY ? 1 : MathHelper.ceil(((double) this.type.entries.size() + 1) / this.pageSize);
+        }
+
+        @Override
+        protected void updateDisplay() {
+            if (type == Type.INVENTORY) {
+                var inventory = this.player.getInventory();
+                for (var i = 0; i < 3; ++i) {
+                    for (var j = 0; j < 9; ++j) {
+                        this.setSlot(i * 9 + j, createSlot(inventory.getStack(j + (i + 1) * 9)));
+                    }
+                }
+
+                for (var i = 0; i < 9; ++i) {
+                    this.setSlot(i + 3 * 9, createSlot(inventory.getStack(i)));
+                }
+            } else {
+                super.updateDisplay();
+            }
+        }
+
+        private GuiElement createSlot(ItemStack stack) {
+            return new GuiElement(stack, (x, type, z) -> {
+                var page = PolydexUtils.getItemEntryFor(stack);
+                if (page != null && ((type.isLeft && page.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && page.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0))) {
+                    MainIndexGui.this.close(true);
+                    new EntryViewerGui(player, page, type.isRight, MainIndexGui.this::open).open();
+                    GuiUtils.playClickSound(this.player);
+                }
+            });
         }
 
         @Override
@@ -170,14 +219,6 @@ public class MainIndexGui extends LayeredGui {
         @Override
         protected GuiElement getNavElement(int id) {
             return switch (id) {
-                case 0 -> new GuiElementBuilder(Items.BOOK)
-                        .setName(Text.translatable("text.polydex.category." + this.type.name().toLowerCase(Locale.ROOT)))
-                        .setCallback((x, y, z) -> {
-                            GuiUtils.playClickSound(this.player);
-                            this.type = this.type.getNext();
-                            this.updateDisplay();
-                        })
-                        .build();
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
                 case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
                         .setName(Text.translatable("text.polydex.view.pages",
@@ -186,16 +227,13 @@ public class MainIndexGui extends LayeredGui {
                                 ).formatted(Formatting.AQUA)
                         ).build() : GuiUtils.FILLER;
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : GuiUtils.FILLER;
-                case 8 -> GuiUtils.backButton(this.player, () -> {
-                    GuiUtils.playClickSound(this.player);
-                    MainIndexGui.this.indexLayerView.setZIndex(0);
-                }, false);
                 default -> GuiUtils.FILLER;
             };
         }
 
 
         private enum Type {
+            INVENTORY(null),
             NAMESPACES(PolydexImpl.NAMESPACED_ENTRIES),
             ITEM_GROUP(PolydexImpl.ITEM_GROUP_ENTRIES),
             ;

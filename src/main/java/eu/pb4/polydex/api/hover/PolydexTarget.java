@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api;
+package eu.pb4.polydex.api.hover;
 
 import eu.pb4.polydex.impl.PlayerInterface;
 import net.minecraft.block.BlockState;

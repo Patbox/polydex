@@ -4,23 +4,24 @@ import eu.pb4.polydex.api.PolydexUtils;
 import eu.pb4.polydex.mixin.SmithingTransformRecipeAccessor;
 import eu.pb4.polydex.mixin.SmithingTransformRecipeAccessor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.SmithingTransformRecipe;
 import net.minecraft.recipe.SmithingTransformRecipe;
 
 public class SmithingTransformRecipeView extends AbstractSmithingRecipeView<SmithingTransformRecipe> {
     @Override
-    protected ItemStack[] getTemplate(SmithingTransformRecipe recipe) {
-        return PolydexUtils.readIngredient(cast(recipe).getTemplate());
+    protected Ingredient getTemplate(SmithingTransformRecipe recipe) {
+        return cast(recipe).getTemplate();
     }
 
     @Override
-    protected ItemStack[] getAddition(SmithingTransformRecipe recipe) {
-        return PolydexUtils.readIngredient(cast(recipe).getAddition());
+    protected Ingredient getAddition(SmithingTransformRecipe recipe) {
+        return cast(recipe).getAddition();
     }
 
     @Override
-    protected ItemStack[] getBase(SmithingTransformRecipe recipe) {
-        return PolydexUtils.readIngredient(cast(recipe).getBase());
+    protected Ingredient getBase(SmithingTransformRecipe recipe) {
+        return cast(recipe).getBase();
     }
 
     private SmithingTransformRecipeAccessor cast(SmithingTransformRecipe recipe) {

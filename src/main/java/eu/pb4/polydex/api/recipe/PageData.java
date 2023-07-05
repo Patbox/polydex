@@ -1,25 +1,26 @@
-package eu.pb4.polydex.api;
+package eu.pb4.polydex.api.recipe;
 
-import eu.pb4.sgui.api.elements.GuiElement;
-import eu.pb4.sgui.api.gui.layered.Layer;
+import eu.pb4.polydex.api.PageView;
+import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
 import java.util.List;
 
-public record PageEntry<T>(ItemPageView<T> view, T object) {
-    public GuiElement getIcon(ItemEntry entry, ServerPlayerEntity player, Runnable returnCallback) {
+public record PageData<T>(Identifier identifier, PageView<T> view, T object) {
+    public ItemStack getIcon(ItemEntry entry, ServerPlayerEntity player) {
         try {
-            return this.view.getIcon(entry, object, player, returnCallback);
+            return this.view.getIcon(entry, object, player);
         } catch (Throwable e) {
             e.printStackTrace();
-            return PolydexUiElements.INVALID_PAGE;
+            return PageIcons.INVALID_PAGE;
         }
     }
 
-    public void renderLayer(ItemEntry entry, Layer layer, ServerPlayerEntity player, Runnable returnCallback) {
+    public void createPage(ItemEntry entry, PageBuilder builder, ServerPlayerEntity player) {
         try {
-            this.view.renderLayer(entry, this.object, player, layer, returnCallback);
+            this.view.createPage(entry, this.object, player, builder);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -41,5 +42,9 @@ public record PageEntry<T>(ItemPageView<T> view, T object) {
             e.printStackTrace();
             return List.of();
         }
+    }
+
+    public int priority() {
+        return this.view.priority(this.object);
     }
 }

@@ -1,11 +1,13 @@
 package eu.pb4.polydex.impl;
 
-import eu.pb4.polydex.api.DisplayBuilder;
-import eu.pb4.polydex.api.ItemPageView;
-import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.api.hover.HoverDisplay;
+import eu.pb4.polydex.api.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.PageView;
 import eu.pb4.polydex.impl.book.view.*;
+import eu.pb4.polydex.impl.book.view.crafting.AbstractCraftingRecipeView;
 import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipeView;
 import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipeView;
+import eu.pb4.polydex.impl.book.view.crafting.ShulkerBoxColoringRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTransformRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipeView;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
@@ -33,36 +35,39 @@ public class PolydexInitializer implements ModInitializer {
             return;
         }
         initialized = true;
-        TargetDisplay.register(id("disabled"), NoopTargetDisplay::create);
-        TargetDisplay.register(id("bossbar"), BossbarTargetDisplay::targetted);
-        TargetDisplay.register(id("bossbar_always"), BossbarTargetDisplay::always);
-        TargetDisplay.register(id("bossbar_sneak"), BossbarTargetDisplay::sneaking);
-        TargetDisplay.register(id("sidebar"), SidebarTargetDisplay::new);
+        HoverDisplay.register(id("disabled"), NoopTargetDisplay::create);
+        HoverDisplay.register(id("bossbar"), BossbarTargetDisplay::targetted);
+        HoverDisplay.register(id("bossbar_always"), BossbarTargetDisplay::always);
+        HoverDisplay.register(id("bossbar_sneak"), BossbarTargetDisplay::sneaking);
+        HoverDisplay.register(id("sidebar"), SidebarTargetDisplay::new);
 
-        ItemPageView.register(PolydexImpl::buildRecipes);
-        ItemPageView.register(PolydexImpl::potionRecipe);
+        PageView.register(PolydexImpl::buildRecipes);
+        PageView.register(PolydexImpl::potionRecipe);
 
-        ItemPageView.registerRecipeViewer(ShapedRecipe.class, new ShapedCraftingRecipeView());
-        ItemPageView.registerRecipeViewer(ShapelessRecipe.class, new ShapelessCraftingRecipeView());
-        ItemPageView.registerRecipeViewer(BlastingRecipe.class, new AbstractCookingRecipeView(Items.BLAST_FURNACE));
-        ItemPageView.registerRecipeViewer(SmeltingRecipe.class, new AbstractCookingRecipeView(Items.FURNACE));
-        ItemPageView.registerRecipeViewer(CampfireCookingRecipe.class, new AbstractCookingRecipeView(Items.CAMPFIRE));
-        ItemPageView.registerRecipeViewer(SmokingRecipe.class, new AbstractCookingRecipeView(Items.SMOKER));
-        ItemPageView.registerRecipeViewer(SmithingTrimRecipe.class, new SmithingTrimRecipeView());
-        ItemPageView.registerRecipeViewer(SmithingTransformRecipe.class, new SmithingTransformRecipeView());
-        ItemPageView.registerRecipeViewer(StonecuttingRecipe.class, new StonecuttingRecipeView());
+        PageView.registerRecipeViewer(ShapedRecipe.class, new ShapedCraftingRecipeView());
+        PageView.registerRecipeViewer(ShapelessRecipe.class, new ShapelessCraftingRecipeView());
+        PageView.registerRecipeViewer(ShulkerBoxColoringRecipe.class, new ShulkerBoxColoringRecipeView());
 
-        ItemPageView.register(PolydexImpl::addCustomPages);
+        PageView.registerRecipeViewer(BlastingRecipe.class, new AbstractCookingRecipeView(Items.BLAST_FURNACE));
+        PageView.registerRecipeViewer(SmeltingRecipe.class, new AbstractCookingRecipeView(Items.FURNACE));
+        PageView.registerRecipeViewer(CampfireCookingRecipe.class, new AbstractCookingRecipeView(Items.CAMPFIRE));
+        PageView.registerRecipeViewer(SmokingRecipe.class, new AbstractCookingRecipeView(Items.SMOKER));
+        PageView.registerRecipeViewer(SmithingTrimRecipe.class, new SmithingTrimRecipeView());
+        PageView.registerRecipeViewer(SmithingTransformRecipe.class, new SmithingTransformRecipeView());
+        PageView.registerRecipeViewer(StonecuttingRecipe.class, new StonecuttingRecipeView());
 
-        DisplayBuilder.register(PolydexImpl::defaultBuilder);
+        PageView.register(PolydexImpl::addCustomPages);
+
+        HoverDisplayBuilder.register(PolydexImpl::defaultBuilder);
     }
 
     @Override
     public void onInitialize() {
-        GenericModInfo.build(FabricLoader.getInstance().getModContainer("polydex").get());
+        GenericModInfo.build(FabricLoader.getInstance().getModContainer("polydex2").get());
         CommandRegistrationCallback.EVENT.register(Commands::register);
-        ServerLifecycleEvents.SERVER_STARTED.register(PolydexImpl::updateCaches);
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, manager, b) -> PolydexImpl.updateCaches(server));
+        ServerLifecycleEvents.SERVER_STARTED.register(PolydexImpl::rebuild);
+        ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, manager, b) -> PolydexImpl.rebuild(server));
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
 
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {

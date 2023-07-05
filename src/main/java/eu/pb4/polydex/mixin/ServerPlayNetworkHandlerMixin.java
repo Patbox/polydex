@@ -1,8 +1,8 @@
 package eu.pb4.polydex.mixin;
 
 import eu.pb4.playerdata.api.PlayerDataApi;
-import eu.pb4.polydex.api.PolydexTarget;
-import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.api.hover.PolydexTarget;
+import eu.pb4.polydex.api.hover.HoverDisplay;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.PlayerInterface;
@@ -28,7 +28,7 @@ import static eu.pb4.polydex.impl.PolydexImpl.id;
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
     @Shadow public ServerPlayerEntity player;
-    private TargetDisplay polydex_display;
+    private HoverDisplay polydex_display;
 
     @Shadow public abstract void sendPacket(Packet<?> packet);
 
@@ -99,12 +99,12 @@ public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
     }
 
     @Override
-    public TargetDisplay polydex_getDisplay() {
+    public HoverDisplay polydex_getDisplay() {
         return this.polydex_display;
     }
 
     @Override
-    public void polydex_setDisplay(Identifier identifier, Function<PolydexTarget, TargetDisplay> displayCreator) {
+    public void polydex_setDisplay(Identifier identifier, Function<PolydexTarget, HoverDisplay> displayCreator) {
         this.polydex_display.remove();
         this.polydex_display = displayCreator.apply(this.polydex_target);
         PlayerDataApi.setGlobalDataFor(this.player, id("display_type"), NbtString.of(identifier.toString()));

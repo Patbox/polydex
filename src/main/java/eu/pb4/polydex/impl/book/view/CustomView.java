@@ -2,26 +2,28 @@ package eu.pb4.polydex.impl.book.view;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import eu.pb4.polydex.api.ItemEntry;
-import eu.pb4.polydex.api.ItemPageView;
+import eu.pb4.polydex.api.recipe.ItemEntry;
+import eu.pb4.polydex.api.PageView;
+import eu.pb4.polydex.api.recipe.PageBuilder;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.CraftingRecipe;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
 
 import java.util.List;
 import java.util.Optional;
 
-public final class CustomView implements ItemPageView<CustomView.ViewData> {
+public final class CustomView implements PageView<CustomView.ViewData> {
     public static CustomView INSTANCE = new CustomView();
 
     @Override
-    public GuiElement getIcon(ItemEntry entry, ViewData object, ServerPlayerEntity player, Runnable returnCallback) {
+    public ItemStack getIcon(ItemEntry entry, ViewData object, ServerPlayerEntity player) {
         var builder = GuiElementBuilder.from(object.icon);
         if (object.name.isPresent()) {
             builder.setName(object.name.get());
@@ -33,13 +35,13 @@ public final class CustomView implements ItemPageView<CustomView.ViewData> {
             builder.setLore(object.lore);
         }
 
-        return builder.build();
+        return builder.asStack();
     }
 
     @Override
-    public void renderLayer(ItemEntry entry, ViewData object, ServerPlayerEntity player, Layer layer, Runnable returnCallback) {
+    public void createPage(ItemEntry entry, ViewData object, ServerPlayerEntity player, PageBuilder b) {
         for (var element : object.elements) {
-            if (element.x < 0 || element.y < 0 || element.x > layer.getWidth() || element.y > layer.getWidth()) {
+            if (element.x < 0 || element.y < 0 || element.x > b.width() || element.y > b.height()) {
                 continue;
             }
 
@@ -54,8 +56,13 @@ public final class CustomView implements ItemPageView<CustomView.ViewData> {
                 builder.setLore(object.lore);
             }
 
-            layer.setSlot(element.x + element.y * layer.getWidth(), builder);
+            b.set(element.x, element.y, builder);
         }
+    }
+
+    @Override
+    public boolean isOwner(MinecraftServer server, ItemEntry entry, ViewData object) {
+        return true;
     }
 
     public record ViewData(Identifier entryId, ItemStack icon, Optional<Text> name, List<Text> lore, List<ItemData> elements) {

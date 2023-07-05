@@ -1,4 +1,4 @@
-package eu.pb4.polydex.impl;
+package eu.pb4.polydex.impl.book;
 
 import eu.pb4.polydex.api.PolydexUtils;
 import eu.pb4.polydex.impl.book.GuiUtils;

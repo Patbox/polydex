@@ -1,10 +1,10 @@
 package eu.pb4.polydex.impl.display;
 
-import eu.pb4.polydex.api.PolydexTarget;
-import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.api.hover.PolydexTarget;
+import eu.pb4.polydex.api.hover.HoverDisplay;
 
-public class NoopTargetDisplay implements TargetDisplay {
-    public static final TargetDisplay INSTANCE = new NoopTargetDisplay();
+public class NoopTargetDisplay implements HoverDisplay {
+    public static final HoverDisplay INSTANCE = new NoopTargetDisplay();
 
     @Override
     public void showDisplay() {
@@ -46,7 +46,7 @@ public class NoopTargetDisplay implements TargetDisplay {
         return Type.NONE;
     }
 
-    public static TargetDisplay create(PolydexTarget target) {
+    public static HoverDisplay create(PolydexTarget target) {
         return INSTANCE;
     }
 }

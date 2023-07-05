@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.api.hover.HoverDisplay;
 import eu.pb4.polydex.impl.book.MainIndexGui;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
@@ -31,8 +31,8 @@ public class Commands {
                         )
                         
                 )
-                .then(literal("pages")
-                        .requires(Permissions.require("polydex.pages", 0))
+                .then(literal("page")
+                        .requires(Permissions.require("polydex.page", 0))
                         .then(argument("number", IntegerArgumentType.integer(1))
                                 .executes((ctx) -> Commands.openIndex(ctx, (IntegerArgumentType.getInteger(ctx, "number") - 1)))
                         )
@@ -73,7 +73,7 @@ public class Commands {
         var id = IdentifierArgumentType.getIdentifier(context, "style");
 
         if (PolydexImpl.DISPLAYS.containsKey(id)) {
-            TargetDisplay.set(context.getSource().getPlayer(), id);
+            HoverDisplay.set(context.getSource().getPlayer(), id);
             context.getSource().sendFeedback(() -> Text.translatable("text.polydex.changed_style", id.toString()), false);
             return 1;
         } else {

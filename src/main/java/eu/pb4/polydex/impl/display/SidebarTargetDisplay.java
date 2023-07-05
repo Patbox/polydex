@@ -1,8 +1,8 @@
 package eu.pb4.polydex.impl.display;
 
-import eu.pb4.polydex.api.DisplayBuilder;
-import eu.pb4.polydex.api.PolydexTarget;
-import eu.pb4.polydex.api.TargetDisplay;
+import eu.pb4.polydex.api.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.hover.PolydexTarget;
+import eu.pb4.polydex.api.hover.HoverDisplay;
 import eu.pb4.sidebars.api.Sidebar;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -10,7 +10,7 @@ import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 
-public class SidebarTargetDisplay extends Sidebar implements TargetDisplay {
+public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
     private final PolydexTarget target;
 
     public SidebarTargetDisplay(PolydexTarget target) {
@@ -39,14 +39,14 @@ public class SidebarTargetDisplay extends Sidebar implements TargetDisplay {
     public void onTargetUpdate() {
         this.clearLines();
 
-        var build = DisplayBuilder.build(this.target);
+        var build = HoverDisplayBuilder.build(this.target);
         this.setTitle(Text.literal(this.target.getTargetPos().toShortString()).formatted(Formatting.GRAY));
 
         var lines = new ArrayList<Text>();
 
         {
-            var component = build.getComponent(DisplayBuilder.NAME);
-            build.removeComponent(DisplayBuilder.NAME);
+            var component = build.getComponent(HoverDisplayBuilder.NAME);
+            build.removeComponent(HoverDisplayBuilder.NAME);
             if (component != null) {
                 lines.add(
                         Text.translatable("text.polydex.sidebar.target", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.YELLOW, Formatting.BOLD)
@@ -56,7 +56,7 @@ public class SidebarTargetDisplay extends Sidebar implements TargetDisplay {
         {
             boolean shouldAdd = true;
             {
-                var component = build.getComponent(DisplayBuilder.INPUT);
+                var component = build.getComponent(HoverDisplayBuilder.INPUT);
                 if (component != null) {
                     if (shouldAdd) {
                         shouldAdd = false;
@@ -69,7 +69,7 @@ public class SidebarTargetDisplay extends Sidebar implements TargetDisplay {
                 }
             }
             {
-                var component = build.getComponent(DisplayBuilder.FUEL);
+                var component = build.getComponent(HoverDisplayBuilder.FUEL);
                 if (component != null) {
                     if (shouldAdd) {
                         shouldAdd = false;
@@ -82,7 +82,7 @@ public class SidebarTargetDisplay extends Sidebar implements TargetDisplay {
                 }
             }
             {
-                var component = build.getComponent(DisplayBuilder.OUTPUT);
+                var component = build.getComponent(HoverDisplayBuilder.OUTPUT);
                 if (component != null) {
                     if (shouldAdd) {
                         lines.add(Text.empty());
@@ -95,8 +95,8 @@ public class SidebarTargetDisplay extends Sidebar implements TargetDisplay {
             }
         }
 
-        var progress = build.getComponent(DisplayBuilder.PROGRESS);
-        build.removeComponent(DisplayBuilder.PROGRESS);
+        var progress = build.getComponent(HoverDisplayBuilder.PROGRESS);
+        build.removeComponent(HoverDisplayBuilder.PROGRESS);
 
         {
             var out = build.getOutput();

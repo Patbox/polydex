@@ -1,9 +1,9 @@
 package eu.pb4.polydex.impl.display;
 
-import eu.pb4.polydex.api.DisplayBuilder;
-import eu.pb4.polydex.api.PolydexTarget;
+import eu.pb4.polydex.api.hover.HoverDisplay;
+import eu.pb4.polydex.api.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.hover.PolydexTarget;
 import eu.pb4.polydex.api.PolydexUtils;
-import eu.pb4.polydex.api.TargetDisplay;
 import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.BossBar;
@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 
 import java.util.UUID;
 
-public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
+public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
     private static final UUID ID = new UUID(0x706F6C79646578l, 0l);
     private final PolydexTarget target;
     private final DisplayMode displayMode;
@@ -105,7 +105,7 @@ public class BossbarTargetDisplay extends BossBar implements TargetDisplay {
             percent = Math.min(this.target.getBreakingProgress(), 1);
         }
 
-        this.setName(PolydexUtils.mergeText(DisplayBuilder.buildText(this.target), PolydexUtils.DEFAULT_SEPARATOR));
+        this.setName(PolydexUtils.mergeText(HoverDisplayBuilder.buildText(this.target), PolydexUtils.DEFAULT_SEPARATOR));
         this.setPercent(percent);
 
         if (!this.isHidden || this.displayMode == DisplayMode.ALWAYS) {
