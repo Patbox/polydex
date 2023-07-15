@@ -2,15 +2,13 @@ package eu.pb4.polydex.impl.book.view;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import eu.pb4.polydex.api.recipe.ItemEntry;
-import eu.pb4.polydex.api.PageView;
+import eu.pb4.polydex.api.recipe.PolydexEntry;
+import eu.pb4.polydex.api.recipe.PolydexIngredient;
+import eu.pb4.polydex.api.recipe.PolydexPage;
 import eu.pb4.polydex.api.recipe.PageBuilder;
 import eu.pb4.polydex.impl.PolydexImpl;
-import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -19,11 +17,16 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 import java.util.Optional;
 
-public final class CustomView implements PageView<CustomView.ViewData> {
-    public static CustomView INSTANCE = new CustomView();
+public record CustomPage(Identifier identifier, CustomPage.ViewData object) implements PolydexPage {
+
 
     @Override
-    public ItemStack getIcon(ItemEntry entry, ViewData object, ServerPlayerEntity player) {
+    public Identifier identifier() {
+        return identifier;
+    }
+
+    @Override
+    public ItemStack getIcon(ServerPlayerEntity player) {
         var builder = GuiElementBuilder.from(object.icon);
         if (object.name.isPresent()) {
             builder.setName(object.name.get());
@@ -39,7 +42,7 @@ public final class CustomView implements PageView<CustomView.ViewData> {
     }
 
     @Override
-    public void createPage(ItemEntry entry, ViewData object, ServerPlayerEntity player, PageBuilder b) {
+    public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder b) {
         for (var element : object.elements) {
             if (element.x < 0 || element.y < 0 || element.x > b.width() || element.y > b.height()) {
                 continue;
@@ -61,7 +64,12 @@ public final class CustomView implements PageView<CustomView.ViewData> {
     }
 
     @Override
-    public boolean isOwner(MinecraftServer server, ItemEntry entry, ViewData object) {
+    public List<PolydexIngredient<?>> getIngredients() {
+        return List.of();
+    }
+
+    @Override
+    public boolean isOwner(MinecraftServer server, PolydexEntry entry) {
         return true;
     }
 

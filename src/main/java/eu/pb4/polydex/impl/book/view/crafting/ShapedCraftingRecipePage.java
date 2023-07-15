@@ -1,13 +1,13 @@
 package eu.pb4.polydex.impl.book.view.crafting;
 
-import eu.pb4.polydex.api.PolydexUtils;
-import eu.pb4.polydex.impl.book.view.crafting.AbstractCraftingRecipeView;
-import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.server.network.ServerPlayerEntity;
 
-public final class ShapedCraftingRecipeView extends AbstractCraftingRecipeView<ShapedRecipe> {
+public final class ShapedCraftingRecipePage extends AbstractCraftingRecipePage<ShapedRecipe> {
+    public ShapedCraftingRecipePage(ShapedRecipe recipe) {
+        super(recipe);
+    }
+
     protected Ingredient getStacksAt(ShapedRecipe recipe, int x, int y) {
         if (x < recipe.getWidth() && y < recipe.getHeight()) {
             return recipe.getIngredients().get(x + (recipe.getWidth() * y));

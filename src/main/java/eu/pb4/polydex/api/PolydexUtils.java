@@ -1,6 +1,6 @@
 package eu.pb4.polydex.api;
 
-import eu.pb4.polydex.api.recipe.ItemEntry;
+import eu.pb4.polydex.api.recipe.PolydexEntry;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.EntryViewerGui;
 import net.minecraft.item.ItemStack;
@@ -64,7 +64,7 @@ public class PolydexUtils {
     }
 
     @Nullable
-    public static ItemEntry getItemEntryFor(ItemStack stack) {
+    public static PolydexEntry getItemEntryFor(ItemStack stack) {
         return PolydexImpl.getEntry(stack);
     }
 

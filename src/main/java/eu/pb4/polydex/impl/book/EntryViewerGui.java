@@ -1,10 +1,9 @@
 package eu.pb4.polydex.impl.book;
 
-import eu.pb4.polydex.api.recipe.ItemEntry;
-import eu.pb4.polydex.api.recipe.PageData;
+import eu.pb4.polydex.api.recipe.PolydexEntry;
+import eu.pb4.polydex.api.recipe.PolydexPage;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.layered.Layer;
 import eu.pb4.sgui.api.gui.layered.LayeredGui;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -20,12 +19,12 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
 
     protected final Runnable closeCallback;
     private final LayerBuilder displayLayer;
-    private final ItemEntry entry;
-    private final List<PageData<?>> pages;
+    private final PolydexEntry entry;
+    private final List<PolydexPage> pages;
     private final boolean ingredientsView;
     protected int page = 0;
 
-    public EntryViewerGui(ServerPlayerEntity player, ItemEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
+    public EntryViewerGui(ServerPlayerEntity player, PolydexEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
         this.closeCallback = closeCallback;
         this.entry = entry;
@@ -70,8 +69,8 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         }
         var pageEntry = this.pages.get(this.page);
         this.displayLayer.clear();
-        pageEntry.createPage(this.entry, this.displayLayer, this.getPlayer());
-        this.setSlot(PAGE_SIZE, pageEntry.getIcon(this.entry, this.getPlayer()));
+        pageEntry.createPage(this.entry, this.getPlayer(), this.displayLayer);
+        this.setSlot(PAGE_SIZE, pageEntry.getIcon(this.getPlayer()));
         if (this.pages.size() > 1) {
             this.setSlot(PAGE_SIZE + 4, new GuiElementBuilder(Items.BOOK)
                     .setName(

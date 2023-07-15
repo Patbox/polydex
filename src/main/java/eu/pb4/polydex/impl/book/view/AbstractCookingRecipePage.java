@@ -1,8 +1,9 @@
 package eu.pb4.polydex.impl.book.view;
 
-import eu.pb4.polydex.api.recipe.ItemEntry;
-import eu.pb4.polydex.api.PageView;
+import eu.pb4.polydex.api.recipe.PolydexEntry;
 import eu.pb4.polydex.api.recipe.PageBuilder;
+import eu.pb4.polydex.api.recipe.PolydexPage;
+import eu.pb4.polydex.api.recipe.SimpleRecipePolydexPage;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -12,22 +13,30 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.function.Function;
 
-public final class AbstractCookingRecipeView<T extends AbstractCookingRecipe> implements PageView<T> {
+
+public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> extends SimpleRecipePolydexPage<T> {
     private final ItemStack icon;
 
-    public AbstractCookingRecipeView(Item icon) {
+    public AbstractCookingRecipePage(T recipe, Item icon) {
+        super(recipe);
         this.icon = icon.getDefaultStack();
     }
 
+    public static <T extends AbstractCookingRecipe> Function<T, PolydexPage> of(Item icon) {
+        return (r) -> new AbstractCookingRecipePage<T>(r, icon);
+    }
+
+
 
     @Override
-    public ItemStack getIcon(ItemEntry entry, T object, ServerPlayerEntity player) {
+    public ItemStack getIcon(ServerPlayerEntity player) {
         return this.icon;
     }
 
     @Override
-    public void createPage(ItemEntry entry, T recipe, ServerPlayerEntity player, PageBuilder builder) {
+    public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         builder.setIngredient(2, 2,recipe.getIngredients().get(0));
         builder.set(4, 2, new GuiElementBuilder(Items.BLAZE_POWDER)
                 .setName(Text.translatable("text.polydex.view.cooking_time", Text.literal("" + (recipe.getCookTime() / 20d) + "s")

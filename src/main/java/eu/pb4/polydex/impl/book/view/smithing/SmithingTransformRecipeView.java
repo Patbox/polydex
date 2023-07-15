@@ -9,18 +9,22 @@ import net.minecraft.recipe.SmithingTransformRecipe;
 import net.minecraft.recipe.SmithingTransformRecipe;
 
 public class SmithingTransformRecipeView extends AbstractSmithingRecipeView<SmithingTransformRecipe> {
+    public SmithingTransformRecipeView(SmithingTransformRecipe recipe) {
+        super(recipe);
+    }
+
     @Override
-    protected Ingredient getTemplate(SmithingTransformRecipe recipe) {
+    protected Ingredient getTemplate() {
         return cast(recipe).getTemplate();
     }
 
     @Override
-    protected Ingredient getAddition(SmithingTransformRecipe recipe) {
+    protected Ingredient getAddition() {
         return cast(recipe).getAddition();
     }
 
     @Override
-    protected Ingredient getBase(SmithingTransformRecipe recipe) {
+    protected Ingredient getBase() {
         return cast(recipe).getBase();
     }
 

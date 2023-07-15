@@ -67,7 +67,7 @@ public class MainIndexGui extends LayeredGui {
             if (id < MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size()) {
                 var item = MainIndexGui.this.entries.get(MainIndexGui.this.showAll).get(id);
 
-                return GuiElementBuilder.from(item.stack())
+                return GuiElementBuilder.from(item.stack().toItemStack(player))
                         .setCallback((x, type, z) -> {
                             /*if (player.isCreative() && type.isMiddle) {
                                 var cursor = this.player.currentScreenHandler.getCursorStack();
@@ -195,7 +195,7 @@ public class MainIndexGui extends LayeredGui {
             if (id < this.type.entries.size() + 1) {
                 var item = this.type.entries.get(id - 1);
 
-                var builder = GuiElementBuilder.from(item.icon())
+                var builder = GuiElementBuilder.from(item.icon().apply(player))
                         .setName(item.display())
                         .hideFlags()
                         .setCallback((x, y, z) -> {

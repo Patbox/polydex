@@ -1,22 +1,25 @@
 package eu.pb4.polydex.impl.book;
 
-import eu.pb4.polydex.api.recipe.ItemEntry;
+import eu.pb4.polydex.api.recipe.PolydexEntry;
 import eu.pb4.polydex.api.recipe.PageBuilder;
+import eu.pb4.polydex.api.recipe.PolydexIngredient;
+import eu.pb4.polydex.api.recipe.PolydexStack;
 import eu.pb4.polydex.impl.PolydexImplUtils;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+
+import java.util.ArrayList;
 
 public class LayerBuilder extends Layer implements PageBuilder {
-    private final ItemEntry currentEntry;
+    private final PolydexEntry currentEntry;
+    private final ServerPlayerEntity player;
 
-    public LayerBuilder(ServerPlayerEntity player, ItemEntry currentEntry) {
+    public LayerBuilder(ServerPlayerEntity player, PolydexEntry currentEntry) {
         super(5, 9);
         this.currentEntry = currentEntry;
+        this.player = player;
     }
 
     @Override
@@ -34,6 +37,17 @@ public class LayerBuilder extends Layer implements PageBuilder {
     }
 
     @Override
+    public void setOutput(int x, int y, PolydexStack<?>... stacks) {
+        var list = new ArrayList<ItemStack>(stacks.length);
+
+        for (var stack : stacks) {
+            list.add(stack.toItemStack(this.player));
+        }
+
+        setOutput(x, y, list.toArray(new ItemStack[0]));
+    }
+
+    @Override
     public void setIngredient(int x, int y, ItemStack... stacks) {
         this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(stacks));
     }
@@ -44,14 +58,25 @@ public class LayerBuilder extends Layer implements PageBuilder {
     }
 
     @Override
+    public void setIngredient(int x, int y, PolydexIngredient<?> ingredient) {
+        var stacks = ingredient.asStacks();
+        var list = new ArrayList<ItemStack>(stacks.size());
+
+        for (var stack : stacks) {
+            list.add(stack.toItemStack(this.player));
+        }
+
+        setOutput(x, y, list.toArray(new ItemStack[0]));
+    }
+
+    @Override
     public void setEmpty(int x, int y) {
         this.setSlot(index(x, y), ItemStack.EMPTY);
     }
 
     public void clear() {
-        var fill = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.empty()).build();
         for (int i = 0, size = this.size; i < size; i++) {
-            this.setSlot(i, fill);
+            this.setSlot(i, GuiUtils.FILLER);
         }
     }
 }

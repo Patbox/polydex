@@ -10,12 +10,17 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
 
 public class GuiUtils {
     public static final GuiElement EMPTY = new GuiElement(ItemStack.EMPTY, GuiElementInterface.EMPTY_CALLBACK);
-    public static final GuiElement FILLER = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
-            .setName(Text.empty())
-            .hideFlags().build();
+    public static final GuiElement FILLER = Util.make(() -> {
+        var b = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
+                .setName(Text.empty())
+                .hideFlags();
+        b.getOrCreateNbt().putBoolean("polydex:filler", true);
+        return b.build();
+    });
 
     public static GuiElement backButton(ServerPlayerEntity player, Runnable callback, boolean back) {
         return new GuiElementBuilder(Items.STRUCTURE_VOID)

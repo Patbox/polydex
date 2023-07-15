@@ -10,8 +10,10 @@ public interface PageBuilder {
         set(x, y, builder.asStack());
     }
     void setOutput(int x, int y, ItemStack... stack);
+    void setOutput(int x, int y, PolydexStack<?>... stack);
     void setIngredient(int x, int y, ItemStack... stacks);
     void setIngredient(int x, int y, Ingredient ingredient);
+    void setIngredient(int x, int y, PolydexIngredient<?> ingredient);
     void setEmpty(int x, int y);
 
     default int width() {

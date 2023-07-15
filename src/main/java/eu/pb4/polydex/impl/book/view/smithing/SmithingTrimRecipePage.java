@@ -1,6 +1,6 @@
 package eu.pb4.polydex.impl.book.view.smithing;
 
-import eu.pb4.polydex.api.recipe.ItemEntry;
+import eu.pb4.polydex.api.recipe.PolydexEntry;
 import eu.pb4.polydex.impl.PolydexImplUtils;
 import eu.pb4.polydex.mixin.SmithingTrimRecipeAccessor;
 import net.minecraft.item.ItemStack;
@@ -18,43 +18,47 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class SmithingTrimRecipeView extends AbstractSmithingRecipeView<SmithingTrimRecipe> {
+public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingTrimRecipe> {
     private static final Ingredient DEFAULT = Ingredient.ofItems(Items.IRON_CHESTPLATE);
 
+    public SmithingTrimRecipePage(SmithingTrimRecipe recipe) {
+        super(recipe);
+    }
+
     @Override
-    protected Ingredient getTemplate(SmithingTrimRecipe recipe) {
+    protected Ingredient getTemplate() {
         return cast(recipe).getTemplate();
     }
 
     @Override
-    protected Ingredient getAddition(SmithingTrimRecipe recipe) {
+    protected Ingredient getAddition() {
         return cast(recipe).getAddition();
     }
 
     @Override
-    protected Ingredient getBase(SmithingTrimRecipe recipe) {
+    protected Ingredient getBase() {
         return cast(recipe).getBase();
     }
 
     @Override
-    protected Ingredient getBaseItem(ItemEntry entry, SmithingTrimRecipe recipe) {
-        return getBase(recipe).test(entry.stack()) ? Ingredient.ofStacks(entry.stack()) : DEFAULT;
+    protected Ingredient getBaseItem(PolydexEntry entry) {
+        return getBase().test((ItemStack) entry.stack().getBacking()) ? Ingredient.ofStacks((ItemStack) entry.stack().getBacking()) : DEFAULT;
     }
 
     @Override
-    public int priority(SmithingTrimRecipe recipe) {
+    public int priority() {
         return -100;
     }
 
     @Override
-    protected ItemStack[] getOutput(ItemEntry entry, ServerPlayerEntity player, SmithingTrimRecipe recipe) {
+    protected ItemStack[] getOutput(PolydexEntry entry, ServerPlayerEntity player) {
         var list = new ArrayList<ItemStack>();
-        var trim = getTemplate(recipe).getMatchingStacks()[0];
+        var trim = getTemplate().getMatchingStacks()[0];
         var optional2 = ArmorTrimPatterns.get(player.server.getRegistryManager(), trim);
 
-        var baseStack = getBase(recipe).test(entry.stack()) ? entry.stack() : Items.IRON_CHESTPLATE.getDefaultStack();
+        var baseStack = getBase().test((ItemStack) entry.stack().getBacking()) ? (ItemStack) entry.stack().getBacking() : Items.IRON_CHESTPLATE.getDefaultStack();
 
-        for (var material : PolydexImplUtils.readIngredient(getAddition(recipe))) {
+        for (var material : PolydexImplUtils.readIngredient(getAddition())) {
             Optional<RegistryEntry.Reference<ArmorTrimMaterial>> optional = ArmorTrimMaterials.get(player.server.getRegistryManager(), material);
             if (optional.isPresent() && optional2.isPresent()) {
                 Optional<ArmorTrim> optional3 = ArmorTrim.getTrim(player.server.getRegistryManager(), trim);
@@ -75,8 +79,8 @@ public class SmithingTrimRecipeView extends AbstractSmithingRecipeView<SmithingT
     }
 
     @Override
-    public boolean isOwner(MinecraftServer server, ItemEntry entry, SmithingTrimRecipe object) {
-        return getBase(object).test(entry.stack());
+    public boolean isOwner(MinecraftServer server, PolydexEntry entry) {
+        return entry.stack().getBackingClass() == ItemStack.class && getBase().test((ItemStack) entry.stack().getBacking());
     }
 
     private SmithingTrimRecipeAccessor cast(SmithingTrimRecipe recipe) {
