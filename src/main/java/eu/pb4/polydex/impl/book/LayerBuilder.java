@@ -78,6 +78,11 @@ public class LayerBuilder extends Layer implements PageBuilder {
         this.setSlot(index(x, y), ItemStack.EMPTY);
     }
 
+    @Override
+    public boolean hasTextures() {
+        return PolymerResourcePackUtils.hasPack(this.player);
+    }
+
     public void clear(GuiElement filler) {
         for (int i = 0, size = this.size; i < size; i++) {
             this.setSlot(i, filler);

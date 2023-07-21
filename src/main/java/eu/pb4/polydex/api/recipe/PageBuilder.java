@@ -24,4 +24,6 @@ public interface PageBuilder {
     default int height() {
         return 5;
     }
+
+    boolean hasTextures();
 }

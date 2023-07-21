@@ -29,7 +29,9 @@ public final class StonecuttingRecipePage extends SimpleRecipePolydexPage<Stonec
     @Override
     public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         builder.setIngredient(2, 2, recipe.getIngredients().get(0));
-        //builder.set(4, 2, new GuiElementBuilder(Items.ARROW).setName(Text.empty()));
+        if (!builder.hasTextures()) {
+            builder.set(4, 2, new GuiElementBuilder(Items.ARROW).setName(Text.empty()));
+        }
         builder.setOutput(6, 2, recipe.getOutput(player.server.getRegistryManager()));
     }
 }
