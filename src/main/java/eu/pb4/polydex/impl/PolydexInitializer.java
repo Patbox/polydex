@@ -12,6 +12,7 @@ import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipePage;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.SidebarTargetDisplay;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -57,6 +58,8 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.register(PolydexImpl::addCustomPages);
 
         HoverDisplayBuilder.register(PolydexImpl::defaultBuilder);
+
+        PolymerResourcePackUtils.addModAssets("polydex2");
     }
 
     @Override

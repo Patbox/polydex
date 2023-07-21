@@ -5,16 +5,20 @@ import eu.pb4.polydex.api.recipe.PageBuilder;
 import eu.pb4.polydex.api.recipe.PolydexIngredient;
 import eu.pb4.polydex.api.recipe.PolydexStack;
 import eu.pb4.polydex.impl.PolydexImplUtils;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 
 public class LayerBuilder extends Layer implements PageBuilder {
     private final PolydexEntry currentEntry;
     private final ServerPlayerEntity player;
+    public Text texture;
 
     public LayerBuilder(ServerPlayerEntity player, PolydexEntry currentEntry) {
         super(5, 9);
@@ -74,9 +78,9 @@ public class LayerBuilder extends Layer implements PageBuilder {
         this.setSlot(index(x, y), ItemStack.EMPTY);
     }
 
-    public void clear() {
+    public void clear(GuiElement filler) {
         for (int i = 0, size = this.size; i < size; i++) {
-            this.setSlot(i, GuiUtils.FILLER);
+            this.setSlot(i, filler);
         }
     }
 }

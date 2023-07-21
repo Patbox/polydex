@@ -13,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +40,11 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
         }
 
         return builder.asStack();
+    }
+
+    @Override
+    public @Nullable Text getTexture(ServerPlayerEntity player) {
+        return null;
     }
 
     @Override

@@ -13,7 +13,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 
 public class GuiUtils {
-    public static final GuiElement EMPTY = new GuiElement(ItemStack.EMPTY, GuiElementInterface.EMPTY_CALLBACK);
+    public static final GuiElement EMPTY = GuiElement.EMPTY;
     public static final GuiElement FILLER = Util.make(() -> {
         var b = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
                 .setName(Text.empty())
@@ -33,7 +33,7 @@ public class GuiUtils {
     }
 
     public static final void playClickSound(ServerPlayerEntity player) {
-        player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 1, 1);
+        player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 0.5f, 1);
     }
 
     public static GuiElement nextPage(ServerPlayerEntity player, PageAware gui) {

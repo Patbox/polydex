@@ -1,11 +1,14 @@
 package eu.pb4.polydex.impl.book.view.crafting;
 
 import eu.pb4.polydex.api.recipe.*;
+import eu.pb4.polydex.impl.book.InternalPageTextures;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,11 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
 
     public AbstractCraftingRecipePage(T recipe) {
         super(recipe);
+    }
+
+    @Override
+    public @Nullable Text getTexture(ServerPlayerEntity player) {
+        return InternalPageTextures.CRAFTING;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package eu.pb4.polydex.impl.book.view;
 
 import eu.pb4.polydex.api.recipe.*;
+import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.polydex.mixin.BrewingRecipeAccessor;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Item;
@@ -13,6 +14,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -27,6 +29,11 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
         this.recipe = recipe;
         this.access = (BrewingRecipeAccessor<T>) recipe;
         this.ingredient = PolydexIngredient.of(((BrewingRecipeAccessor<T>) recipe).getIngredient());
+    }
+
+    @Override
+    public @Nullable Text getTexture(ServerPlayerEntity player) {
+        return InternalPageTextures.POTION;
     }
 
     @Override

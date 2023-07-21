@@ -1,5 +1,6 @@
 package eu.pb4.polydex.impl.book;
 
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.Layer;
@@ -29,7 +30,7 @@ public abstract class PagedLayer extends Layer implements PageAware {
             var element = this.getElement(offset + i);
 
             if (element == null) {
-                element = GuiUtils.EMPTY;
+                element = GuiElement.EMPTY;
             }
 
             this.setSlot(i, element);
@@ -39,11 +40,15 @@ public abstract class PagedLayer extends Layer implements PageAware {
             var navElement = this.getNavElement(i);
 
             if (navElement == null) {
-                navElement = GuiUtils.EMPTY;
+                navElement = GuiElement.EMPTY;
             }
 
             this.setSlot(i + this.pageSize, navElement);
         }
+    }
+
+    private GuiElement filler() {
+        return PolymerResourcePackUtils.hasPack(this.player) ? GuiElement.EMPTY : GuiUtils.FILLER;
     }
 
     public int getPage() {
@@ -60,14 +65,14 @@ public abstract class PagedLayer extends Layer implements PageAware {
 
     protected GuiElement getNavElement(int id) {
         return switch (id) {
-            case 2 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
+            case 2 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
             case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
                     .setName(Text.translatable("text.polydex.view.recipeOutput",
                                     Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
                                     Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                             ).formatted(Formatting.AQUA)
                     ).build() : GuiUtils.FILLER;
-            case 6 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : GuiUtils.FILLER;
+            case 6 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
             default -> GuiUtils.FILLER;
         };
     }

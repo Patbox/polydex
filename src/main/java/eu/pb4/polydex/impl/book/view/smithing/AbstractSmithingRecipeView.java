@@ -1,10 +1,13 @@
 package eu.pb4.polydex.impl.book.view.smithing;
 
 import eu.pb4.polydex.api.recipe.*;
+import eu.pb4.polydex.impl.book.InternalPageTextures;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.SmithingRecipe;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -15,6 +18,11 @@ public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> exten
     public AbstractSmithingRecipeView(T recipe) {
         super(recipe);
         this.ingrendients = List.of(PolydexIngredient.of(getBase()), PolydexIngredient.of(getTemplate()), PolydexIngredient.of(getAddition()));
+    }
+
+    @Override
+    public @Nullable Text getTexture(ServerPlayerEntity player) {
+        return InternalPageTextures.SMITHING;
     }
 
     @Override

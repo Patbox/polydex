@@ -5,7 +5,6 @@ import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.LayerView;
-import eu.pb4.sgui.api.gui.layered.LayeredGui;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class MainIndexGui extends LayeredGui {
+public class MainIndexGui extends ExtendedGui {
     private final ItemLayer mainLayer;
     private final NamespaceLayer indexLayer;
     private final LayerView indexLayerView;
@@ -40,7 +39,8 @@ public class MainIndexGui extends LayeredGui {
         this.indexLayerView = this.addLayer(this.indexLayer, 0, 6);
         this.indexLayerView.setZIndex(0);
 
-        this.setTitle(Text.translatable("text.polydex.index_title"));
+        this.setOverlayTexture(InternalPageTextures.MAIN_INVENTORY);
+        this.setText(Text.translatable("text.polydex.index_title"));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class MainIndexGui extends LayeredGui {
                         .build();
 
             }
-            return GuiUtils.EMPTY;
+            return GuiElement.EMPTY;
         }
 
         @Override
@@ -108,6 +108,11 @@ public class MainIndexGui extends LayeredGui {
                             MainIndexGui.this.indexLayer.type = MainIndexGui.this.indexLayer.type.getNext();
                             MainIndexGui.this.indexLayer.updateDisplay();
                             this.updateDisplay();
+                            MainIndexGui.this.setOverlayTexture(
+                                    MainIndexGui.this.indexLayer.type == NamespaceLayer.Type.INVENTORY
+                                            ? InternalPageTextures.MAIN_INVENTORY
+                                            : InternalPageTextures.MAIN
+                                    );
                         })
                         .build();
                 /*case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
@@ -116,16 +121,16 @@ public class MainIndexGui extends LayeredGui {
                             GuiUtils.playClickSound(this.player);
                             MainIndexGui.this.indexLayerView.setZIndex(2);
                         }).build();*/
-                case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
+                case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
                 case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
                         .setName(Text.translatable("text.polydex.view.pages",
                                         Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
                                         Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                                 ).formatted(Formatting.AQUA)
-                        ).build() : GuiUtils.FILLER;
-                case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : GuiUtils.FILLER;
+                        ).build() : filler();
+                case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
                 case 8 -> GuiUtils.backButton(this.player, () -> MainIndexGui.this.close(), false);
-                default -> GuiUtils.FILLER;
+                default -> filler();
             };
         }
     }
@@ -213,29 +218,29 @@ public class MainIndexGui extends LayeredGui {
 
                 return builder.build();
             }
-            return GuiUtils.EMPTY;
+            return GuiElement.EMPTY;
         }
 
         @Override
         protected GuiElement getNavElement(int id) {
             return switch (id) {
-                case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : GuiUtils.FILLER;
+                case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
                 case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
                         .setName(Text.translatable("text.polydex.view.pages",
                                         Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
                                         Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                                 ).formatted(Formatting.AQUA)
-                        ).build() : GuiUtils.FILLER;
-                case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : GuiUtils.FILLER;
-                default -> GuiUtils.FILLER;
+                        ).build() : filler();
+                case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
+                default -> filler();
             };
         }
 
 
         private enum Type {
             INVENTORY(null),
-            NAMESPACES(PolydexImpl.NAMESPACED_ENTRIES),
             ITEM_GROUP(PolydexImpl.ITEM_GROUP_ENTRIES),
+            NAMESPACES(PolydexImpl.NAMESPACED_ENTRIES),
             ;
             public final List<PolydexImpl.NamespacedEntry> entries;
 

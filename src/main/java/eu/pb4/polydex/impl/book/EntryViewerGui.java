@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class EntryViewerGui extends LayeredGui implements PageAware {
+public final class EntryViewerGui extends ExtendedGui implements PageAware {
     public static final int PAGE_SIZE = 9 * 5;
 
     protected final Runnable closeCallback;
@@ -32,9 +32,10 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         this.pages = ingredients ? entry.getVisibleIngredientPages(player) : entry.getVisiblePages(player);
         this.displayLayer = new LayerBuilder(player, entry);
         this.addLayer(this.displayLayer, 0, 0);
-        this.setTitle(Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", this.entry.stack().getName()));
-
-        var filler = GuiUtils.FILLER;
+        this.lock();
+        this.setText(Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", this.entry.stack().getName()));
+        this.setOverlayTexture(InternalPageTextures.MAIN);
+        var filler = filler();
 
         boolean addNav = this.pages.size() > 1;
         this.setSlot(PAGE_SIZE + 1, filler);
@@ -67,8 +68,11 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
         if (!PolydexImpl.isReady()) {
             return;
         }
+        this.lock();
         var pageEntry = this.pages.get(this.page);
-        this.displayLayer.clear();
+        var t = pageEntry.getTexture(this.getPlayer());
+        this.setTexture(t);
+        this.displayLayer.clear(t != null ? filler() : GuiUtils.FILLER);
         pageEntry.createPage(this.entry, this.getPlayer(), this.displayLayer);
         this.setSlot(PAGE_SIZE, pageEntry.getIcon(this.getPlayer()));
         if (this.pages.size() > 1) {
@@ -81,6 +85,7 @@ public final class EntryViewerGui extends LayeredGui implements PageAware {
                     )
             );
         }
+        this.unlock();
     }
 
     public int getPage() {
