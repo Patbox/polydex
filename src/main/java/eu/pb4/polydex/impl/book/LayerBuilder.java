@@ -1,9 +1,9 @@
 package eu.pb4.polydex.impl.book;
 
-import eu.pb4.polydex.api.recipe.PolydexEntry;
-import eu.pb4.polydex.api.recipe.PageBuilder;
-import eu.pb4.polydex.api.recipe.PolydexIngredient;
-import eu.pb4.polydex.api.recipe.PolydexStack;
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
+import eu.pb4.polydex.api.v1.recipe.PageBuilder;
+import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
+import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.polydex.impl.PolydexImplUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;

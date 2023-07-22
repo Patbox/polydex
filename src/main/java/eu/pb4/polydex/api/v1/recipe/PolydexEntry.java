@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api.recipe;
+package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.item.Item;
@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 

@@ -1,7 +1,7 @@
 package eu.pb4.polydex.impl.book.view.crafting;
 
-import eu.pb4.polydex.api.recipe.PolydexEntry;
-import eu.pb4.polydex.api.recipe.PolydexIngredient;
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
+import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.DyeItem;

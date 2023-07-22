@@ -1,9 +1,9 @@
 package eu.pb4.polydex.impl.display;
 
-import eu.pb4.polydex.api.hover.HoverDisplay;
-import eu.pb4.polydex.api.hover.HoverDisplayBuilder;
-import eu.pb4.polydex.api.hover.PolydexTarget;
-import eu.pb4.polydex.api.PolydexUtils;
+import eu.pb4.polydex.api.v1.hover.HoverDisplay;
+import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.v1.hover.PolydexTarget;
+import eu.pb4.polydex.api.v1.PolydexUtils;
 import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.BossBar;

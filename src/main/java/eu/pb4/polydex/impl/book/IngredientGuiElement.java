@@ -1,7 +1,6 @@
 package eu.pb4.polydex.impl.book;
 
-import eu.pb4.polydex.api.PolydexUtils;
-import eu.pb4.polydex.impl.book.GuiUtils;
+import eu.pb4.polydex.api.v1.PolydexUtils;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;

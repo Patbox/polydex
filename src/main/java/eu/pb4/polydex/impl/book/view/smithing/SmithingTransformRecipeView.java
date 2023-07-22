@@ -1,11 +1,7 @@
 package eu.pb4.polydex.impl.book.view.smithing;
 
-import eu.pb4.polydex.api.PolydexUtils;
 import eu.pb4.polydex.mixin.SmithingTransformRecipeAccessor;
-import eu.pb4.polydex.mixin.SmithingTransformRecipeAccessor;
-import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.SmithingTransformRecipe;
 import net.minecraft.recipe.SmithingTransformRecipe;
 
 public class SmithingTransformRecipeView extends AbstractSmithingRecipeView<SmithingTransformRecipe> {

@@ -1,9 +1,9 @@
 package eu.pb4.polydex.impl.book.view;
 
-import eu.pb4.polydex.api.recipe.PolydexEntry;
-import eu.pb4.polydex.api.recipe.PageBuilder;
-import eu.pb4.polydex.api.recipe.PolydexPage;
-import eu.pb4.polydex.api.recipe.SimpleRecipePolydexPage;
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
+import eu.pb4.polydex.api.v1.recipe.PageBuilder;
+import eu.pb4.polydex.api.v1.recipe.PolydexPage;
+import eu.pb4.polydex.api.v1.recipe.SimpleRecipePolydexPage;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Item;

@@ -1,6 +1,7 @@
-package eu.pb4.polydex.api.recipe;
+package eu.pb4.polydex.api.v1.recipe;
 
-import eu.pb4.polydex.api.PolydexUtils;
+import eu.pb4.polydex.api.v1.PolydexUtils;
+import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;

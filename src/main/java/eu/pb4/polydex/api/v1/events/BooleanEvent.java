@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api.events;
+package eu.pb4.polydex.api.v1.events;
 
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api.recipe;
+package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.book.PolydexItemStackImpl;
 import net.minecraft.item.Item;

@@ -1,6 +1,6 @@
-package eu.pb4.polydex.api;
+package eu.pb4.polydex.api.v1;
 
-import eu.pb4.polydex.api.recipe.PolydexEntry;
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.EntryViewerGui;
 import net.minecraft.item.ItemStack;
@@ -12,13 +12,15 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PolydexUtils {
     public static final Text DEFAULT_SEPARATOR = Text.literal(" | ").formatted(Formatting.DARK_GRAY);
     public static final Text SPACE_SEPARATOR = Text.literal(" ");
 
     public static Identifier fromRecipe(Recipe<?> recipe) {
-        return new Identifier(recipe.getId().getNamespace(), "recipe/" + recipe.getId().getPath());
+        return recipe.getId().withPrefixedPath("recipe/");
     }
 
     public static Text mergeText(Collection<Text> texts, Text separator) {

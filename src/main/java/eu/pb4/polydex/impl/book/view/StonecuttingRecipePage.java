@@ -1,6 +1,6 @@
 package eu.pb4.polydex.impl.book.view;
 
-import eu.pb4.polydex.api.recipe.*;
+import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.ItemStack;

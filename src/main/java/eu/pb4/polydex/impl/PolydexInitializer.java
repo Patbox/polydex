@@ -1,8 +1,8 @@
 package eu.pb4.polydex.impl;
 
-import eu.pb4.polydex.api.hover.HoverDisplay;
-import eu.pb4.polydex.api.hover.HoverDisplayBuilder;
-import eu.pb4.polydex.api.recipe.PolydexPage;
+import eu.pb4.polydex.api.v1.hover.HoverDisplay;
+import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.impl.book.view.*;
 import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipePage;
@@ -55,7 +55,7 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerRecipeViewer(SmithingTransformRecipe.class, SmithingTransformRecipeView::new);
         PolydexPage.registerRecipeViewer(StonecuttingRecipe.class, StonecuttingRecipePage::new);
 
-        PolydexPage.register(PolydexImpl::addCustomPages);
+        PolydexPage.registerModifier(PolydexImpl::addCustomPages);
 
         HoverDisplayBuilder.register(PolydexImpl::defaultBuilder);
 

@@ -1,6 +1,6 @@
 package eu.pb4.polydex.impl.book.view.smithing;
 
-import eu.pb4.polydex.api.recipe.PolydexEntry;
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.impl.PolydexImplUtils;
 import eu.pb4.polydex.mixin.SmithingTrimRecipeAccessor;
 import net.minecraft.item.ItemStack;

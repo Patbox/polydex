@@ -1,10 +1,9 @@
 package eu.pb4.polydex.impl.book;
 
-import eu.pb4.polydex.api.recipe.PolydexEntry;
-import eu.pb4.polydex.api.recipe.PolydexPage;
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
+import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.layered.LayeredGui;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;

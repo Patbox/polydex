@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api.hover;
+package eu.pb4.polydex.api.v1.hover;
 
 import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;

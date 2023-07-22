@@ -1,6 +1,6 @@
 package eu.pb4.polydex.impl.book;
 
-import eu.pb4.polydex.api.PolydexUtils;
+import eu.pb4.polydex.api.v1.PolydexUtils;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
@@ -129,7 +129,7 @@ public class MainIndexGui extends ExtendedGui {
                                 ).formatted(Formatting.AQUA)
                         ).build() : filler();
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
-                case 8 -> GuiUtils.backButton(this.player, () -> MainIndexGui.this.close(), false);
+                case 8 -> GuiUtils.backButton(this.player, MainIndexGui.this::close, false);
                 default -> filler();
             };
         }

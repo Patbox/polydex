@@ -1,4 +1,4 @@
-package eu.pb4.polydex.api.recipe;
+package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.item.ItemStack;
@@ -10,9 +10,8 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface PolydexPage {
@@ -38,16 +37,24 @@ public interface PolydexPage {
     boolean isOwner(MinecraftServer server, PolydexEntry entry);
 
     static <T extends Recipe<?>> void registerRecipeViewer(Class<T> recipeClass, Function<T, PolydexPage> viewCreator) {
-        //noinspection unchecked
         PolydexImpl.RECIPE_VIEWS.put(recipeClass, (Function<Recipe, PolydexPage>) (Object) viewCreator);
     }
 
-    static void register(Creator viewBuilder) {
-        PolydexImpl.VIEWS.add(viewBuilder);
+    static void registerModifier(EntryModifier viewBuilder) {
+        PolydexImpl.ENTRY_MODIFIERS.add(viewBuilder);
+    }
+
+    static void register(PageCreator creator) {
+        PolydexImpl.PAGE_CREATORS.add(creator);
     }
 
     @FunctionalInterface
-    interface Creator {
-        @Nullable Collection<PolydexPage> createPages(MinecraftServer server, PolydexEntry itemEntry);
+    interface EntryModifier {
+        void entryModifier(MinecraftServer server, PolydexEntry itemEntry);
+    }
+
+    @FunctionalInterface
+    interface PageCreator {
+        void createPages(MinecraftServer server, Consumer<PolydexPage> pageConsumer);
     }
 }
