@@ -22,7 +22,6 @@ public interface PolydexTarget {
 
     @Nullable
     Entity entity();
-
     BlockPos pos();
 
     float breakingProgress();

@@ -33,8 +33,8 @@ public class Commands {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(literal("polydex")
                 .executes((ctx) -> Commands.openIndex(ctx, 0))
-                .then(literal("alwaysDisplay")
-                        .requires(Permissions.require("polydex.alwaysDisplay", 0).and((ctx) -> PolydexImpl.config.displayEnabled))
+                .then(literal("display")
+                        .requires(Permissions.require("polydex.display", 0).and((ctx) -> PolydexImpl.config.displayEnabled))
                         .then(argument("style", IdentifierArgumentType.identifier())
                                 .suggests((context, builder) -> CommandSource.suggestIdentifiers(PolydexImpl.DISPLAYS.keySet(), builder))
                                 .executes(Commands::changeStyle)

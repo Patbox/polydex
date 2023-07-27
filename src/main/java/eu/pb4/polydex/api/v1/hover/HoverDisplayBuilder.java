@@ -4,6 +4,8 @@ import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +13,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
-
+@ApiStatus.NonExtendable
 public interface HoverDisplayBuilder {
     ComponentType NAME = ComponentType.of(id("name"), true);
     ComponentType MOD_SOURCE = ComponentType.of(id("mod_source"), false);
@@ -28,6 +30,8 @@ public interface HoverDisplayBuilder {
     void setComponent(ComponentType type, Text text);
     Text getComponent(ComponentType type);
     boolean removeComponent(ComponentType type);
+    @Nullable
+    Text removeAndGetComponent(ComponentType type);
     Collection<ComponentType> getComponentTypes();
     List<Text> getOutput();
 

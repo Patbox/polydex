@@ -365,7 +365,7 @@ public class PolydexImpl {
     }
 
     private static Text getMod(Identifier id) {
-        return MOD_NAMES.computeIfAbsent(id.getPath(), PolydexImpl::createModName);
+        return MOD_NAMES.computeIfAbsent(id.getNamespace(), PolydexImpl::createModName);
     }
 
     private static Text createModName(String s) {

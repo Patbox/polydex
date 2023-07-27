@@ -45,23 +45,29 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
         var lines = new ArrayList<Text>();
 
         {
-            var component = build.getComponent(HoverDisplayBuilder.NAME);
-            build.removeComponent(HoverDisplayBuilder.NAME);
+            var component = build.removeAndGetComponent(HoverDisplayBuilder.NAME);
             if (component != null) {
                 lines.add(
-                        Text.translatable("text.polydex.sidebar.target", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.YELLOW, Formatting.BOLD)
+                        Text.translatable("text.polydex.sidebar.target", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.GRAY, Formatting.BOLD)
+                );
+            }
+        }
+
+        {
+            var component = build.removeAndGetComponent(HoverDisplayBuilder.MOD_SOURCE);
+            if (component != null) {
+                lines.add(
+                        Text.translatable("text.polydex.sidebar.mod", component.copy().setStyle(Style.EMPTY.withColor(Formatting.BLUE).withBold(false))).formatted(Formatting.DARK_GRAY, Formatting.BOLD)
                 );
             }
         }
         {
             boolean shouldAdd = true;
             {
-                var component = build.getComponent(HoverDisplayBuilder.INPUT);
+                var component = build.removeAndGetComponent(HoverDisplayBuilder.INPUT);
                 if (component != null) {
-                    if (shouldAdd) {
-                        shouldAdd = false;
-                        lines.add(Text.empty());
-                    }
+                    shouldAdd = false;
+                    lines.add(Text.empty());
 
                     lines.add(
                             Text.translatable("text.polydex.sidebar.input", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.GREEN, Formatting.BOLD)
@@ -69,7 +75,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
                 }
             }
             {
-                var component = build.getComponent(HoverDisplayBuilder.FUEL);
+                var component = build.removeAndGetComponent(HoverDisplayBuilder.FUEL);
                 if (component != null) {
                     if (shouldAdd) {
                         shouldAdd = false;
@@ -82,7 +88,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
                 }
             }
             {
-                var component = build.getComponent(HoverDisplayBuilder.OUTPUT);
+                var component = build.removeAndGetComponent(HoverDisplayBuilder.OUTPUT);
                 if (component != null) {
                     if (shouldAdd) {
                         lines.add(Text.empty());

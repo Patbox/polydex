@@ -4,6 +4,7 @@ import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -42,7 +43,12 @@ public class DisplayImpl implements HoverDisplayBuilder {
 
     @Override
     public boolean removeComponent(ComponentType type) {
-        return this.components.remove(type) != null;
+        return this.removeAndGetComponent(type) != null;
+    }
+
+    @Override
+    public @Nullable Text removeAndGetComponent(ComponentType type) {
+        return this.components.remove(type);
     }
 
     @Override
