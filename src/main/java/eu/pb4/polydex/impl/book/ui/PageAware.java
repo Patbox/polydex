@@ -1,4 +1,4 @@
-package eu.pb4.polydex.impl.book;
+package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
 import net.minecraft.server.network.ServerPlayerEntity;

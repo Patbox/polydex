@@ -1,4 +1,4 @@
-package eu.pb4.polydex.impl.book;
+package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PageBuilder;
@@ -16,13 +16,11 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 
 public class LayerBuilder extends Layer implements PageBuilder {
-    private final PolydexEntry currentEntry;
     private final ServerPlayerEntity player;
     public Text texture;
 
-    public LayerBuilder(ServerPlayerEntity player, PolydexEntry currentEntry) {
+    public LayerBuilder(ServerPlayerEntity player) {
         super(5, 9);
-        this.currentEntry = currentEntry;
         this.player = player;
     }
 

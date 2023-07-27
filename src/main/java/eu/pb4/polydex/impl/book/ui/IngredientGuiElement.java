@@ -1,6 +1,6 @@
-package eu.pb4.polydex.impl.book;
+package eu.pb4.polydex.impl.book.ui;
 
-import eu.pb4.polydex.api.v1.PolydexUtils;
+import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
@@ -46,9 +46,9 @@ public class IngredientGuiElement implements GuiElementInterface, GuiElementInte
     public void click(int i, ClickType clickType, SlotActionType slotActionType, SlotGuiInterface slotGuiInterface) {
         boolean sound = false;
         if (clickType.isLeft) {
-            sound = PolydexUtils.openRecipeListUi(slotGuiInterface.getPlayer(), this.currentItemStack, slotGuiInterface::open);
+            sound = PolydexPageUtils.openRecipeListUi(slotGuiInterface.getPlayer(), this.currentItemStack, slotGuiInterface::open);
         } else if (clickType.isRight) {
-            sound = PolydexUtils.openUsagesListUi(slotGuiInterface.getPlayer(), this.currentItemStack, slotGuiInterface::open);
+            sound = PolydexPageUtils.openUsagesListUi(slotGuiInterface.getPlayer(), this.currentItemStack, slotGuiInterface::open);
         }
 
         if (sound) {

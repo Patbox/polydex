@@ -40,7 +40,7 @@ public class ShulkerBoxColoringRecipePage extends AbstractCraftingRecipePage<Shu
     }
 
     @Override
-    public List<PolydexIngredient<?>> getIngredients() {
+    public List<PolydexIngredient<?>> ingredients() {
         return INGREDIENTS;
     }
 

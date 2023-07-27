@@ -31,18 +31,18 @@ public class DisplayImpl implements HoverDisplayBuilder {
     }
 
     @Override
-    public void setComponent(ComponentType component, Text text) {
-        this.components.put(component, text);
+    public void setComponent(ComponentType type, Text text) {
+        this.components.put(type, text);
     }
 
     @Override
-    public Text getComponent(ComponentType component) {
-        return this.components.get(component);
+    public Text getComponent(ComponentType type) {
+        return this.components.get(type);
     }
 
     @Override
-    public boolean removeComponent(ComponentType component) {
-        return this.components.remove(component) != null;
+    public boolean removeComponent(ComponentType type) {
+        return this.components.remove(type) != null;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class DisplayImpl implements HoverDisplayBuilder {
         var out = new ArrayList<Text>();
 
         for (var entry : list) {
-            if (entry.getKey().display()) {
+            if (entry.getKey().alwaysDisplay()) {
                 out.add(entry.getValue());
             }
         }

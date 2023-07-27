@@ -11,23 +11,23 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 
-public final class StonecuttingRecipePage extends SimpleRecipePolydexPage<StonecuttingRecipe> {
+public final class StonecuttingRecipePage extends AbstractRecipePolydexPage<StonecuttingRecipe> {
     public StonecuttingRecipePage(StonecuttingRecipe recipe) {
         super(recipe);
     }
 
     @Override
-    public @Nullable Text getTexture(ServerPlayerEntity player) {
+    public @Nullable Text texture(ServerPlayerEntity player) {
         return InternalPageTextures.STONECUTTING;
     }
 
     @Override
-    public ItemStack getIcon(ServerPlayerEntity player) {
+    public ItemStack typeIcon(ServerPlayerEntity player) {
         return PageIcons.STONECUTTING_RECIPE_ICON;
     }
 
     @Override
-    public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
+    public void createPage(@Nullable PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         builder.setIngredient(2, 2, recipe.getIngredients().get(0));
         if (!builder.hasTextures()) {
             builder.set(4, 2, new GuiElementBuilder(Items.ARROW).setName(Text.empty()));

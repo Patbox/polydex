@@ -2,10 +2,7 @@ package eu.pb4.polydex.impl.book.view;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
-import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
-import eu.pb4.polydex.api.v1.recipe.PolydexPage;
-import eu.pb4.polydex.api.v1.recipe.PageBuilder;
+import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.ItemStack;
@@ -27,7 +24,7 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
     }
 
     @Override
-    public ItemStack getIcon(ServerPlayerEntity player) {
+    public ItemStack typeIcon(ServerPlayerEntity player) {
         var builder = GuiElementBuilder.from(object.icon);
         if (object.name.isPresent()) {
             builder.setName(object.name.get());
@@ -43,7 +40,12 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
     }
 
     @Override
-    public @Nullable Text getTexture(ServerPlayerEntity player) {
+    public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
+        return entry != null ? entry.stack().toItemStack(player) : ItemStack.EMPTY;
+    }
+
+    @Override
+    public @Nullable Text texture(ServerPlayerEntity player) {
         return null;
     }
 
@@ -70,8 +72,13 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
     }
 
     @Override
-    public List<PolydexIngredient<?>> getIngredients() {
+    public List<PolydexIngredient<?>> ingredients() {
         return List.of();
+    }
+
+    @Override
+    public List<PolydexCategory> categories() {
+        return List.of(PolydexCategory.CUSTOM);
     }
 
     @Override

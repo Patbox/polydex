@@ -14,6 +14,7 @@ import static eu.pb4.polydex.impl.PolydexImpl.id;
 
 public interface HoverDisplayBuilder {
     ComponentType NAME = ComponentType.of(id("name"), true);
+    ComponentType MOD_SOURCE = ComponentType.of(id("mod_source"), false);
     ComponentType HEALTH = ComponentType.of(id("health"), true);
     ComponentType EFFECTS = ComponentType.of(id("effects"), true);
     ComponentType INPUT = ComponentType.of(id("input"), false);
@@ -24,9 +25,9 @@ public interface HoverDisplayBuilder {
     boolean isSmall();
     HoverDisplay.Type getDisplayType();
     PolydexTarget getTarget();
-    void setComponent(ComponentType identifier, Text text);
-    Text getComponent(ComponentType identifier);
-    boolean removeComponent(ComponentType identifier);
+    void setComponent(ComponentType type, Text text);
+    Text getComponent(ComponentType type);
+    boolean removeComponent(ComponentType type);
     Collection<ComponentType> getComponentTypes();
     List<Text> getOutput();
 
@@ -51,11 +52,11 @@ public interface HoverDisplayBuilder {
         return build(target).getOutput();
     }
 
-    record ComponentType(Identifier identifier, boolean display, int index) {
+    record ComponentType(Identifier identifier, boolean alwaysDisplay, int index) {
         private static int currentIndex = 0;
 
-        public static ComponentType of(Identifier identifier, boolean display) {
-            return new ComponentType(identifier, display, currentIndex++);
+        public static ComponentType of(Identifier identifier, boolean alwaysDisplay) {
+            return new ComponentType(identifier, alwaysDisplay, currentIndex++);
         }
 
         @Override

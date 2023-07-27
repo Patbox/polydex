@@ -1,7 +1,8 @@
-package eu.pb4.polydex.impl.book;
+package eu.pb4.polydex.impl.book.ui;
 
-import eu.pb4.polydex.api.v1.PolydexUtils;
+import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.impl.PolydexImpl;
+import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.LayerView;
@@ -78,7 +79,7 @@ public class MainIndexGui extends ExtendedGui {
                                 }
                             } else */if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
                                 MainIndexGui.this.close(true);
-                                new EntryViewerGui(player, item, type.isRight, () -> {
+                                new EntryPageViewerGui(player, item, type.isRight, () -> {
                                     MainIndexGui.this.open();
                                 }).open();
                                 GuiUtils.playClickSound(this.player);
@@ -167,10 +168,10 @@ public class MainIndexGui extends ExtendedGui {
 
         private GuiElement createSlot(ItemStack stack) {
             return new GuiElement(stack, (x, type, z) -> {
-                var page = PolydexUtils.getItemEntryFor(stack);
+                var page = PolydexPageUtils.getItemEntryFor(stack);
                 if (page != null && ((type.isLeft && page.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && page.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0))) {
                     MainIndexGui.this.close(true);
-                    new EntryViewerGui(player, page, type.isRight, MainIndexGui.this::open).open();
+                    new EntryPageViewerGui(player, page, type.isRight, MainIndexGui.this::open).open();
                     GuiUtils.playClickSound(this.player);
                 }
             });

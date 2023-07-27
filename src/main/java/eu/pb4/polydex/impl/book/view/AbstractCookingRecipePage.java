@@ -3,7 +3,7 @@ package eu.pb4.polydex.impl.book.view;
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PageBuilder;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
-import eu.pb4.polydex.api.v1.recipe.SimpleRecipePolydexPage;
+import eu.pb4.polydex.api.v1.recipe.AbstractRecipePolydexPage;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Item;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 
-public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> extends SimpleRecipePolydexPage<T> {
+public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> extends AbstractRecipePolydexPage<T> {
     private final ItemStack icon;
 
     public AbstractCookingRecipePage(T recipe, Item icon) {
@@ -27,7 +27,7 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
     }
 
     @Override
-    public @Nullable Text getTexture(ServerPlayerEntity player) {
+    public @Nullable Text texture(ServerPlayerEntity player) {
         return InternalPageTextures.SMELTING;
     }
 
@@ -36,7 +36,7 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
     }
 
     @Override
-    public ItemStack getIcon(ServerPlayerEntity player) {
+    public ItemStack typeIcon(ServerPlayerEntity player) {
         return this.icon;
     }
 

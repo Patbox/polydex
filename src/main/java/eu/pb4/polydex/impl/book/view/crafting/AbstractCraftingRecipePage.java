@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
-public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> extends SimpleRecipePolydexPage<T> {
+public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> extends AbstractRecipePolydexPage<T> {
     private static ItemStack CRAFTING_TABLE = PageIcons.CRAFTING_TABLE_RECIPE_ICON;
     private static ItemStack CRAFTING = PageIcons.CRAFTING_RECIPE_ICON;
 
@@ -20,17 +20,17 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
     }
 
     @Override
-    public @Nullable Text getTexture(ServerPlayerEntity player) {
+    public @Nullable Text texture(ServerPlayerEntity player) {
         return InternalPageTextures.CRAFTING;
     }
 
     @Override
-    public ItemStack getIcon(ServerPlayerEntity player) {
+    public ItemStack typeIcon(ServerPlayerEntity player) {
         return recipe.fits(2, 2) ? CRAFTING : CRAFTING_TABLE;
     }
 
     @Override
-    public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
+    public void createPage(@Nullable PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         for (int i = 0; i < 9; i++) {
             var x = i % 3;
             var y = i / 3;

@@ -12,19 +12,20 @@ import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.NonExtendable
 public interface PolydexTarget {
-    ServerPlayerEntity getPlayer();
+    ServerPlayerEntity player();
     @Nullable
-    HitResult getHitResult();
-    BlockState getBlockState();
+    HitResult hitResult();
+    BlockState blockState();
     @Nullable
-    BlockEntity getBlockEntity();
+    BlockEntity blockEntity();
+
 
     @Nullable
-    Entity getEntity();
+    Entity entity();
 
-    BlockPos getTargetPos();
+    BlockPos pos();
 
-    float getBreakingProgress();
+    float breakingProgress();
     boolean isMining();
 
     boolean hasTarget();

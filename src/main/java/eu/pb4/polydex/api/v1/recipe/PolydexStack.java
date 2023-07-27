@@ -18,6 +18,11 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
 
     T getBacking();
 
+    @Override
+    default boolean matches(PolydexStack<?> stack, boolean strict) {
+        return this.matchesInternal(stack, strict) && stack.matchesInternal(this, strict);
+    }
+
     static PolydexStack<ItemStack> of(Item item) {
         return new PolydexItemStackImpl(item.getDefaultStack(), 1);
     }

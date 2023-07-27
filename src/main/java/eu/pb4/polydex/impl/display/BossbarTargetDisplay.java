@@ -3,8 +3,8 @@ package eu.pb4.polydex.impl.display;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
-import eu.pb4.polydex.api.v1.PolydexUtils;
 import eu.pb4.polydex.impl.PolydexImpl;
+import eu.pb4.polydex.impl.PolydexImplUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.network.packet.s2c.play.BossBarS2CPacket;
@@ -26,7 +26,7 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
         this.displayMode = mode;
 
         if (mode == DisplayMode.ALWAYS) {
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.add(this));
+            this.target.player().networkHandler.sendPacket(BossBarS2CPacket.add(this));
         }
     }
 
@@ -45,8 +45,8 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
     @Override
     public void showDisplay() {
         this.onTargetUpdate();
-        if (this.displayMode != DisplayMode.ALWAYS && (this.displayMode == DisplayMode.TARGET || this.target.getPlayer().isSneaking())) {
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.add(this));
+        if (this.displayMode != DisplayMode.ALWAYS && (this.displayMode == DisplayMode.TARGET || this.target.player().isSneaking())) {
+            this.target.player().networkHandler.sendPacket(BossBarS2CPacket.add(this));
             this.isHidden = false;
         }
     }
@@ -60,11 +60,11 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
                 this.setColor(Color.WHITE);
                 this.isEntity = false;
 
-                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
-                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
-                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
+                this.target.player().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
+                this.target.player().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
+                this.target.player().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
             } else {
-                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.remove(this.getUuid()));
+                this.target.player().networkHandler.sendPacket(BossBarS2CPacket.remove(this.getUuid()));
             }
             this.isHidden = true;
         }
@@ -77,12 +77,12 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
 
     @Override
     public void onTargetUpdate() {
-        if (this.displayMode == DisplayMode.SNEAK && !this.target.getPlayer().isSneaking()) {
+        if (this.displayMode == DisplayMode.SNEAK && !this.target.player().isSneaking()) {
             this.hideDisplay();
             return;
         }
 
-        var entity = this.target.getEntity();
+        var entity = this.target.entity();
         boolean isEntity = entity != null;
         if (this.isEntity != isEntity) {
             this.isEntity = isEntity;
@@ -93,7 +93,7 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
                 this.setColor(Color.WHITE);
             }
             if (!this.isHidden || this.displayMode == DisplayMode.ALWAYS) {
-                this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
+                this.target.player().networkHandler.sendPacket(BossBarS2CPacket.updateStyle(this));
             }
         }
 
@@ -102,15 +102,15 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
         if (entity instanceof LivingEntity livingEntity && PolydexImpl.config.displayEntityHealth) {
             percent = Math.min(livingEntity.getHealth() / livingEntity.getMaxHealth(), 1);
         } else if (PolydexImpl.config.displayMiningProgress && this.target.isMining()) {
-            percent = Math.min(this.target.getBreakingProgress(), 1);
+            percent = Math.min(this.target.breakingProgress(), 1);
         }
 
-        this.setName(PolydexUtils.mergeText(HoverDisplayBuilder.buildText(this.target), PolydexUtils.DEFAULT_SEPARATOR));
+        this.setName(PolydexImplUtils.mergeText(HoverDisplayBuilder.buildText(this.target), PolydexImplUtils.DEFAULT_SEPARATOR));
         this.setPercent(percent);
 
         if (!this.isHidden || this.displayMode == DisplayMode.ALWAYS) {
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
+            this.target.player().networkHandler.sendPacket(BossBarS2CPacket.updateName(this));
+            this.target.player().networkHandler.sendPacket(BossBarS2CPacket.updateProgress(this));
         }
     }
 
@@ -127,7 +127,7 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
     @Override
     public void remove() {
         if (this.displayMode == DisplayMode.ALWAYS || !this.isHidden) {
-            this.target.getPlayer().networkHandler.sendPacket(BossBarS2CPacket.remove(this.getUuid()));
+            this.target.player().networkHandler.sendPacket(BossBarS2CPacket.remove(this.getUuid()));
         }
     }
 

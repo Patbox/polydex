@@ -42,7 +42,7 @@ public final class PolydexTargetImpl implements PolydexTarget {
     }
 
     public void updateRaycast() {
-        var player = this.getPlayer();
+        var player = this.player();
         double maxDistance = 8.02;
 
         this.hitResult = this.handler.player.raycast(maxDistance, 0, false);
@@ -86,39 +86,39 @@ public final class PolydexTargetImpl implements PolydexTarget {
     }
 
     private boolean isTargettable(Entity entity) {
-        return !entity.isSpectator() && entity.canHit() && !entity.isInvisibleTo(this.getPlayer());
+        return !entity.isSpectator() && entity.canHit() && !entity.isInvisibleTo(this.player());
     }
 
     public void onBreakingChange() {
-        var inter = (SPIMAccessor) this.getPlayer().interactionManager;
+        var inter = (SPIMAccessor) this.player().interactionManager;
         if (inter.getFailedToMine()) {
-            var state = this.getPlayer().getWorld().getBlockState(inter.getFailedMiningPos());
+            var state = this.player().getWorld().getBlockState(inter.getFailedMiningPos());
 
             if (!inter.getMiningPos().equals(this.miningPos) || this.startingTime != inter.getFailedStartMiningTime()) {
                 this.currentBreakingProgress = 0f;
                 this.startingTime = inter.getFailedStartMiningTime();
                 this.miningPos = inter.getFailedMiningPos();
-                this.cachedMiningBlockEntity = this.getPlayer().getWorld().getBlockEntity(this.miningPos);
+                this.cachedMiningBlockEntity = this.player().getWorld().getBlockEntity(this.miningPos);
                 this.cachedMiningBlockState = state;
             }
 
             this.currentBreakingProgress = Math.min(
-                    this.currentBreakingProgress + state.calcBlockBreakingDelta(this.getPlayer(), this.getPlayer().getWorld(), inter.getFailedMiningPos()),
+                    this.currentBreakingProgress + state.calcBlockBreakingDelta(this.player(), this.player().getWorld(), inter.getFailedMiningPos()),
                     1
             );
         } else {
-            var state = this.getPlayer().getWorld().getBlockState(inter.getMiningPos());
+            var state = this.player().getWorld().getBlockState(inter.getMiningPos());
             if (!inter.getMiningPos().equals(this.miningPos) || this.startingTime != inter.getStartMiningTime()) {
                 this.currentBreakingProgress = 0f;
                 this.startingTime = inter.getStartMiningTime();
                 this.miningPos = inter.getMiningPos();
-                this.cachedMiningBlockEntity = this.getPlayer().getWorld().getBlockEntity(this.miningPos);
+                this.cachedMiningBlockEntity = this.player().getWorld().getBlockEntity(this.miningPos);
                 this.cachedMiningBlockState = state;
             }
 
             if (inter.isMining()) {
                 this.currentBreakingProgress = Math.min(
-                        this.currentBreakingProgress + state.calcBlockBreakingDelta(this.getPlayer(), this.getPlayer().getWorld(), inter.getMiningPos()),
+                        this.currentBreakingProgress + state.calcBlockBreakingDelta(this.player(), this.player().getWorld(), inter.getMiningPos()),
                         1
                 );
             }
@@ -126,38 +126,38 @@ public final class PolydexTargetImpl implements PolydexTarget {
     }
 
     @Override
-    public ServerPlayerEntity getPlayer() {
+    public ServerPlayerEntity player() {
         return this.handler.player;
     }
 
     @Override
-    public HitResult getHitResult() {
+    public HitResult hitResult() {
         return this.hitResult;
     }
 
     @Override
-    public BlockState getBlockState() {
+    public BlockState blockState() {
         return this.getIntMen().isMining() ? this.cachedMiningBlockState : this.cachedBlockState;
     }
 
     @Override
     @Nullable
-    public BlockEntity getBlockEntity() {
+    public BlockEntity blockEntity() {
         return this.getIntMen().isMining() ? this.cachedMiningBlockEntity : this.cachedBlockEntity;
     }
 
     @Override
-    public @Nullable Entity getEntity() {
+    public @Nullable Entity entity() {
         return this.entity;
     }
 
     @Override
-    public BlockPos getTargetPos() {
+    public BlockPos pos() {
         return this.getIntMen().isMining() ? this.miningPos : this.hitResult instanceof BlockHitResult blockHitResult ? blockHitResult.getBlockPos() : this.entity != null ? this.entity.getBlockPos() : BlockPos.ORIGIN;
     }
 
     @Override
-    public float getBreakingProgress() {
+    public float breakingProgress() {
         return this.getIntMen().isMining() ? this.currentBreakingProgress : 0f;
     }
 
@@ -168,7 +168,7 @@ public final class PolydexTargetImpl implements PolydexTarget {
 
     @Override
     public boolean hasTarget() {
-        return !this.getBlockState().isAir() || this.entity != null;
+        return !this.blockState().isAir() || this.entity != null;
     }
 
     public DisplayImpl getDisplayBuilder() {

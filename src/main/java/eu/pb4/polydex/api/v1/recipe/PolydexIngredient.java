@@ -3,6 +3,7 @@ package eu.pb4.polydex.api.v1.recipe;
 import eu.pb4.polydex.impl.book.PolydexIngredientImpl;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 
@@ -12,17 +13,21 @@ public interface PolydexIngredient<T> {
     long amount();
 
     default boolean matches(PolydexStack<?> stack, boolean strict) {
+        return this.matchesInternal(stack, strict);
+    }
+
+    @ApiStatus.OverrideOnly
+    default boolean matchesInternal(PolydexStack<?> stack, boolean strict) {
         if (stack.getBackingClass().isAssignableFrom(this.getBackingClass())) {
             return matchesDirect((PolydexStack<T>) stack, strict);
         }
         return false;
     }
 
+    @ApiStatus.OverrideOnly
     boolean matchesDirect(PolydexStack<T> stack, boolean strict);
 
-
     boolean isEmpty();
-
 
     Class<T> getBackingClass();
 

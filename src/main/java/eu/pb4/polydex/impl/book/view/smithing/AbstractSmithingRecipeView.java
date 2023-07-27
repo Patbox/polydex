@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 
-public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> extends SimpleRecipePolydexPage<T> {
+public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> extends AbstractRecipePolydexPage<T> {
     private final List<PolydexIngredient<?>> ingrendients;
 
     public AbstractSmithingRecipeView(T recipe) {
@@ -21,33 +21,33 @@ public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> exten
     }
 
     @Override
-    public @Nullable Text getTexture(ServerPlayerEntity player) {
+    public @Nullable Text texture(ServerPlayerEntity player) {
         return InternalPageTextures.SMITHING;
     }
 
     @Override
-    public ItemStack getIcon(ServerPlayerEntity player) {
+    public ItemStack typeIcon(ServerPlayerEntity player) {
         return PageIcons.SMITING_RECIPE_ICON;
     }
 
     @Override
-    public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
+    public void createPage(@Nullable PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         builder.setIngredient(2, 2,this.getTemplate());
         builder.setIngredient(3, 2, this.getBaseItem(entry));
         builder.setIngredient(4, 2, this.getAddition());
         builder.setOutput(6, 2, this.getOutput(entry, player));
     }
 
-    protected ItemStack[] getOutput(PolydexEntry entry, ServerPlayerEntity player) {
+    protected ItemStack[] getOutput(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
         return new ItemStack[] { recipe.getOutput(player.server.getRegistryManager()) };
     }
 
     @Override
-    public List<PolydexIngredient<?>> getIngredients() {
+    public List<PolydexIngredient<?>> ingredients() {
         return this.ingrendients;
     }
 
-    protected Ingredient getBaseItem(PolydexEntry entry) {
+    protected Ingredient getBaseItem(@Nullable PolydexEntry entry) {
         return getBase();
     }
 

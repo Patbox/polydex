@@ -6,10 +6,11 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import eu.pb4.placeholders.api.TextParserUtils;
-import eu.pb4.polydex.api.v1.PolydexUtils;
+import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
+import eu.pb4.polydex.api.v1.recipe.PolydexCategory;
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
@@ -28,8 +29,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
@@ -64,12 +63,15 @@ public class PolydexImpl {
     public static final Map<ItemGroup, NamespacedEntry> BY_ITEMGROUP = new HashMap<>();
     public static final List<NamespacedEntry> NAMESPACED_ENTRIES = new ArrayList<>();
     public static final List<NamespacedEntry> ITEM_GROUP_ENTRIES = new ArrayList<>();
+    public static final Map<PolydexCategory, List<PolydexPage>> CATEGORY_TO_PAGES = new Object2ObjectOpenHashMap<>();
     public static final Map<PolydexStack<?>, PolydexEntry> STACK_TO_ENTRY = new Object2ObjectOpenHashMap<>();
     public static final Map<Item, List<PolydexEntry>> ITEM_TO_ENTRIES = new Object2ObjectOpenCustomHashMap<>(Util.identityHashStrategy());
     public static final Logger LOGGER = LogManager.getLogger("Polydex");
     public static final List<Consumer<HoverDisplayBuilder>> DISPLAY_BUILDER_CONSUMERS = new ArrayList<>();
     public static final Map<Identifier, List<CustomPage.ViewData>> CUSTOM_PAGES = new HashMap<>();
-    private static final Comparator<PolydexPage> PAGE_SORT = Comparator.<PolydexPage>comparingInt((x) -> -x.priority()).thenComparing(PolydexPage::identifier);
+    public static final Map<Identifier, PolydexCategory> CATEGORY_BY_ID = new HashMap<>();
+    private static final Comparator<PolydexPage> PAGE_SORT = Comparator.<PolydexPage>comparingInt((x) -> -x.priority()).thenComparing(PolydexPage::sortingId).thenComparing(PolydexPage::identifier);
+    private static final Map<String, Text> MOD_NAMES = new HashMap<>();
     public static Codec<ItemStack> ITEM_STACK_CODEC = Codec.either(Identifier.CODEC, ItemStack.CODEC).xmap(
             x -> x.left().isPresent() ? Registries.ITEM.get(x.left().get()).getDefaultStack() : x.right().get(), x -> x.hasNbt() || x.getCount() != 1 ? Either.right(x) : Either.left(Registries.ITEM.getId(x.getItem())));
     public static Codec<Text> TEXT = Codec.either(Codec.STRING, Codecs.TEXT)
@@ -143,6 +145,8 @@ public class PolydexImpl {
         BY_ITEMGROUP.clear();
         STACK_TO_ENTRY.clear();
         ITEM_TO_ENTRIES.clear();
+        CATEGORY_TO_PAGES.clear();
+        CATEGORY_BY_ID.clear();
         BY_NAMESPACE.put("minecraft", new NamespacedEntry("minecraft", Text.literal("Minecraft (Vanilla)"), (p) -> Items.GRASS_BLOCK.getDefaultStack(), PackedEntries.create()));
         NAMESPACED_ENTRIES.clear();
         ITEM_GROUP_ENTRIES.clear();
@@ -185,7 +189,7 @@ public class PolydexImpl {
             }
         }
 
-        var list = new ArrayList<PolydexPage>(recipes.size());
+        var globalPages = new ArrayList<PolydexPage>(recipes.size());
         for (var recipe : recipes) {
             var baseClass = (Class<?>) recipe.getClass();
 
@@ -195,7 +199,7 @@ public class PolydexImpl {
                 if (view != null) {
                     var page = view.apply(recipe);
                     if (page != null) {
-                        list.add(page);
+                        globalPages.add(page);
                     }
                     break;
                 }
@@ -204,28 +208,29 @@ public class PolydexImpl {
         }
 
         for (var creator : PAGE_CREATORS) {
-            creator.createPages(server, list::add);
+            creator.createPages(server, globalPages::add);
         }
 
-        for (var recipe : list) {
+        for (var globalPage : globalPages) {
             for (var entry : entries) {
-                if (recipe.isOwner(server, entry)) {
-                    entry.recipeOutput().add(recipe);
+                if (globalPage.isOwner(server, entry)) {
+                    entry.outputPages().add(globalPage);
                 }
 
-                for (var ingredient : recipe.getIngredients()) {
+                for (var ingredient : globalPage.ingredients()) {
                     if (ingredient.matches(entry.stack(), false)) {
-                        entry.ingredients().add(recipe);
+                        entry.ingredientPages().add(globalPage);
                         break;
                     }
                 }
             }
-        }
 
-        var map = new HashMap<Item, Collection<Recipe<?>>>();
-
-        for (var item : Registries.ITEM) {
-            map.put(item, new ArrayList<>());
+            for (var category : globalPage.categories()) {
+                CATEGORY_TO_PAGES.computeIfAbsent(category, (x) -> {
+                    CATEGORY_BY_ID.put(x.identifier(), x);
+                    return new ArrayList<>();
+                }).add(globalPage);
+            }
         }
 
         for (var entry : entries) {
@@ -235,8 +240,8 @@ public class PolydexImpl {
         }
 
         for (var entry : entries) {
-            entry.recipeOutput().sort(PAGE_SORT);
-            entry.ingredients().sort(PAGE_SORT);
+            entry.outputPages().sort(PAGE_SORT);
+            entry.ingredientPages().sort(PAGE_SORT);
 
             ITEM_ENTRIES.add(entry);
             STACK_TO_ENTRY.put(entry.stack(), entry);
@@ -255,10 +260,15 @@ public class PolydexImpl {
             x.entries.recalculateEmpty();
         }
 
+        for (var x : CATEGORY_TO_PAGES.values()) {
+            x.sort(PAGE_SORT);
+        }
+
         NAMESPACED_ENTRIES.addAll(BY_NAMESPACE.values());
         NAMESPACED_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
         ITEM_GROUP_ENTRIES.addAll(BY_ITEMGROUP.values());
         ITEM_GROUP_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
+
         config = PolydexConfig.loadOrCreateConfig();
     }
 
@@ -286,9 +296,10 @@ public class PolydexImpl {
 
     public static void defaultBuilder(HoverDisplayBuilder displayBuilder) {
         var target = displayBuilder.getTarget();
-        var entity = target.getEntity();
+        var entity = target.entity();
         if (entity != null) {
             displayBuilder.setComponent(HoverDisplayBuilder.NAME, entity.getDisplayName());
+            displayBuilder.setComponent(HoverDisplayBuilder.MOD_SOURCE, getMod(Registries.ENTITY_TYPE.getId(entity.getType())));
 
             if (entity instanceof LivingEntity livingEntity) {
                 if (PolydexImpl.config.displayEntityHealth) {
@@ -314,23 +325,25 @@ public class PolydexImpl {
                     }
 
                     if (!effects.isEmpty()) {
-                        displayBuilder.setComponent(HoverDisplayBuilder.EFFECTS, PolydexUtils.mergeText(effects, PolydexUtils.SPACE_SEPARATOR));
+                        displayBuilder.setComponent(HoverDisplayBuilder.EFFECTS, PolydexImplUtils.mergeText(effects, PolydexImplUtils.SPACE_SEPARATOR));
                     }
                 }
 
             }
         } else {
-            if (target.getBlockEntity() instanceof Nameable nameable) {
+            if (target.blockEntity() instanceof Nameable nameable) {
                 if (nameable.hasCustomName()) {
                     displayBuilder.setComponent(HoverDisplayBuilder.NAME, nameable.getCustomName());
                 } else {
                     displayBuilder.setComponent(HoverDisplayBuilder.NAME, nameable.getDisplayName());
                 }
             } else {
-                displayBuilder.setComponent(HoverDisplayBuilder.NAME, target.getBlockState().getBlock().getName());
+                displayBuilder.setComponent(HoverDisplayBuilder.NAME, target.blockState().getBlock().getName());
             }
+            displayBuilder.setComponent(HoverDisplayBuilder.MOD_SOURCE, getMod(Registries.BLOCK.getId(target.blockState().getBlock())));
 
-            if (PolydexImpl.config.displayCantMine && (!target.getPlayer().canHarvest(target.getBlockState()) || target.getBlockState().calcBlockBreakingDelta(target.getPlayer(), target.getPlayer().getWorld(), target.getTargetPos()) <= 0)) {
+
+            if (PolydexImpl.config.displayCantMine && (!target.player().canHarvest(target.blockState()) || target.blockState().calcBlockBreakingDelta(target.player(), target.player().getWorld(), target.pos()) <= 0)) {
                 var text = Text.literal("⛏").formatted(Formatting.DARK_RED);
                 if (!displayBuilder.isSmall()) {
                     text.append(" ").append(Text.translatable("text.polydex.cant_mine").formatted(Formatting.RED));
@@ -338,17 +351,31 @@ public class PolydexImpl {
                 displayBuilder.setComponent(HoverDisplayBuilder.EFFECTS, text);
             }
 
-            if (config.displayAdditional && target.getBlockEntity() instanceof AbstractFurnaceBlockEntity furnace) {
-                displayBuilder.setComponent(HoverDisplayBuilder.INPUT, PolydexUtils.createText(furnace.getStack(0)));
-                displayBuilder.setComponent(HoverDisplayBuilder.FUEL, PolydexUtils.createText(furnace.getStack(1)));
-                displayBuilder.setComponent(HoverDisplayBuilder.OUTPUT, PolydexUtils.createText(furnace.getStack(2)));
+            if (config.displayAdditional && target.blockEntity() instanceof AbstractFurnaceBlockEntity furnace) {
+                displayBuilder.setComponent(HoverDisplayBuilder.INPUT, PolydexPageUtils.createText(furnace.getStack(0)));
+                displayBuilder.setComponent(HoverDisplayBuilder.FUEL, PolydexPageUtils.createText(furnace.getStack(1)));
+                displayBuilder.setComponent(HoverDisplayBuilder.OUTPUT, PolydexPageUtils.createText(furnace.getStack(2)));
             }
 
             if (PolydexImpl.config.displayMiningProgress && target.isMining()) {
-                displayBuilder.setComponent(HoverDisplayBuilder.PROGRESS, Text.literal("" + (int) (target.getBreakingProgress() * 100))
+                displayBuilder.setComponent(HoverDisplayBuilder.PROGRESS, Text.literal("" + (int) (target.breakingProgress() * 100))
                         .append(Text.literal("%").formatted(Formatting.GRAY)));
             }
         }
+    }
+
+    private static Text getMod(Identifier id) {
+        return MOD_NAMES.computeIfAbsent(id.getPath(), PolydexImpl::createModName);
+    }
+
+    private static Text createModName(String s) {
+        var container = FabricLoader.getInstance().getModContainer(s);
+
+        if (container.isPresent()) {
+            return Text.literal(container.get().getMetadata().getName());
+        }
+
+        return Text.literal(s);
     }
 
     public static Collection<PolydexPage> addCustomPages(MinecraftServer server, PolydexEntry entry) {
@@ -398,7 +425,7 @@ public class PolydexImpl {
 
         public void add(PolydexEntry entry) {
             this.all.add(entry);
-            if (!entry.recipeOutput().isEmpty() || !entry.ingredients().isEmpty()) {
+            if (!entry.outputPages().isEmpty() || !entry.ingredientPages().isEmpty()) {
                 this.nonEmpty.add(entry);
             }
         }
@@ -406,7 +433,7 @@ public class PolydexImpl {
         public void recalculateEmpty() {
             this.nonEmpty.clear();
             for (var entry : this.all) {
-                if (!entry.recipeOutput().isEmpty() || !entry.ingredients().isEmpty()) {
+                if (!entry.outputPages().isEmpty() || !entry.ingredientPages().isEmpty()) {
                     this.nonEmpty.add(entry);
                 }
             }
@@ -416,7 +443,7 @@ public class PolydexImpl {
             this.all.addAll(groupEntries);
 
             for (var entry : groupEntries) {
-                if (!entry.recipeOutput().isEmpty() || !entry.ingredients().isEmpty()) {
+                if (!entry.outputPages().isEmpty() || !entry.ingredientPages().isEmpty()) {
                     this.nonEmpty.add(entry);
                 }
             }

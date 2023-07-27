@@ -16,7 +16,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
     public SidebarTargetDisplay(PolydexTarget target) {
         super(Priority.HIGH);
         this.target = target;
-        this.addPlayer(target.getPlayer());
+        this.addPlayer(target.player());
     }
 
     @Override
@@ -40,7 +40,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
         this.clearLines();
 
         var build = HoverDisplayBuilder.build(this.target);
-        this.setTitle(Text.literal(this.target.getTargetPos().toShortString()).formatted(Formatting.GRAY));
+        this.setTitle(Text.literal(this.target.pos().toShortString()).formatted(Formatting.GRAY));
 
         var lines = new ArrayList<Text>();
 

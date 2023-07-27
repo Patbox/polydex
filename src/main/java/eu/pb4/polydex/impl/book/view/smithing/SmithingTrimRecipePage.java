@@ -14,6 +14,7 @@ import net.minecraft.recipe.SmithingTrimRecipe;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -41,8 +42,8 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
     }
 
     @Override
-    protected Ingredient getBaseItem(PolydexEntry entry) {
-        return getBase().test((ItemStack) entry.stack().getBacking()) ? Ingredient.ofStacks((ItemStack) entry.stack().getBacking()) : DEFAULT;
+    protected Ingredient getBaseItem(@Nullable PolydexEntry entry) {
+        return entry != null && getBase().test((ItemStack) entry.stack().getBacking()) ? Ingredient.ofStacks((ItemStack) entry.stack().getBacking()) : DEFAULT;
     }
 
     @Override
@@ -51,12 +52,12 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
     }
 
     @Override
-    protected ItemStack[] getOutput(PolydexEntry entry, ServerPlayerEntity player) {
+    protected ItemStack[] getOutput(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
         var list = new ArrayList<ItemStack>();
         var trim = getTemplate().getMatchingStacks()[0];
         var optional2 = ArmorTrimPatterns.get(player.server.getRegistryManager(), trim);
 
-        var baseStack = getBase().test((ItemStack) entry.stack().getBacking()) ? (ItemStack) entry.stack().getBacking() : Items.IRON_CHESTPLATE.getDefaultStack();
+        var baseStack = entry != null && getBase().test((ItemStack) entry.stack().getBacking()) ? (ItemStack) entry.stack().getBacking() : Items.IRON_CHESTPLATE.getDefaultStack();
 
         for (var material : PolydexImplUtils.readIngredient(getAddition())) {
             Optional<RegistryEntry.Reference<ArmorTrimMaterial>> optional = ArmorTrimMaterials.get(player.server.getRegistryManager(), material);

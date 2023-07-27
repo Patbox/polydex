@@ -16,14 +16,15 @@ import java.util.function.Function;
 
 public interface PolydexPage {
     Identifier identifier();
-    ItemStack getIcon(ServerPlayerEntity player);
+    ItemStack typeIcon(ServerPlayerEntity player);
+    ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player);
     @Nullable
-    default Text getTexture(ServerPlayerEntity player) {
+    default Text texture(ServerPlayerEntity player) {
         return null;
     }
-    void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder layer);
+    void createPage(@Nullable PolydexEntry entry, ServerPlayerEntity player, PageBuilder layer);
 
-    default boolean canDisplay(PolydexEntry entry, ServerPlayerEntity player) {
+    default boolean canDisplay(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
         return true;
     }
 
@@ -31,7 +32,12 @@ public interface PolydexPage {
         return 0;
     }
 
-    List<PolydexIngredient<?>> getIngredients();
+    List<PolydexIngredient<?>> ingredients();
+    List<PolydexCategory> categories();
+
+    default String sortingId() {
+        return this.identifier().toString();
+    }
 
     @ApiStatus.OverrideOnly
     boolean isOwner(MinecraftServer server, PolydexEntry entry);

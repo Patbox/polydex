@@ -35,7 +35,7 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
     }
 
     @Override
-    public @Nullable Text getTexture(ServerPlayerEntity player) {
+    public @Nullable Text texture(ServerPlayerEntity player) {
         return InternalPageTextures.POTION;
     }
 
@@ -45,8 +45,13 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
     }
 
     @Override
-    public List<PolydexIngredient<?>> getIngredients() {
+    public List<PolydexIngredient<?>> ingredients() {
         return this.ingredient;
+    }
+
+    @Override
+    public List<PolydexCategory> categories() {
+        return List.of(PolydexCategory.BREWING);
     }
 
     @Override
@@ -59,12 +64,12 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
     protected abstract boolean isOwnerPotion(ItemStack backing);
 
     @Override
-    public ItemStack getIcon(ServerPlayerEntity player) {
+    public ItemStack typeIcon(ServerPlayerEntity player) {
         return PageIcons.POTION_RECIPE_ICON;
     }
 
     @Override
-    public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
+    public void createPage(@Nullable PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         var base = getBaseStack(entry);
         var out = getOutStack(entry);
 
@@ -77,9 +82,9 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
 
     }
 
-    protected abstract ItemStack getBaseStack(PolydexEntry entry);
+    protected abstract ItemStack getBaseStack(@Nullable PolydexEntry entry);
 
-    protected abstract ItemStack getOutStack(PolydexEntry entry);
+    protected abstract ItemStack getOutStack(@Nullable  PolydexEntry entry);
 
     protected abstract PolydexIngredient<ItemStack> customIngredient();
 
@@ -95,12 +100,12 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
 
 
         @Override
-        protected ItemStack getBaseStack(PolydexEntry entry) {
+        protected ItemStack getBaseStack(@Nullable PolydexEntry entry) {
             return PotionUtil.setPotion(this.access.getInput().getDefaultStack(), getPotion(entry));
         }
 
         @Override
-        protected ItemStack getOutStack(PolydexEntry entry) {
+        protected ItemStack getOutStack(@Nullable PolydexEntry entry) {
             return PotionUtil.setPotion(this.access.getOutput().getDefaultStack(), getPotion(entry));
         }
 
@@ -109,12 +114,17 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
             return PolydexIngredient.of(Ingredient.ofItems(this.access.getInput()));
         }
 
-        private Potion getPotion(PolydexEntry entry) {
-            if (entry.stack().getBacking() instanceof ItemStack backing) {
+        private Potion getPotion(@Nullable  PolydexEntry entry) {
+            if (entry != null && entry.stack().getBacking() instanceof ItemStack backing) {
                 return PotionUtil.getPotion(backing);
             } else {
                 return Potions.EMPTY;
             }
+        }
+
+        @Override
+        public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
+            return getOutStack(entry);
         }
     };
 
@@ -134,13 +144,18 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
         }
 
         @Override
-        protected ItemStack getOutStack(PolydexEntry entry) {
+        protected ItemStack getOutStack(@Nullable  PolydexEntry entry) {
             return PotionUtil.setPotion(getStack(entry), this.access.getOutput());
         }
 
         @Override
         protected PolydexIngredient<ItemStack> customIngredient() {
             return PotionIngredient.of(this.access.getInput());
+        }
+
+        @Override
+        public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
+            return getOutStack(entry);
         }
 
         private record PotionIngredient(Potion potion, List<PolydexStack<ItemStack>> stacks) implements PolydexIngredient<ItemStack> {
@@ -190,8 +205,8 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
             }
         }
 
-        protected ItemStack getStack(PolydexEntry entry) {
-            if (entry.stack().getBacking() instanceof ItemStack backing
+        protected ItemStack getStack(@Nullable  PolydexEntry entry) {
+            if (entry != null && entry.stack().getBacking() instanceof ItemStack backing
                     && (backing.isOf(Items.POTION) || backing.isOf(Items.SPLASH_POTION) ||backing.isOf(Items.LINGERING_POTION) || backing.isOf(Items.GLASS_BOTTLE))) {
 
                 return backing.getItem().getDefaultStack();

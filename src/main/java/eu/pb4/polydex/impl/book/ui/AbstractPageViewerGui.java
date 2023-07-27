@@ -1,8 +1,9 @@
-package eu.pb4.polydex.impl.book;
+package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.impl.PolydexImpl;
+import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -13,27 +14,25 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class EntryViewerGui extends ExtendedGui implements PageAware {
+public abstract class AbstractPageViewerGui extends ExtendedGui implements PageAware {
     public static final int PAGE_SIZE = 9 * 5;
 
     protected final Runnable closeCallback;
     private final LayerBuilder displayLayer;
-    private final PolydexEntry entry;
-    private final List<PolydexPage> pages;
-    private final boolean ingredientsView;
     protected int page = 0;
+    protected List<PolydexPage> pages;
+    @Nullable
+    protected PolydexEntry entry;
 
-    public EntryViewerGui(ServerPlayerEntity player, PolydexEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
+    public AbstractPageViewerGui(ServerPlayerEntity player, @Nullable Runnable closeCallback) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
         this.closeCallback = closeCallback;
-        this.entry = entry;
-        this.ingredientsView = ingredients;
-        this.pages = ingredients ? entry.getVisibleIngredientPages(player) : entry.getVisiblePages(player);
-        this.displayLayer = new LayerBuilder(player, entry);
+        this.displayLayer = new LayerBuilder(player);
         this.addLayer(this.displayLayer, 0, 0);
-        this.lock();
-        this.setText(Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", this.entry.stack().getName()));
         this.setOverlayTexture(InternalPageTextures.MAIN);
+    }
+
+    protected void setupNavigator() {
         var filler = filler();
 
         boolean addNav = this.pages.size() > 1;
@@ -51,7 +50,6 @@ public final class EntryViewerGui extends ExtendedGui implements PageAware {
                 this.close();
             }
         }, this.closeCallback != null));
-        this.updateDisplay();
     }
 
     @Override
@@ -69,11 +67,11 @@ public final class EntryViewerGui extends ExtendedGui implements PageAware {
         }
         this.lock();
         var pageEntry = this.pages.get(this.page);
-        var t = pageEntry.getTexture(this.getPlayer());
+        var t = pageEntry.texture(this.getPlayer());
         this.setTexture(t);
         this.displayLayer.clear(t != null ? filler() : GuiUtils.FILLER);
         pageEntry.createPage(this.entry, this.getPlayer(), this.displayLayer);
-        this.setSlot(PAGE_SIZE, pageEntry.getIcon(this.getPlayer()));
+        this.setSlot(PAGE_SIZE, pageEntry.typeIcon(this.getPlayer()));
         if (this.pages.size() > 1) {
             this.setSlot(PAGE_SIZE + 4, new GuiElementBuilder(Items.BOOK)
                     .setName(

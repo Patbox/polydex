@@ -1,4 +1,4 @@
-package eu.pb4.polydex.impl.book;
+package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
@@ -65,15 +65,15 @@ public abstract class PagedLayer extends Layer implements PageAware {
 
     protected GuiElement getNavElement(int id) {
         return switch (id) {
-            case 2 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
+            case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
             case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
-                    .setName(Text.translatable("text.polydex.view.recipeOutput",
+                    .setName(Text.translatable("text.polydex.view.pages",
                                     Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
                                     Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
                             ).formatted(Formatting.AQUA)
-                    ).build() : GuiUtils.FILLER;
-            case 6 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
-            default -> GuiUtils.FILLER;
+                    ).build() : filler();
+            case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
+            default -> filler();
         };
     }
 }
