@@ -24,7 +24,9 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.*;
+import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
@@ -70,6 +72,7 @@ public class PolydexImpl {
     public static final List<Consumer<HoverDisplayBuilder>> DISPLAY_BUILDER_CONSUMERS = new ArrayList<>();
     public static final Map<Identifier, List<CustomPage.ViewData>> CUSTOM_PAGES = new HashMap<>();
     public static final Map<Identifier, PolydexCategory> CATEGORY_BY_ID = new HashMap<>();
+    public static final Map<Item, Function<ItemStack, @Nullable PolydexEntry>> ITEM_ENTRY_CREATOR = new HashMap<>();
     private static final Comparator<PolydexPage> PAGE_SORT = Comparator.<PolydexPage>comparingInt((x) -> -x.priority()).thenComparing(PolydexPage::sortingId).thenComparing(PolydexPage::identifier);
     private static final Map<String, Text> MOD_NAMES = new HashMap<>();
     public static Codec<ItemStack> ITEM_STACK_CODEC = Codec.either(Identifier.CODEC, ItemStack.CODEC).xmap(
@@ -161,10 +164,28 @@ public class PolydexImpl {
                 var namespacedEntry = NamespacedEntry.ofItemGroup(group);
 
                 for (var item : group.getDisplayStacks()) {
-                    groupEntries.add(PolydexEntry.of(item));
+                    var x = ITEM_ENTRY_CREATOR.get(item.getItem());
+
+                    if (x != null) {
+                        var y = x.apply(item);
+                        if (y != null) {
+                            groupEntries.add(y);
+                        }
+                    } else {
+                        groupEntries.add(PolydexEntry.of(item));
+                    }
                 }
                 for (var item : group.getSearchTabStacks()) {
-                    groupEntries.add(PolydexEntry.of(item));
+                    var x = ITEM_ENTRY_CREATOR.get(item.getItem());
+
+                    if (x != null) {
+                        var y = x.apply(item);
+                        if (y != null) {
+                            groupEntries.add(y);
+                        }
+                    } else {
+                        groupEntries.add(PolydexEntry.of(item));
+                    }
                 }
 
                 entries.addAll(groupEntries);
@@ -409,6 +430,26 @@ public class PolydexImpl {
                 LOGGER.error("Failed to read page at {}", resource.getKey(), e);
             }
         }
+    }
+
+    public static PolydexEntry seperateCustomEnchantments(ItemStack stack) {
+        var ench = EnchantmentHelper.get(stack);
+        var string = new StringBuilder();
+
+        ench.forEach((a, b) -> {
+            string.append(Registries.ENCHANTMENT.getId(a).toUnderscoreSeparatedString()).append("/");
+        });
+
+
+        var baseId = Registries.ITEM.getId(stack.getItem());
+
+        return PolydexEntry.of(baseId.withSuffixedPath("//" + string), stack);
+    }
+
+    public static PolydexEntry seperateCustomPotion(ItemStack stack) {
+        var potion = PotionUtil.getPotion(stack);
+        var baseId = Registries.ITEM.getId(stack.getItem());
+        return PolydexEntry.of(baseId.withSuffixedPath("/" + Registries.POTION.getId(potion).toUnderscoreSeparatedString()), stack);
     }
 
     public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty) {

@@ -34,6 +34,10 @@ public interface PolydexEntry {
         return new PolydexEntryImpl(identifier, PolydexStack.of(stack), new ArrayList<>(), new ArrayList<>(), isPartOf);
     }
 
+    static void registerEntryCreator(Item item, Function<ItemStack, @Nullable PolydexEntry> builder) {
+        PolydexImpl.ITEM_ENTRY_CREATOR.put(item, builder);
+    }
+
     static void registerBuilder(Item item, Function<Item, @Nullable Collection<PolydexEntry>> builder) {
         PolydexImpl.ITEM_ENTRY_BUILDERS.put(item, builder);
     }

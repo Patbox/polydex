@@ -2,6 +2,7 @@ package eu.pb4.polydex.impl;
 
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.impl.book.ui.GuiUtils;
 import eu.pb4.polydex.impl.book.view.*;
@@ -57,6 +58,12 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerRecipeViewer(StonecuttingRecipe.class, StonecuttingRecipePage::new);
 
         PolydexPage.registerModifier(PolydexImpl::addCustomPages);
+
+        PolydexEntry.registerEntryCreator(Items.ENCHANTED_BOOK, PolydexImpl::seperateCustomEnchantments);
+        PolydexEntry.registerEntryCreator(Items.POTION, PolydexImpl::seperateCustomPotion);
+        PolydexEntry.registerEntryCreator(Items.SPLASH_POTION, PolydexImpl::seperateCustomPotion);
+        PolydexEntry.registerEntryCreator(Items.LINGERING_POTION, PolydexImpl::seperateCustomPotion);
+        PolydexEntry.registerEntryCreator(Items.TIPPED_ARROW, PolydexImpl::seperateCustomPotion);
 
         HoverDisplayBuilder.register(PolydexImpl::defaultBuilder);
     }
