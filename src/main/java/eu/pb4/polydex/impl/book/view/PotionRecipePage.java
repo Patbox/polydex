@@ -57,8 +57,7 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
     @Override
     public boolean isOwner(MinecraftServer server, PolydexEntry entry) {
         return entry.stack().getBackingClass() == ItemStack.class 
-                && (this.access.getIngredient().test((ItemStack) entry.stack().getBacking())
-                || this.isOwnerPotion((ItemStack) entry.stack().getBacking()));
+                && (this.isOwnerPotion((ItemStack) entry.stack().getBacking()));
     }
 
     protected abstract boolean isOwnerPotion(ItemStack backing);

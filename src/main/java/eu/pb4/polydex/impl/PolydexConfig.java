@@ -2,6 +2,9 @@ package eu.pb4.polydex.impl;
 
 
 import com.google.gson.*;
+import eu.pb4.predicate.api.BuiltinPredicates;
+import eu.pb4.predicate.api.GsonPredicateSerializer;
+import eu.pb4.predicate.api.MinecraftPredicate;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
@@ -16,18 +19,29 @@ public class PolydexConfig {
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping().setLenient().setPrettyPrinting()
             .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
+            .registerTypeHierarchyAdapter(MinecraftPredicate.class, GsonPredicateSerializer.INSTANCE)
             .create();
 
-    public Identifier defaultDisplay = id("disabled");
-    public boolean defaultAlwaysShowDisplay = false;
+    public Identifier defaultDisplay = id(getDefaultDisplay());
+
+    private static String getDefaultDisplay() {
+        if (FabricLoader.getInstance().isModLoaded("wthit") || FabricLoader.getInstance().isModLoaded("jade")) {
+            return "disabled";
+        }
+
+        return "bossbar_sneak";
+    }
+
     public boolean displayEnabled = true;
     public int displayUpdateRate = 4;
     public boolean displayCantMine = true;
+    public boolean displayModSource = true;
     public boolean displayAdditional = true;
     public boolean displayMiningProgress = true;
     public boolean displayEntity = true;
     public boolean displayEntityHealth = true;
 
+    public MinecraftPredicate displayPredicate = BuiltinPredicates.hasPlayer();
 
     public static PolydexConfig loadOrCreateConfig() {
         try {

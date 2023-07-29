@@ -3,6 +3,7 @@ package eu.pb4.polydex.impl.display;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
+import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sidebars.api.Sidebar;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -53,7 +54,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
             }
         }
 
-        {
+        if (PolydexImpl.config.displayModSource) {
             var component = build.removeAndGetComponent(HoverDisplayBuilder.MOD_SOURCE);
             if (component != null) {
                 lines.add(

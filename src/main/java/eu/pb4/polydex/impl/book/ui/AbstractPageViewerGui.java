@@ -73,14 +73,7 @@ public abstract class AbstractPageViewerGui extends ExtendedGui implements PageA
         pageEntry.createPage(this.entry, this.getPlayer(), this.displayLayer);
         this.setSlot(PAGE_SIZE, pageEntry.typeIcon(this.getPlayer()));
         if (this.pages.size() > 1) {
-            this.setSlot(PAGE_SIZE + 4, new GuiElementBuilder(Items.BOOK)
-                    .setName(
-                            Text.translatable("text.polydex.view.pages",
-                                    Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
-                                    Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
-                            ).formatted(Formatting.AQUA)
-                    )
-            );
+            this.setSlot(PAGE_SIZE + 4, GuiUtils.page(this.getPlayer(),  this.page + 1, this.getPageAmount()));
         }
         this.unlock();
     }

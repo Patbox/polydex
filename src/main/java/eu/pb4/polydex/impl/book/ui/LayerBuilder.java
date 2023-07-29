@@ -6,7 +6,9 @@ import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.polydex.impl.PolydexImplUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
@@ -17,7 +19,6 @@ import java.util.ArrayList;
 
 public class LayerBuilder extends Layer implements PageBuilder {
     private final ServerPlayerEntity player;
-    public Text texture;
 
     public LayerBuilder(ServerPlayerEntity player) {
         super(5, 9);
@@ -27,6 +28,11 @@ public class LayerBuilder extends Layer implements PageBuilder {
     @Override
     public void set(int x, int y, ItemStack stack) {
         this.setSlot(index(x, y), stack);
+    }
+
+    @Override
+    public void set(int x, int y, ItemStack... stack) {
+        this.setSlot(index(x, y), new AnimatedGuiElement(stack, 20, false, GuiElementInterface.EMPTY_CALLBACK));
     }
 
     private int index(int x, int y) {

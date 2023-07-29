@@ -1,11 +1,13 @@
 package eu.pb4.polydex.api.v1.recipe;
 
+import eu.pb4.sgui.api.elements.AnimatedGuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 
 public interface PageBuilder {
     void set(int x, int y, ItemStack stack);
+    void set(int x, int y, ItemStack... stack);
     default void set(int x, int y, GuiElementBuilder builder) {
         set(x, y, builder.asStack());
     }

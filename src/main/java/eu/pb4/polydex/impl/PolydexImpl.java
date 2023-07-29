@@ -299,8 +299,9 @@ public class PolydexImpl {
         var entity = target.entity();
         if (entity != null) {
             displayBuilder.setComponent(HoverDisplayBuilder.NAME, entity.getDisplayName());
-            displayBuilder.setComponent(HoverDisplayBuilder.MOD_SOURCE, getMod(Registries.ENTITY_TYPE.getId(entity.getType())));
-
+            if (PolydexImpl.config.displayModSource) {
+                displayBuilder.setComponent(HoverDisplayBuilder.MOD_SOURCE, getMod(Registries.ENTITY_TYPE.getId(entity.getType())));
+            }
             if (entity instanceof LivingEntity livingEntity) {
                 if (PolydexImpl.config.displayEntityHealth) {
                     displayBuilder.setComponent(HoverDisplayBuilder.HEALTH, Text.literal("").append(Text.literal("♥ ").formatted(Formatting.RED))
@@ -340,8 +341,9 @@ public class PolydexImpl {
             } else {
                 displayBuilder.setComponent(HoverDisplayBuilder.NAME, target.blockState().getBlock().getName());
             }
-            displayBuilder.setComponent(HoverDisplayBuilder.MOD_SOURCE, getMod(Registries.BLOCK.getId(target.blockState().getBlock())));
-
+            if (PolydexImpl.config.displayModSource) {
+                displayBuilder.setComponent(HoverDisplayBuilder.MOD_SOURCE, getMod(Registries.BLOCK.getId(target.blockState().getBlock())));
+            }
 
             if (PolydexImpl.config.displayCantMine && (!target.player().canHarvest(target.blockState()) || target.blockState().calcBlockBreakingDelta(target.player(), target.player().getWorld(), target.pos()) <= 0)) {
                 var text = Text.literal("⛏").formatted(Formatting.DARK_RED);

@@ -24,7 +24,7 @@ public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
         } else {
             this.itemStacks = List.of(ingredient.getMatchingStacks());
         }
-        this.polydexStacks = this.itemStacks.stream().map(PolydexStack::of).toList();
+        this.polydexStacks = this.itemStacks.stream().map((x) -> PolydexStack.of(x, count, chance)).toList();
     }
 
     @Override

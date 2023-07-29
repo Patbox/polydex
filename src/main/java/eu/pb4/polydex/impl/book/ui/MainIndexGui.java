@@ -102,7 +102,7 @@ public class MainIndexGui extends ExtendedGui {
                             GuiUtils.playClickSound(this.player);
                         }).build();
 
-                case 1 -> new GuiElementBuilder(Items.BOOK)
+                case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .setName(Text.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.type.name().toLowerCase(Locale.ROOT)))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
@@ -123,12 +123,7 @@ public class MainIndexGui extends ExtendedGui {
                             MainIndexGui.this.indexLayerView.setZIndex(2);
                         }).build();*/
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
-                case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
-                        .setName(Text.translatable("text.polydex.view.pages",
-                                        Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
-                                        Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
-                                ).formatted(Formatting.AQUA)
-                        ).build() : filler();
+                case 4 -> this.getPageAmount() > 1 ? GuiUtils.page(this.player,  this.page + 1, this.getPageAmount()).build() : filler();
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
                 case 8 -> GuiUtils.backButton(this.player, MainIndexGui.this::close, false);
                 default -> filler();
@@ -226,12 +221,7 @@ public class MainIndexGui extends ExtendedGui {
         protected GuiElement getNavElement(int id) {
             return switch (id) {
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
-                case 4 -> this.getPageAmount() > 1 ? new GuiElementBuilder(Items.BOOK)
-                        .setName(Text.translatable("text.polydex.view.pages",
-                                        Text.literal("" + (this.page + 1)).formatted(Formatting.WHITE),
-                                        Text.literal("" + this.getPageAmount()).formatted(Formatting.WHITE)
-                                ).formatted(Formatting.AQUA)
-                        ).build() : filler();
+                case 4 -> this.getPageAmount() > 1 ? GuiUtils.page(this.player,  this.page + 1, this.getPageAmount()).build() : filler();
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
                 default -> filler();
             };

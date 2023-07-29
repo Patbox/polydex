@@ -5,6 +5,7 @@ import eu.pb4.polydex.api.v1.recipe.PageBuilder;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.api.v1.recipe.AbstractRecipePolydexPage;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
+import eu.pb4.polydex.impl.book.ui.GuiUtils;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -43,11 +44,11 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
     @Override
     public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         builder.setIngredient(3, 2, recipe.getIngredients().get(0));
-        builder.set(3, 3, new GuiElementBuilder(Items.BLAZE_POWDER)
+        builder.set(3, 3, GuiUtils.flame(player)
                 .setName(Text.translatable("text.polydex.view.cooking_time", Text.literal("" + (recipe.getCookTime() / 20d) + "s")
                         .formatted(Formatting.WHITE)).formatted(Formatting.GOLD)));
         if (recipe.getExperience() != 0) {
-            builder.set(5, 3, new GuiElementBuilder(Items.EXPERIENCE_BOTTLE)
+            builder.set(5, 3, GuiUtils.xp(player)
                     .setName(Text.translatable("text.polydex.view.experience", Text.literal("" + recipe.getExperience())
                             .append(Text.translatable("text.polydex.view.experience.points")).formatted(Formatting.WHITE)).formatted(Formatting.GREEN)));
         }

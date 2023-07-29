@@ -1,6 +1,7 @@
 package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.PolydexImpl;
+import eu.pb4.polydex.impl.book.ui.CategoryPageViewerGui;
 import eu.pb4.polydex.impl.book.ui.EntryPageViewerGui;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Recipe;
@@ -9,6 +10,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PolydexPageUtils {
@@ -41,7 +43,33 @@ public class PolydexPageUtils {
         return PolydexImpl.CATEGORY_TO_PAGES.getOrDefault(category, List.of());
     }
 
-    public static boolean openRecipeListUi(ServerPlayerEntity player, ItemStack stack, Runnable closeCallback) {
+    public static boolean openCategoryUi(ServerPlayerEntity player, PolydexCategory category, @Nullable Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
+        var entry = getPagesForCategory(category);
+        if (entry.isEmpty()) {
+            return false;
+        }
+
+        List<PolydexPage> list = new ArrayList<>();
+        for (PolydexPage polydexPage : entry) {
+            if (polydexPage.canDisplay(null, player)) {
+                list.add(polydexPage);
+            }
+        }
+
+        if (entry.size() > 0) {
+            new CategoryPageViewerGui(player, category, list, closeCallback).open();
+            return true;
+        }
+
+
+        return false;
+    }
+
+    public static boolean openRecipeListUi(ServerPlayerEntity player, ItemStack stack, @Nullable Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -59,7 +87,7 @@ public class PolydexPageUtils {
         return false;
     }
 
-    public static boolean openUsagesListUi(ServerPlayerEntity player, ItemStack stack, Runnable closeCallback) {
+    public static boolean openUsagesListUi(ServerPlayerEntity player, ItemStack stack, @Nullable  Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }

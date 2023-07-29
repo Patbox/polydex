@@ -3,6 +3,7 @@ package eu.pb4.polydex.impl;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
+import eu.pb4.polydex.impl.book.ui.GuiUtils;
 import eu.pb4.polydex.impl.book.view.*;
 import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipePage;
@@ -58,8 +59,6 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerModifier(PolydexImpl::addCustomPages);
 
         HoverDisplayBuilder.register(PolydexImpl::defaultBuilder);
-
-        PolymerResourcePackUtils.addModAssets("polydex2");
     }
 
     @Override
@@ -70,6 +69,8 @@ public class PolydexInitializer implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, manager, b) -> PolydexImpl.rebuild(server));
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
+        PolymerResourcePackUtils.addModAssets("polydex2");
+        GuiUtils.register();
 
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override

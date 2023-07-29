@@ -24,15 +24,19 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
     }
 
     static PolydexStack<ItemStack> of(Item item) {
-        return new PolydexItemStackImpl(item.getDefaultStack(), 1);
+        return new PolydexItemStackImpl(item.getDefaultStack(), 1, 1);
     }
 
     static PolydexStack<ItemStack> of(ItemStack stack) {
-        return new PolydexItemStackImpl(stack, 1);
+        return new PolydexItemStackImpl(stack, stack.getCount(), 1);
     }
 
     static PolydexStack<ItemStack> of(ItemStack stack, float chance) {
-        return new PolydexItemStackImpl(stack, chance);
+        return new PolydexItemStackImpl(stack, stack.getCount(), chance);
+    }
+
+    static PolydexStack<ItemStack> of(ItemStack stack, long count, float chance) {
+        return new PolydexItemStackImpl(stack, count, chance);
     }
 
     boolean isEmpty();
