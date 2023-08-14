@@ -21,13 +21,12 @@ import java.util.HashMap;
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
 public class PolydexConfigImpl {
+    public static final Identifier DEFAULT_DISPLAY = id(getDefaultDisplay());
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping().setLenient().setPrettyPrinting()
             .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
             .registerTypeHierarchyAdapter(MinecraftPredicate.class, GsonPredicateSerializer.INSTANCE)
             .create();
-
-    public Identifier defaultDisplay = id(getDefaultDisplay());
 
     private static String getDefaultDisplay() {
         if (FabricLoader.getInstance().isModLoaded("wthit") || FabricLoader.getInstance().isModLoaded("jade")) {
@@ -50,7 +49,10 @@ public class PolydexConfigImpl {
 
     public MinecraftPredicate displayPredicate = BuiltinPredicates.hasPlayer();
 
-    public class GlobalSettings implements HoverSettings {
+    public static class GlobalSettings implements HoverSettings {
+        @SerializedName("display_type")
+        public Identifier defaultDisplay = DEFAULT_DISPLAY;
+
         @SerializedName("display_mode")
         public DisplayMode displayMode = DisplayMode.TARGET;
         @SerializedName("visible_components")
@@ -82,10 +84,6 @@ public class PolydexConfigImpl {
     }
 
     private void fillDefaults() {
-        if (this.defaultDisplay.equals(id("bossbar_sneak")) || this.defaultDisplay.equals(id("bossbar_always"))) {
-            this.defaultDisplay = id("bossbar");
-        }
-
         for (var c : HoverDisplayBuilder.ComponentType.getAll()) {
             if (!this.defaultHoverSettings.visibilityMap.containsKey(c.identifier())) {
                 this.defaultHoverSettings.visibilityMap.put(c.identifier(), c.defaultVisibility());
