@@ -45,15 +45,19 @@ public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void polydex_create(MinecraftServer server, ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
-        this.polydex_target = new PolydexTargetImpl((ServerPlayNetworkHandler) (Object) this);
+        //noinspection ConstantConditions
+        if (((Object) this).getClass() == ServerPlayNetworkHandler.class) {
+            this.polydex_target = new PolydexTargetImpl((ServerPlayNetworkHandler) (Object) this);
 
-        var creator = PolydexImpl.DISPLAYS.get(this.polydex_target.settings().currentType());
-        if (creator != null) {
-            this.polydex_display = creator.apply(this.polydex_target);
+            var creator = PolydexImpl.DISPLAYS.get(this.polydex_target.settings().currentType());
+            if (creator != null) {
+                this.polydex_display = creator.apply(this.polydex_target);
+            } else {
+                this.polydex_display = new BossbarTargetDisplay(this.polydex_target);
+            }
         } else {
-            this.polydex_display = new BossbarTargetDisplay(this.polydex_target);
+            this.polydex_display = NoopTargetDisplay.INSTANCE;
         }
-
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
