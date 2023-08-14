@@ -2,6 +2,7 @@ package eu.pb4.polydex.impl.display;
 
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
+import eu.pb4.polydex.impl.PlayerHoverSettings;
 import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.mixin.SPIMAccessor;
@@ -34,11 +35,17 @@ public final class PolydexTargetImpl implements PolydexTarget {
     private int startingTime = -1;
     private BlockPos miningPos;
     private Entity entity;
-    private DisplayImpl displayBuilder;
+    private final DisplayImpl displayBuilder;
+    private final PlayerHoverSettings settings;
 
     public PolydexTargetImpl(ServerPlayNetworkHandler handler) {
         this.handler = handler;
+        this.settings = new PlayerHoverSettings(handler);
         this.displayBuilder = new DisplayImpl(this);
+    }
+
+    public static PolydexTargetImpl get(ServerPlayerEntity player) {
+        return ((PlayerInterface) player.networkHandler).polydex_getTarget();
     }
 
     public void updateRaycast() {
@@ -169,6 +176,11 @@ public final class PolydexTargetImpl implements PolydexTarget {
     @Override
     public boolean hasTarget() {
         return !this.blockState().isAir() || this.entity != null;
+    }
+
+    @Override
+    public PlayerHoverSettings settings() {
+        return this.settings;
     }
 
     public DisplayImpl getDisplayBuilder() {

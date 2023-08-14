@@ -45,6 +45,11 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
         return new ItemStack[] { recipe.getOutput(player.server.getRegistryManager()) };
     }
 
+    @Override
+    public boolean syncWithClient(ServerPlayerEntity player) {
+        return false;
+    }
+
     protected abstract Ingredient getStacksAt(T recipe, int x, int y);
 
     public static <T extends CraftingRecipe> Function<T, AbstractCraftingRecipePage<T>> of(StackGetter<T> getter) {

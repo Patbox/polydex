@@ -2,20 +2,25 @@ package eu.pb4.polydex.impl;
 
 
 import com.google.gson.*;
+import com.google.gson.annotations.SerializedName;
+import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
+import eu.pb4.polydex.api.v1.hover.HoverSettings;
 import eu.pb4.predicate.api.BuiltinPredicates;
 import eu.pb4.predicate.api.GsonPredicateSerializer;
 import eu.pb4.predicate.api.MinecraftPredicate;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
-public class PolydexConfig {
+public class PolydexConfigImpl {
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping().setLenient().setPrettyPrinting()
             .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
@@ -29,7 +34,7 @@ public class PolydexConfig {
             return "disabled";
         }
 
-        return "bossbar_sneak";
+        return "bossbar";
     }
 
     public boolean displayEnabled = true;
@@ -40,32 +45,80 @@ public class PolydexConfig {
     public boolean displayMiningProgress = true;
     public boolean displayEntity = true;
     public boolean displayEntityHealth = true;
+    @SerializedName("default_hover_settings")
+    public GlobalSettings defaultHoverSettings = new GlobalSettings();
 
     public MinecraftPredicate displayPredicate = BuiltinPredicates.hasPlayer();
 
-    public static PolydexConfig loadOrCreateConfig() {
+    public class GlobalSettings implements HoverSettings {
+        @SerializedName("display_mode")
+        public DisplayMode displayMode = DisplayMode.TARGET;
+        @SerializedName("visible_components")
+        public HashMap<Identifier, HoverDisplayBuilder.ComponentType.Visibility> visibilityMap = new HashMap<>();
+
+        @Override
+        public Identifier currentType() {
+            return defaultDisplay;
+        }
+
+        @Override
+        public DisplayMode displayMode() {
+            return displayMode;
+        }
+
+        @Override
+        public boolean isComponentVisible(ServerPlayerEntity player, HoverDisplayBuilder.ComponentType type) {
+            var value =  visibilityMap.getOrDefault(type.identifier(), HoverDisplayBuilder.ComponentType.Visibility.DEFAULT);
+            if (value == HoverDisplayBuilder.ComponentType.Visibility.DEFAULT) {
+                value = type.defaultVisibility();
+            }
+
+            return switch (value) {
+                case ALWAYS -> true;
+                case NEVER, DEFAULT -> false;
+                case SNEAKING -> player.isSneaking();
+            };
+        }
+    }
+
+    private void fillDefaults() {
+        if (this.defaultDisplay.equals(id("bossbar_sneak")) || this.defaultDisplay.equals(id("bossbar_always"))) {
+            this.defaultDisplay = id("bossbar");
+        }
+
+        for (var c : HoverDisplayBuilder.ComponentType.getAll()) {
+            if (!this.defaultHoverSettings.visibilityMap.containsKey(c.identifier())) {
+                this.defaultHoverSettings.visibilityMap.put(c.identifier(), c.defaultVisibility());
+            }
+        }
+    }
+
+
+    public static PolydexConfigImpl loadOrCreateConfig() {
         try {
-            PolydexConfig config;
+            PolydexConfigImpl config;
             File configFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "polydex.json");
 
             if (configFile.exists()) {
                 String json = IOUtils.toString(new InputStreamReader(new FileInputStream(configFile), StandardCharsets.UTF_8));
 
-                config = GSON.fromJson(json, PolydexConfig.class);
+                config = GSON.fromJson(json, PolydexConfigImpl.class);
             } else {
-                config = new PolydexConfig();
+                config = new PolydexConfigImpl();
             }
+
+            config.fillDefaults();
 
             saveConfig(config);
             return config;
         } catch (IOException exception) {
             PolydexImpl.LOGGER.error("Something went wrong while reading config!");
             exception.printStackTrace();
-            return new PolydexConfig();
+            return new PolydexConfigImpl();
         }
     }
 
-    public static void saveConfig(PolydexConfig config) {
+    public static void saveConfig(PolydexConfigImpl config) {
         File configFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "polydex.json");
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(configFile), StandardCharsets.UTF_8));

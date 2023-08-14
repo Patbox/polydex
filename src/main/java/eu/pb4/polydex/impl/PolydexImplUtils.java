@@ -15,7 +15,7 @@ public class PolydexImplUtils {
     public static final Text SPACE_SEPARATOR = Text.literal(" ");
 
     public static Text mergeText(Collection<Text> texts, Text separator) {
-        var out = Text.literal("");
+        var out = Text.empty();
 
         var iterator = texts.iterator();
 
@@ -31,7 +31,7 @@ public class PolydexImplUtils {
     }
 
     public static Text mergeText(Collection<Text> texts) {
-        var out = Text.literal("");
+        var out = Text.empty();
 
         var iterator = texts.iterator();
 

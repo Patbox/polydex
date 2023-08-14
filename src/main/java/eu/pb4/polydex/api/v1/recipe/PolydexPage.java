@@ -17,6 +17,9 @@ import java.util.function.Function;
 public interface PolydexPage {
     Identifier identifier();
     ItemStack typeIcon(ServerPlayerEntity player);
+    default ItemStack typeIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
+        return typeIcon(player);
+    }
     ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player);
     @Nullable
     default Text texture(ServerPlayerEntity player) {
@@ -62,5 +65,9 @@ public interface PolydexPage {
     @FunctionalInterface
     interface PageCreator {
         void createPages(MinecraftServer server, Consumer<PolydexPage> pageConsumer);
+    }
+
+    default boolean syncWithClient(ServerPlayerEntity player) {
+        return true;
     }
 }

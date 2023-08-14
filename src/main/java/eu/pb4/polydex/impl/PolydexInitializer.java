@@ -11,12 +11,14 @@ import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.ShulkerBoxColoringRecipePage;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTransformRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipePage;
+import eu.pb4.polydex.impl.compat.LibMultiPartCompatibility;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.SidebarTargetDisplay;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -32,15 +34,15 @@ import static eu.pb4.polydex.impl.PolydexImpl.id;
 public class PolydexInitializer implements ModInitializer {
     private static boolean initialized;
 
+    private static final Identifier EVENT_ID = id("run_reload");
+
     public static void init() {
         if (initialized) {
             return;
         }
         initialized = true;
         HoverDisplay.register(id("disabled"), NoopTargetDisplay::create);
-        HoverDisplay.register(id("bossbar"), BossbarTargetDisplay::targetted);
-        HoverDisplay.register(id("bossbar_always"), BossbarTargetDisplay::always);
-        HoverDisplay.register(id("bossbar_sneak"), BossbarTargetDisplay::sneaking);
+        HoverDisplay.register(id("bossbar"), BossbarTargetDisplay::new);
         HoverDisplay.register(id("sidebar"), SidebarTargetDisplay::new);
 
         PolydexPage.register(PolydexImpl::potionRecipe);
@@ -66,15 +68,21 @@ public class PolydexInitializer implements ModInitializer {
         PolydexEntry.registerEntryCreator(Items.TIPPED_ARROW, PolydexImpl::seperateCustomPotion);
 
         HoverDisplayBuilder.register(PolydexImpl::defaultBuilder);
+
+        if (FabricLoader.getInstance().isModLoaded("libmultipart")) {
+            LibMultiPartCompatibility.register();
+        }
     }
 
     @Override
     public void onInitialize() {
         GenericModInfo.build(FabricLoader.getInstance().getModContainer("polydex2").get());
         CommandRegistrationCallback.EVENT.register(Commands::register);
-        ServerLifecycleEvents.SERVER_STARTED.register(PolydexImpl::rebuild);
+        ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(Event.DEFAULT_PHASE, EVENT_ID);
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.addPhaseOrdering(Event.DEFAULT_PHASE, EVENT_ID);
+        ServerLifecycleEvents.SERVER_STARTED.register(EVENT_ID, PolydexImpl::rebuild);
         ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, manager, b) -> PolydexImpl.rebuild(server));
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(EVENT_ID, (server, manager, b) -> PolydexImpl.rebuild(server));
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
         PolymerResourcePackUtils.addModAssets("polydex2");
         GuiUtils.register();

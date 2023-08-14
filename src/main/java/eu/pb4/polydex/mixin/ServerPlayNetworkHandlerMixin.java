@@ -5,6 +5,7 @@ import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.impl.*;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
+import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
 import eu.pb4.polymer.core.impl.PolymerImpl;
 import eu.pb4.predicate.api.PredicateContext;
@@ -46,28 +47,21 @@ public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
     private void polydex_create(MinecraftServer server, ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
         this.polydex_target = new PolydexTargetImpl((ServerPlayNetworkHandler) (Object) this);
 
-        var string = PlayerDataApi.getGlobalDataFor(player, id("display_type"));
-
-        Identifier display = null;
-        if (string instanceof NbtString nbtString) {
-            display = Identifier.tryParse(nbtString.asString());
-        }
-
-        if (display == null) {
-            display = PolydexImpl.config.defaultDisplay;
-        }
-
-        var creator = PolydexImpl.DISPLAYS.get(display);
+        var creator = PolydexImpl.DISPLAYS.get(this.polydex_target.settings().currentType());
         if (creator != null) {
             this.polydex_display = creator.apply(this.polydex_target);
         } else {
-            this.polydex_display = new BossbarTargetDisplay(this.polydex_target, BossbarTargetDisplay.DisplayMode.TARGET);
+            this.polydex_display = new BossbarTargetDisplay(this.polydex_target);
         }
 
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void polydex_tick(CallbackInfo ci) {
+        if (this.polydex_display == NoopTargetDisplay.INSTANCE) {
+            return;
+        }
+
         if (this.player.age % 32 == 0) {
             var value = PolydexImpl.config.displayPredicate.test(PredicateContext.of(this.player)).success();
 
@@ -107,7 +101,6 @@ public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
                 this.polydex_display.hideDisplay();
             } else {
                 this.polydex_display.onTargetUpdate();
-
             }
         }
     }
@@ -126,6 +119,7 @@ public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
     public void polydex_setDisplay(Identifier identifier, Function<PolydexTarget, HoverDisplay> displayCreator) {
         this.polydex_display.remove();
         this.polydex_display = displayCreator.apply(this.polydex_target);
-        PlayerDataApi.setGlobalDataFor(this.player, id("display_type"), NbtString.of(identifier.toString()));
+        this.polydex_target.settings().setDisplay(identifier);
+
     }
 }

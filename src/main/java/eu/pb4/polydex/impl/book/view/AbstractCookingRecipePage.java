@@ -21,10 +21,12 @@ import java.util.function.Function;
 
 public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> extends AbstractRecipePolydexPage<T> {
     private final ItemStack icon;
+    private final boolean sync;
 
-    public AbstractCookingRecipePage(T recipe, Item icon) {
+    public AbstractCookingRecipePage(T recipe, Item icon, boolean sync) {
         super(recipe);
         this.icon = icon.getDefaultStack();
+        this.sync = sync;
     }
 
     @Override
@@ -33,12 +35,17 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
     }
 
     public static <T extends AbstractCookingRecipe> Function<T, PolydexPage> of(Item icon) {
-        return (r) -> new AbstractCookingRecipePage<T>(r, icon);
+        return (r) -> new AbstractCookingRecipePage<T>(r, icon, false);
     }
 
     @Override
     public ItemStack typeIcon(ServerPlayerEntity player) {
         return this.icon;
+    }
+
+    @Override
+    public boolean syncWithClient(ServerPlayerEntity player) {
+        return this.sync;
     }
 
     @Override

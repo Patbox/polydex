@@ -35,6 +35,11 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
     }
 
     @Override
+    public boolean syncWithClient(ServerPlayerEntity player) {
+        return false;
+    }
+
+    @Override
     public @Nullable Text texture(ServerPlayerEntity player) {
         return InternalPageTextures.POTION;
     }

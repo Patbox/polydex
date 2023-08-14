@@ -2,6 +2,8 @@ package eu.pb4.polydex.api.v1.hover;
 
 import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
+import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.InvalidIdentifierException;

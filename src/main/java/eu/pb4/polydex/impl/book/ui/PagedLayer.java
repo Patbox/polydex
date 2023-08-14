@@ -22,6 +22,12 @@ public abstract class PagedLayer extends Layer implements PageAware {
         this.pageSize = this.withNavigation ? (height - 1) * width : height * width;
     }
 
+    protected abstract int getEntryCount();
+
+    @Override
+    public int getPageAmount() {
+        return (this.getEntryCount() - 1) / this.pageSize + 1;
+    }
 
     protected void updateDisplay() {
         var offset = this.page * this.pageSize;

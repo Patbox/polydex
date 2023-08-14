@@ -58,7 +58,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
             var component = build.removeAndGetComponent(HoverDisplayBuilder.MOD_SOURCE);
             if (component != null) {
                 lines.add(
-                        Text.translatable("text.polydex.sidebar.mod", component.copy().setStyle(Style.EMPTY.withColor(Formatting.BLUE).withBold(false))).formatted(Formatting.DARK_GRAY, Formatting.BOLD)
+                        Text.translatable("text.polydex.sidebar.mod", component.copy().setStyle(Style.EMPTY.withColor(Formatting.YELLOW).withBold(false))).formatted(Formatting.DARK_GRAY)
                 );
             }
         }
@@ -102,8 +102,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
             }
         }
 
-        var progress = build.getComponent(HoverDisplayBuilder.PROGRESS);
-        build.removeComponent(HoverDisplayBuilder.PROGRESS);
+        var progress = build.removeAndGetComponent(HoverDisplayBuilder.PROGRESS);
 
         {
             var out = build.getOutput();

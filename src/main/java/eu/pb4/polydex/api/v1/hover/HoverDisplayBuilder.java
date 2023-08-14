@@ -2,17 +2,18 @@ package eu.pb4.polydex.api.v1.hover;
 
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
+import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
+
 @ApiStatus.NonExtendable
 public interface HoverDisplayBuilder {
     ComponentType NAME = ComponentType.of(id("name"), true);
@@ -23,22 +24,18 @@ public interface HoverDisplayBuilder {
     ComponentType FUEL = ComponentType.of(id("fuel"), false);
     ComponentType OUTPUT = ComponentType.of(id("output"), false);
     ComponentType PROGRESS = ComponentType.of(id("progress"), true);
-
-    boolean isSmall();
-    HoverDisplay.Type getDisplayType();
-    PolydexTarget getTarget();
-    void setComponent(ComponentType type, Text text);
-    Text getComponent(ComponentType type);
-    boolean removeComponent(ComponentType type);
-    @Nullable
-    Text removeAndGetComponent(ComponentType type);
-    Collection<ComponentType> getComponentTypes();
-    List<Text> getOutput();
-
-
+    ComponentType RAW_ID = ComponentType.of(id("raw_id"), false);
 
     static void register(Consumer<HoverDisplayBuilder> consumer) {
         PolydexImpl.DISPLAY_BUILDER_CONSUMERS.add(consumer);
+    }
+
+    static void register(Block block, Consumer<HoverDisplayBuilder> consumer) {
+        PolydexImpl.DISPLAY_BUILDER_CONSUMERS_BLOCK.computeIfAbsent(block, (x) -> new ArrayList<>()).add(consumer);
+    }
+
+    static void register(EntityType<?> type, Consumer<HoverDisplayBuilder> consumer) {
+        PolydexImpl.DISPLAY_BUILDER_CONSUMERS_ENTITY_TYPE.computeIfAbsent(type, (x) -> new ArrayList<>()).add(consumer);
     }
 
     static HoverDisplayBuilder build(PolydexTarget target) {
@@ -56,11 +53,61 @@ public interface HoverDisplayBuilder {
         return build(target).getOutput();
     }
 
-    record ComponentType(Identifier identifier, boolean alwaysDisplay, int index) {
+    boolean isSmall();
+
+    HoverDisplay.Type getDisplayType();
+
+    PolydexTarget getTarget();
+
+    void setComponent(ComponentType type, Text text);
+
+    @Nullable
+    Text getComponent(ComponentType type);
+
+    boolean removeComponent(ComponentType type);
+
+    @Nullable
+    Text removeAndGetComponent(ComponentType type);
+
+    Collection<ComponentType> getComponentTypes();
+
+    List<Text> getOutput();
+
+    record ComponentType(Identifier identifier, Visibility defaultVisibility, @Deprecated boolean alwaysDisplay,
+                         int index) {
+        private static final Set<ComponentType> KNOWN_COMPONENTS = new HashSet<>();
+        private static final Map<Identifier, ComponentType> ID = new HashMap<>();
         private static int currentIndex = 0;
 
+        @Deprecated
+        public ComponentType(Identifier identifier, @Deprecated boolean alwaysDisplay, int index) {
+            this(identifier, alwaysDisplay ? Visibility.ALWAYS : Visibility.NEVER, alwaysDisplay, index);
+        }
+
+
+        public ComponentType {
+            if (ID.containsKey(identifier)) {
+                throw new RuntimeException("Duplicate ComponentType '" + identifier + "'");
+            }
+
+            KNOWN_COMPONENTS.add(this);
+            ID.put(identifier, this);
+        }
+
         public static ComponentType of(Identifier identifier, boolean alwaysDisplay) {
-            return new ComponentType(identifier, alwaysDisplay, currentIndex++);
+            return new ComponentType(identifier, alwaysDisplay ? Visibility.ALWAYS : Visibility.NEVER, alwaysDisplay, currentIndex++);
+        }
+
+        public static ComponentType of(Identifier identifier, Visibility displayMode) {
+            return new ComponentType(identifier, displayMode, displayMode == Visibility.ALWAYS, currentIndex++);
+        }
+
+        public static Collection<ComponentType> getAll() {
+            return KNOWN_COMPONENTS;
+        }
+
+        public static Collection<Identifier> getAllIds() {
+            return ID.keySet();
         }
 
         @Override
@@ -74,6 +121,14 @@ public interface HoverDisplayBuilder {
         @Override
         public int hashCode() {
             return Objects.hash(identifier);
+        }
+
+        public enum Visibility {
+            ALWAYS,
+            SNEAKING,
+            NEVER,
+            @ApiStatus.Internal
+            DEFAULT
         }
     }
 }

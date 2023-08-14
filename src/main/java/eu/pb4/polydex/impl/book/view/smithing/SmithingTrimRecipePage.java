@@ -47,6 +47,11 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
     }
 
     @Override
+    public boolean syncWithClient(ServerPlayerEntity player) {
+        return false;
+    }
+
+    @Override
     public int priority() {
         return -100;
     }

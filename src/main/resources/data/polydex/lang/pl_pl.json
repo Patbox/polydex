@@ -26,6 +26,6 @@
   "text.polydex.empty": "Puste",
   "test.polydex.close": "Zamknij",
   "text.polydex.button.select_displayed": "Wybierz przedmioty do wyświetlenia...",
-  "text.polydex.about.version": "Wersja: %s",
+  "text.polydex.about.version": "Wersja: ",
   "text.polydex.about.contributors": "Contributors"
 }

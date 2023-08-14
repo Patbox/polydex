@@ -1,8 +1,7 @@
 package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.PolydexImpl;
-import eu.pb4.polydex.impl.book.ui.CategoryPageViewerGui;
-import eu.pb4.polydex.impl.book.ui.EntryPageViewerGui;
+import eu.pb4.polydex.impl.book.ui.PageViewerGui;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -61,12 +60,20 @@ public class PolydexPageUtils {
         }
 
         if (entry.size() > 0) {
-            new CategoryPageViewerGui(player, category, list, closeCallback).open();
+            PageViewerGui.openCategory(player, category, list, closeCallback);
             return true;
         }
 
 
         return false;
+    }
+
+    @Nullable
+    public static PolydexPage getPageById(Identifier identifier) {
+        if (!isReady()) {
+            return null;
+        }
+        return PolydexImpl.ID_TO_PAGE.get(identifier);
     }
 
     public static boolean openRecipeListUi(ServerPlayerEntity player, ItemStack stack, @Nullable Runnable closeCallback) {
@@ -80,7 +87,20 @@ public class PolydexPageUtils {
         }
 
         if (entry.getVisiblePagesSize(player) > 0) {
-            new EntryPageViewerGui(player, entry, false, closeCallback).open();
+            PageViewerGui.openEntry(player, entry, false, closeCallback);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean openRecipeListUi(ServerPlayerEntity player, PolydexEntry entry, @Nullable Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
+        if (entry.getVisiblePagesSize(player) > 0) {
+            PageViewerGui.openEntry(player, entry, false, closeCallback);
             return true;
         }
 
@@ -98,7 +118,34 @@ public class PolydexPageUtils {
         }
 
         if (entry.getVisibleIngredientPagesSize(player) > 0) {
-            new EntryPageViewerGui(player, entry, true, closeCallback).open();
+            PageViewerGui.openEntry(player, entry, true, closeCallback);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean openUsagesListUi(ServerPlayerEntity player, PolydexEntry entry, @Nullable  Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
+        if (entry.getVisibleIngredientPagesSize(player) > 0) {
+            PageViewerGui.openEntry(player, entry, true, closeCallback);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean openCustomPageUi(ServerPlayerEntity player, Text text, List<PolydexPage> pages, boolean useTypeIcon, @Nullable Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
+
+        if (pages.size() > 0) {
+            PageViewerGui.openCustom(player, text, pages, useTypeIcon, closeCallback);
             return true;
         }
 

@@ -59,8 +59,8 @@ public class MainIndexGui extends ExtendedGui {
         }
 
         @Override
-        public int getPageAmount() {
-            return MathHelper.ceil(((double) MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size()) / this.pageSize);
+        protected int getEntryCount() {
+            return MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size();
         }
 
         @Override
@@ -79,9 +79,7 @@ public class MainIndexGui extends ExtendedGui {
                                 }
                             } else */if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
                                 MainIndexGui.this.close(true);
-                                new EntryPageViewerGui(player, item, type.isRight, () -> {
-                                    MainIndexGui.this.open();
-                                }).open();
+                                PageViewerGui.openEntry (player, item, type.isRight, MainIndexGui.this::open);
                                 GuiUtils.playClickSound(this.player);
                             }
                         })
@@ -139,6 +137,11 @@ public class MainIndexGui extends ExtendedGui {
         }
 
         @Override
+        protected int getEntryCount() {
+            return this.type == Type.INVENTORY ? 1 : this.type.entries.size();
+        }
+
+        @Override
         public int getPageAmount() {
             return this.type == Type.INVENTORY ? 1 : MathHelper.ceil(((double) this.type.entries.size() + 1) / this.pageSize);
         }
@@ -166,7 +169,7 @@ public class MainIndexGui extends ExtendedGui {
                 var page = PolydexPageUtils.getItemEntryFor(stack);
                 if (page != null && ((type.isLeft && page.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && page.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0))) {
                     MainIndexGui.this.close(true);
-                    new EntryPageViewerGui(player, page, type.isRight, MainIndexGui.this::open).open();
+                    PageViewerGui.openEntry(player, page, type.isRight, MainIndexGui.this::open);
                     GuiUtils.playClickSound(this.player);
                 }
             });

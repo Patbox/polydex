@@ -34,4 +34,9 @@ public final class StonecuttingRecipePage extends AbstractRecipePolydexPage<Ston
         }
         builder.setOutput(6, 2, recipe.getOutput(player.server.getRegistryManager()));
     }
+
+    @Override
+    public boolean syncWithClient(ServerPlayerEntity player) {
+        return false;
+    }
 }

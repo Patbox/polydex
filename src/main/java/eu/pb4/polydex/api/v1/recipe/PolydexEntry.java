@@ -3,6 +3,7 @@ package eu.pb4.polydex.api.v1.recipe;
 import eu.pb4.polydex.impl.PolydexEntryImpl;
 import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;

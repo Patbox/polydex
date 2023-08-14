@@ -10,7 +10,7 @@ import java.util.*;
 
 public class DisplayImpl implements HoverDisplayBuilder {
     private final PolydexTargetImpl target;
-    private Map<ComponentType, Text> components = new HashMap<>();
+    private final Map<ComponentType, Text> components = new HashMap<>();
 
     public DisplayImpl(PolydexTargetImpl target) {
         this.target = target;
@@ -33,7 +33,9 @@ public class DisplayImpl implements HoverDisplayBuilder {
 
     @Override
     public void setComponent(ComponentType type, Text text) {
-        this.components.put(type, text);
+        if (this.target.settings().isComponentVisible(this.target.player(), type)) {
+            this.components.put(type, text);
+        }
     }
 
     @Override
@@ -63,9 +65,7 @@ public class DisplayImpl implements HoverDisplayBuilder {
         var out = new ArrayList<Text>();
 
         for (var entry : list) {
-            if (entry.getKey().alwaysDisplay()) {
-                out.add(entry.getValue());
-            }
+            out.add(entry.getValue());
         }
 
         return out;

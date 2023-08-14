@@ -37,6 +37,11 @@ repositories {
 	}
 
 	maven {
+		name = "AlexIIL"
+		url = "https://maven.alexiil.uk/"
+	}
+
+	maven {
 		name = 'Ladysnake Mods'
 		url = 'https://ladysnake.jfrog.io/artifactory/mods'
 	}
@@ -67,6 +72,8 @@ dependencies {
 	modImplementation include("eu.pb4:sidebar-api:${project.sidebar_version}")
 	modImplementation include("xyz.nucleoid:server-translations-api:${project.stapi_version}")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
+
+	modCompileOnly "alexiil.mc.lib:libmultipart-all:0.11.0"
 
 	modCompileOnly "eu.pb4:polymer-core:${project.polymer_version}"
 	modLocalRuntime "eu.pb4:polymer-autohost:${project.polymer_version}"
@@ -103,6 +110,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 jar {
 	from "LICENSE"
 }
+def env = System.getenv()
 
 // configure the maven publication
 publishing {
@@ -118,10 +126,25 @@ publishing {
 		}
 	}
 
-	// select the repositories you want to publish to
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
-		// uncomment to publish to the local maven
-		// mavenLocal()
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+		repositories {
+			if (env.MAVEN_URL) {
+				maven {
+					credentials {
+						username env.MAVEN_USERNAME
+						password env.MAVEN_PASSWORD
+					}
+					url env.MAVEN_URL
+				}
+			} else {
+				mavenLocal()
+			}
+		}
 	}
 }
 

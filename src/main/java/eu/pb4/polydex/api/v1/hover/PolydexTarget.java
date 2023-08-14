@@ -19,7 +19,6 @@ public interface PolydexTarget {
     @Nullable
     BlockEntity blockEntity();
 
-
     @Nullable
     Entity entity();
     BlockPos pos();
@@ -28,6 +27,8 @@ public interface PolydexTarget {
     boolean isMining();
 
     boolean hasTarget();
+
+    HoverSettings settings();
 
     static PolydexTarget get(ServerPlayerEntity player) {
         return ((PlayerInterface) player.networkHandler).polydex_getTarget();
