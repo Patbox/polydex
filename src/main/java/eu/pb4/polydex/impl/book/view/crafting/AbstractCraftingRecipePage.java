@@ -5,6 +5,7 @@ import eu.pb4.polydex.impl.book.InternalPageTextures;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +16,7 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
     private static ItemStack CRAFTING_TABLE = PageIcons.CRAFTING_TABLE_RECIPE_ICON;
     private static ItemStack CRAFTING = PageIcons.CRAFTING_RECIPE_ICON;
 
-    public AbstractCraftingRecipePage(T recipe) {
+    public AbstractCraftingRecipePage(RecipeEntry<T> recipe) {
         super(recipe);
     }
 
@@ -42,7 +43,7 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
     }
 
     protected ItemStack[] getOutput(T recipe, ServerPlayerEntity player) {
-        return new ItemStack[] { recipe.getOutput(player.server.getRegistryManager()) };
+        return new ItemStack[] { recipe.getResult(player.server.getRegistryManager()) };
     }
 
     @Override
@@ -52,7 +53,7 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
 
     protected abstract Ingredient getStacksAt(T recipe, int x, int y);
 
-    public static <T extends CraftingRecipe> Function<T, AbstractCraftingRecipePage<T>> of(StackGetter<T> getter) {
+    public static <T extends CraftingRecipe> Function<RecipeEntry<T>, AbstractCraftingRecipePage<T>> of(StackGetter<T> getter) {
         return (r) -> new AbstractCraftingRecipePage<T>(r) {
             @Override
             protected Ingredient getStacksAt(T recipe, int x, int y) {

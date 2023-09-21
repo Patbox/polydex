@@ -13,6 +13,8 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ConnectedClientData;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -28,12 +30,10 @@ import java.util.function.Function;
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
 @Mixin(ServerPlayNetworkHandler.class)
-public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
+public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkHandler implements PlayerInterface {
     @Shadow public ServerPlayerEntity player;
+    @Unique
     private HoverDisplay polydex_display;
-
-    @Shadow public abstract void sendPacket(Packet<?> packet);
-
     @Unique
     private PolydexTargetImpl polydex_target;
     @Unique
@@ -43,8 +43,12 @@ public abstract class ServerPlayNetworkHandlerMixin implements PlayerInterface {
     @Unique
     private boolean polydex_globalEnabled = true;
 
+    public ServerPlayNetworkHandlerMixin(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
+        super(server, connection, clientData);
+    }
+
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void polydex_create(MinecraftServer server, ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
+    private void polydex_create(MinecraftServer server, ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
         //noinspection ConstantConditions
         if (((Object) this).getClass() == ServerPlayNetworkHandler.class) {
             this.polydex_target = new PolydexTargetImpl((ServerPlayNetworkHandler) (Object) this);

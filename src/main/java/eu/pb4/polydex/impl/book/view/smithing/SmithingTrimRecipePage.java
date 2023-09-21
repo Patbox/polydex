@@ -10,6 +10,7 @@ import net.minecraft.item.trim.ArmorTrimMaterial;
 import net.minecraft.item.trim.ArmorTrimMaterials;
 import net.minecraft.item.trim.ArmorTrimPatterns;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.SmithingTrimRecipe;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingTrimRecipe> {
     private static final Ingredient DEFAULT = Ingredient.ofItems(Items.IRON_CHESTPLATE);
 
-    public SmithingTrimRecipePage(SmithingTrimRecipe recipe) {
+    public SmithingTrimRecipePage(RecipeEntry<SmithingTrimRecipe> recipe) {
         super(recipe);
     }
 
@@ -67,7 +68,7 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
         for (var material : PolydexImplUtils.readIngredient(getAddition())) {
             Optional<RegistryEntry.Reference<ArmorTrimMaterial>> optional = ArmorTrimMaterials.get(player.server.getRegistryManager(), material);
             if (optional.isPresent() && optional2.isPresent()) {
-                Optional<ArmorTrim> optional3 = ArmorTrim.getTrim(player.server.getRegistryManager(), trim);
+                Optional<ArmorTrim> optional3 = ArmorTrim.getTrim(player.server.getRegistryManager(), trim, true);
                 if (optional3.isPresent() && optional3.get().equals(optional2.get(), optional.get())) {
                     continue;
                 }

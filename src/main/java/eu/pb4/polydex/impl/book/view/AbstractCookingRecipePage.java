@@ -23,7 +23,7 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
     private final ItemStack icon;
     private final boolean sync;
 
-    public AbstractCookingRecipePage(T recipe, Item icon, boolean sync) {
+    public AbstractCookingRecipePage(RecipeEntry<T> recipe, Item icon, boolean sync) {
         super(recipe);
         this.icon = icon.getDefaultStack();
         this.sync = sync;
@@ -34,7 +34,7 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
         return InternalPageTextures.SMELTING;
     }
 
-    public static <T extends AbstractCookingRecipe> Function<T, PolydexPage> of(Item icon) {
+    public static <T extends AbstractCookingRecipe> Function<RecipeEntry<T>, PolydexPage> of(Item icon) {
         return (r) -> new AbstractCookingRecipePage<T>(r, icon, false);
     }
 
@@ -52,13 +52,13 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
     public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
         builder.setIngredient(3, 2, recipe.getIngredients().get(0));
         builder.set(3, 3, GuiUtils.flame(player)
-                .setName(Text.translatable("text.polydex.view.cooking_time", Text.literal("" + (recipe.getCookTime() / 20d) + "s")
+                .setName(Text.translatable("text.polydex.view.cooking_time", Text.literal("" + (recipe.getCookingTime() / 20d) + "s")
                         .formatted(Formatting.WHITE)).formatted(Formatting.GOLD)));
         if (recipe.getExperience() != 0) {
             builder.set(5, 3, GuiUtils.xp(player)
                     .setName(Text.translatable("text.polydex.view.experience", Text.literal("" + recipe.getExperience())
                             .append(Text.translatable("text.polydex.view.experience.points")).formatted(Formatting.WHITE)).formatted(Formatting.GREEN)));
         }
-        builder.setOutput(5, 2, recipe.getOutput(player.server.getRegistryManager()));
+        builder.setOutput(5, 2, recipe.getResult(player.server.getRegistryManager()));
     }
 }

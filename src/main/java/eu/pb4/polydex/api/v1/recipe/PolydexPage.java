@@ -45,8 +45,8 @@ public interface PolydexPage {
     @ApiStatus.OverrideOnly
     boolean isOwner(MinecraftServer server, PolydexEntry entry);
 
-    static <T extends Recipe<?>> void registerRecipeViewer(Class<T> recipeClass, Function<T, PolydexPage> viewCreator) {
-        PolydexImpl.RECIPE_VIEWS.put(recipeClass, (Function<Recipe, PolydexPage>) (Object) viewCreator);
+    static <T extends Recipe<?>> void registerRecipeViewer(Class<T> recipeClass, Function<RecipeEntry<T>, PolydexPage> viewCreator) {
+        PolydexImpl.RECIPE_VIEWS.put(recipeClass, (Function<RecipeEntry<?>, PolydexPage>) (Object) viewCreator);
     }
 
     static void registerModifier(EntryModifier viewBuilder) {

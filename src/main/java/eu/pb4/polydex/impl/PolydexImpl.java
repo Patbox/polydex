@@ -30,6 +30,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.*;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
@@ -58,7 +59,7 @@ import java.util.function.Function;
 
 public class PolydexImpl {
     public static final Map<Identifier, Function<PolydexTarget, HoverDisplay>> DISPLAYS = new HashMap<>();
-    public static final HashMap<Class<?>, Function<Recipe, PolydexPage>> RECIPE_VIEWS = new HashMap<>();
+    public static final HashMap<Class<?>, Function<RecipeEntry<?>, PolydexPage>> RECIPE_VIEWS = new HashMap<>();
     public static final List<PolydexPage.EntryModifier> ENTRY_MODIFIERS = new ArrayList<>();
     public static final List<PolydexPage.PageCreator> PAGE_CREATORS = new ArrayList<>();
     public static final String ID = "polydex";
@@ -148,7 +149,7 @@ public class PolydexImpl {
         }, server);
     }
 
-    public static void updateCaches(MinecraftServer server, Collection<Recipe<?>> recipes) {
+    public static void updateCaches(MinecraftServer server, Collection<RecipeEntry<?>> recipes) {
         ITEM_ENTRIES.clear();
         BY_NAMESPACE.clear();
         BY_ITEMGROUP.clear();
@@ -217,7 +218,7 @@ public class PolydexImpl {
 
         var globalPages = new ArrayList<PolydexPage>(recipes.size());
         for (var recipe : recipes) {
-            var baseClass = (Class<?>) recipe.getClass();
+            var baseClass = (Class<?>) recipe.value().getClass();
 
             while (baseClass != Object.class) {
                 var view = PolydexImpl.RECIPE_VIEWS.get(baseClass);

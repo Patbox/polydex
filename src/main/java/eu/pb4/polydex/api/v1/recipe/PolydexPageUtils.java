@@ -14,8 +14,8 @@ import java.util.List;
 
 public class PolydexPageUtils {
 
-    public static Identifier identifierFromRecipe(Recipe<?> recipe) {
-        return recipe.getId().withPrefixedPath("recipe/");
+    public static Identifier identifierFromRecipe(Identifier identifier) {
+        return identifier.withPrefixedPath("recipe/");
     }
 
     public static Text createText(ItemStack stack) {

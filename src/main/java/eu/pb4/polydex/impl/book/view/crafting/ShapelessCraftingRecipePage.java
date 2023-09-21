@@ -1,10 +1,11 @@
 package eu.pb4.polydex.impl.book.view.crafting;
 
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.ShapelessRecipe;
 
 public final class ShapelessCraftingRecipePage extends AbstractCraftingRecipePage<ShapelessRecipe> {
-    public ShapelessCraftingRecipePage(ShapelessRecipe recipe) {
+    public ShapelessCraftingRecipePage(RecipeEntry<ShapelessRecipe> recipe) {
         super(recipe);
     }
 

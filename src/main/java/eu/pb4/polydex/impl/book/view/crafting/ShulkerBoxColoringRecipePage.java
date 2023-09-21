@@ -8,6 +8,7 @@ import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.ShulkerBoxColoringRecipe;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -26,7 +27,7 @@ public class ShulkerBoxColoringRecipePage extends AbstractCraftingRecipePage<Shu
 
     private static final List<PolydexIngredient<?>> INGREDIENTS = List.of(PolydexIngredient.of(SHULKERS_ANY), PolydexIngredient.of(DYES));
 
-    public ShulkerBoxColoringRecipePage(ShulkerBoxColoringRecipe recipe) {
+    public ShulkerBoxColoringRecipePage(RecipeEntry<ShulkerBoxColoringRecipe> recipe) {
         super(recipe);
     }
 

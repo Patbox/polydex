@@ -1,8 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "polydex2",
+  "id": "polydex",
   "version": "${version}",
   "name": "Polydex",
+  "provides": [
+    "polydex2"
+  ],
   "description": "Target block/entity tooltip and recipes in one ui mod for servers!",
   "authors": [
     "Patbox"
