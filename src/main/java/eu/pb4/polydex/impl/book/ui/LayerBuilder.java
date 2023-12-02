@@ -84,7 +84,7 @@ public class LayerBuilder extends Layer implements PageBuilder {
 
     @Override
     public boolean hasTextures() {
-        return PolymerResourcePackUtils.hasPack(this.player);
+        return PolymerResourcePackUtils.hasMainPack(this.player);
     }
 
     public void clear(GuiElement filler) {

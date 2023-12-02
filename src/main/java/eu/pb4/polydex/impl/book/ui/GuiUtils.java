@@ -113,6 +113,6 @@ public class GuiUtils {
     }
 
     private static boolean hasTexture(ServerPlayerEntity player) {
-        return PolymerResourcePackUtils.hasPack(player);
+        return PolymerResourcePackUtils.hasMainPack(player);
     }
 }

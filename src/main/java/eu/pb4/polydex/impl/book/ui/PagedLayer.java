@@ -54,7 +54,7 @@ public abstract class PagedLayer extends Layer implements PageAware {
     }
 
     private GuiElement filler() {
-        return PolymerResourcePackUtils.hasPack(this.player) ? GuiElement.EMPTY : GuiUtils.FILLER;
+        return PolymerResourcePackUtils.hasMainPack(this.player) ? GuiElement.EMPTY : GuiUtils.FILLER;
     }
 
     public int getPage() {

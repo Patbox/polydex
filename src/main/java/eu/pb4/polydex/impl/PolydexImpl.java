@@ -21,6 +21,7 @@ import eu.pb4.polydex.mixin.BrewingRecipeRegistryAccessor;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.Block;
@@ -40,6 +41,7 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
@@ -72,7 +74,7 @@ public class PolydexImpl {
     public static final Map<PolydexCategory, List<PolydexPage>> CATEGORY_TO_PAGES = new Object2ObjectOpenHashMap<>();
     public static final Map<PolydexStack<?>, PolydexEntry> STACK_TO_ENTRY = new Object2ObjectOpenHashMap<>();
     public static final Map<Identifier, PolydexPage> ID_TO_PAGE = new Object2ObjectOpenHashMap<>();
-    public static final Map<Item, List<PolydexEntry>> ITEM_TO_ENTRIES = new Object2ObjectOpenCustomHashMap<>(Util.identityHashStrategy());
+    public static final Map<Item, List<PolydexEntry>> ITEM_TO_ENTRIES = new Reference2ObjectOpenHashMap<>();
     public static final Logger LOGGER = LogManager.getLogger("Polydex");
     public static final List<Consumer<HoverDisplayBuilder>> DISPLAY_BUILDER_CONSUMERS = new ArrayList<>();
     public static final Map<Block, List<Consumer<HoverDisplayBuilder>>> DISPLAY_BUILDER_CONSUMERS_BLOCK = new IdentityHashMap<>();
@@ -84,7 +86,7 @@ public class PolydexImpl {
     private static final Map<String, Text> MOD_NAMES = new HashMap<>();
     public static Codec<ItemStack> ITEM_STACK_CODEC = Codec.either(Identifier.CODEC, ItemStack.CODEC).xmap(
             x -> x.left().isPresent() ? Registries.ITEM.get(x.left().get()).getDefaultStack() : x.right().get(), x -> x.hasNbt() || x.getCount() != 1 ? Either.right(x) : Either.left(Registries.ITEM.getId(x.getItem())));
-    public static Codec<Text> TEXT = Codec.either(Codec.STRING, Codecs.TEXT)
+    public static Codec<Text> TEXT = Codec.either(Codec.STRING, TextCodecs.CODEC)
             .xmap(either -> either.map(TextParserUtils::formatTextSafe, Function.identity()), Either::right);
     public static PolydexConfigImpl config = new PolydexConfigImpl();
     @Nullable
@@ -146,6 +148,7 @@ public class PolydexImpl {
         }).thenAcceptAsync((x) -> {
             LOGGER.info("[Polydex] Done! It took {} ms", (System.currentTimeMillis() - time));
             isReady = true;
+            cacheBuilding = null;
         }, server);
     }
 

@@ -57,7 +57,7 @@ public class ExtendedGui extends LayeredGui {
             return;
         }
         this.isDirty = false;
-        if (PolymerResourcePackUtils.hasPack(this.getPlayer())) {
+        if (PolymerResourcePackUtils.hasMainPack(this.getPlayer())) {
             var text = Text.empty();
             var textTexture = Text.empty().setStyle(TEXTURE_STYLE);
 
@@ -90,6 +90,6 @@ public class ExtendedGui extends LayeredGui {
     }
 
     public GuiElement filler() {
-        return PolymerResourcePackUtils.hasPack(this.getPlayer()) ? GuiElement.EMPTY : GuiUtils.FILLER;
+        return PolymerResourcePackUtils.hasMainPack(this.getPlayer()) ? GuiElement.EMPTY : GuiUtils.FILLER;
     }
 }
