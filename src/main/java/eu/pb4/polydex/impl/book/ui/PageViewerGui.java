@@ -5,14 +5,17 @@ import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
+import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -20,13 +23,14 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
     public static final int PAGE_SIZE = 9 * 5;
 
     protected final Runnable closeCallback;
+    protected final List<PolydexPage> pages;
+    protected final List<GroupedPages> groupedPages;
+    @Nullable
+    protected final PolydexEntry entry;
     private final LayerBuilder displayLayer;
     private final SubRecipeLayer subPages;
     private final IconGetter iconGetter;
     protected int page = 0;
-    protected final List<PolydexPage> pages;
-    @Nullable
-    protected final PolydexEntry entry;
 
     public PageViewerGui(ServerPlayerEntity player, Text title, @Nullable PolydexEntry entry, List<PolydexPage> pages, IconGetter iconGetter, @Nullable Runnable closeCallback) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
@@ -34,6 +38,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
         this.iconGetter = iconGetter;
         this.displayLayer = new LayerBuilder(player);
         this.pages = pages;
+        this.groupedPages = GroupedPages.of(this.pages);
         this.entry = entry;
         this.addLayer(this.displayLayer, 0, 0);
         this.setOverlayTexture(InternalPageTextures.MAIN);
@@ -58,7 +63,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
     public static void openEntry(ServerPlayerEntity player, PolydexEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
         var pages = ingredients ? entry.getVisibleIngredientPages(player) : entry.getVisiblePages(player);
         var title = Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", entry.stack().getName());
-        new PageViewerGui(player, title, entry, pages, PolydexPage::typeIcon, closeCallback);
+        new PageViewerGui(player, title, entry, pages, ingredients ? PolydexPage::entryIcon : PolydexPage::typeIcon, closeCallback);
     }
 
     protected void setupNavigator() {
@@ -102,7 +107,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
         pageEntry.createPage(this.entry, this.getPlayer(), this.displayLayer);
         this.setSlot(PAGE_SIZE, pageEntry.typeIcon(this.entry, this.getPlayer()));
         if (this.pages.size() > 1) {
-            this.setSlot(PAGE_SIZE + 4, GuiUtils.page(this.getPlayer(),  this.page + 1, this.getPageAmount()));
+            this.setSlot(PAGE_SIZE + 4, GuiUtils.page(this.getPlayer(), this.page + 1, this.getPageAmount()));
         }
         this.unlock();
     }
@@ -122,6 +127,48 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
         return this.pages.size();
     }
 
+    @FunctionalInterface
+    public interface IconGetter {
+        ItemStack getIcon(PolydexPage polydexPage, @Nullable PolydexEntry entry, ServerPlayerEntity player);
+    }
+
+    public record GroupedPages(String group, List<PolydexPage> pages, int index) {
+        public static List<GroupedPages> of(List<PolydexPage> pages) {
+            var out = new ArrayList<GroupedPages>();
+            GroupedPages group = null;
+
+            for (int i = 0; i < pages.size(); i++) {
+                var page = pages.get(i);
+
+                if (page.getGroup().isEmpty()) {
+                    if (group != null) {
+                        out.add(group);
+                        group = null;
+                    }
+                    out.add(new GroupedPages("", List.of(page), i));
+                    continue;
+                }
+
+                if (group == null) {
+                    group = new GroupedPages(page.getGroup(), new ArrayList<>(), i);
+                    group.pages.add(page);
+                } else if (group.group.equals(page.getGroup())) {
+                    group.pages.add(page);
+                } else {
+                    out.add(group);
+                    group = new GroupedPages(page.getGroup(), new ArrayList<>(), i);
+                    group.pages.add(page);
+                }
+            }
+
+            if (group != null) {
+                out.add(group);
+            }
+
+            return out;
+        }
+    }
+
     public class SubRecipeLayer extends PagedLayer {
         public SubRecipeLayer(int height) {
             super(PageViewerGui.this.getPlayer(), height, 9, true);
@@ -130,28 +177,25 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
 
         @Override
         protected int getEntryCount() {
-            return pages.size();
+            return groupedPages.size();
         }
 
         @Override
-        protected GuiElement getElement(int id) {
-            if (id < pages.size()) {
-                var page = pages.get(id);
+        protected GuiElementInterface getElement(int id) {
+            if (id < groupedPages.size()) {
+                var group = groupedPages.get(id);
 
-                return GuiElementBuilder.from(iconGetter.getIcon(page, entry, player))
-                        .setCallback((x, type, z) -> {
-                            PageViewerGui.this.setPage(id);
-                            GuiUtils.playClickSound(this.player);
-                        })
-                        .build();
+                var list = new ArrayList<>(group.pages.size());
+                for (var page : group.pages) {
+                    list.add(iconGetter.getIcon(page, entry, player));
+                }
 
+                return new AnimatedGuiElement(list.toArray(new ItemStack[0]), 5, false, (x, type, z) -> {
+                    PageViewerGui.this.setPage(group.index);
+                    GuiUtils.playClickSound(this.player);
+                });
             }
             return GuiElement.EMPTY;
         }
-    }
-
-    @FunctionalInterface
-    public interface IconGetter {
-        ItemStack getIcon(PolydexPage polydexPage, @Nullable PolydexEntry entry, ServerPlayerEntity player);
     }
 }

@@ -2,12 +2,9 @@ package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.layered.Layer;
-import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 public abstract class PagedLayer extends Layer implements PageAware {
     public final int pageSize;
@@ -67,9 +64,9 @@ public abstract class PagedLayer extends Layer implements PageAware {
         this.updateDisplay();
     }
 
-    protected abstract GuiElement getElement(int id);
+    protected abstract GuiElementInterface getElement(int id);
 
-    protected GuiElement getNavElement(int id) {
+    protected GuiElementInterface getNavElement(int id) {
         return switch (id) {
             case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
             case 4 -> this.getPageAmount() > 1 ? GuiUtils.page(this.player,  this.page + 1, this.getPageAmount()).build() : filler();

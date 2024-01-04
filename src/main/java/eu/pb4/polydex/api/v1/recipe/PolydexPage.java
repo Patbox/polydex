@@ -39,7 +39,17 @@ public interface PolydexPage {
     List<PolydexCategory> categories();
 
     default String sortingId() {
-        return this.identifier().toString();
+        var group = this.getGroup();
+
+        if (group.isEmpty()) {
+            return this.identifier().getPath() + "|" + this.identifier().getNamespace();
+        }
+
+        return group + "|" + this.identifier().getPath() + "|" + this.identifier().getNamespace();
+    }
+
+    default String getGroup() {
+        return "";
     }
 
     @ApiStatus.OverrideOnly

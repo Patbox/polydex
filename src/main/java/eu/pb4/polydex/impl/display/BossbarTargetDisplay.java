@@ -37,6 +37,9 @@ public class BossbarTargetDisplay extends BossBar implements HoverDisplay {
     @Override
     public void showDisplay() {
         this.onTargetUpdate();
+        if (this.displayMode == HoverSettings.DisplayMode.SNEAKING && !this.target.player().isSneaking()) {
+            return;
+        }
         if (this.displayMode != HoverSettings.DisplayMode.ALWAYS && (this.displayMode == HoverSettings.DisplayMode.TARGET || this.target.player().isSneaking())) {
             this.target.player().networkHandler.sendPacket(BossBarS2CPacket.add(this));
         }

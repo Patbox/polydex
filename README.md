@@ -21,3 +21,10 @@ https://user-images.githubusercontent.com/39821509/154287702-29546608-3312-4ac6-
 - [Modrinth](https://modrinth.com/mod/polydex)
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/polydex)
 - [GitHub Releases](https://github.com/Patbox/polydex/releases)
+- 
+## Contribute!
+Do you speak some other languages than english? If so, you can help with translating
+this mod (and others) to it!
+### https://crowdin.com/project/patbox-mods
+If you can't find the language you speak, feel free to request it!
+

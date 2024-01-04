@@ -31,7 +31,7 @@ public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements 
     }
 
     @Override
-    public String sortingId() {
+    public String getGroup() {
         return this.recipe.getGroup();
     }
 

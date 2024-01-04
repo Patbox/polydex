@@ -48,6 +48,11 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
     }
 
     @Override
+    public String getGroup() {
+        return "trimming";
+    }
+
+    @Override
     public boolean syncWithClient(ServerPlayerEntity player) {
         return false;
     }
