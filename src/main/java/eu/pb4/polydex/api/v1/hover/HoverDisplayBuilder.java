@@ -95,11 +95,24 @@ public interface HoverDisplayBuilder {
         }
 
         public static ComponentType of(Identifier identifier, boolean alwaysDisplay) {
-            return new ComponentType(identifier, alwaysDisplay ? Visibility.ALWAYS : Visibility.NEVER, alwaysDisplay, currentIndex++);
+            return new ComponentType(identifier, alwaysDisplay ? Visibility.ALWAYS : Visibility.NEVER, alwaysDisplay, currentIndex += 1000);
         }
 
         public static ComponentType of(Identifier identifier, Visibility displayMode) {
-            return new ComponentType(identifier, displayMode, displayMode == Visibility.ALWAYS, currentIndex++);
+            return new ComponentType(identifier, displayMode, displayMode == Visibility.ALWAYS, currentIndex += 1000);
+        }
+
+        public static ComponentType of(Identifier identifier, Visibility displayMode, int index) {
+            return new ComponentType(identifier, displayMode, displayMode == Visibility.ALWAYS, index);
+        }
+
+        public static ComponentType ofAfter(Identifier identifier, Visibility displayMode, ComponentType after) {
+            return new ComponentType(identifier, displayMode, displayMode == Visibility.ALWAYS, after.index() + 1);
+        }
+
+
+        public static ComponentType ofBefore(Identifier identifier, Visibility displayMode, ComponentType before) {
+            return new ComponentType(identifier, displayMode, displayMode == Visibility.ALWAYS, before.index() - 1);
         }
 
         public static Collection<ComponentType> getAll() {
