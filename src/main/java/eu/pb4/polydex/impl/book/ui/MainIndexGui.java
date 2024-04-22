@@ -93,6 +93,8 @@ public class MainIndexGui extends ExtendedGui {
         protected GuiElement getNavElement(int id) {
             return switch (id) {
                 case 0 -> new GuiElementBuilder(MainIndexGui.this.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
+                        .noDefaults()
+                        .hideDefaultTooltip()
                         .setName(Text.translatable("text.polydex.button.see_" + (MainIndexGui.this.showAll ? "limited" : "everything")))
                         .setCallback((x, y, z) -> {
                             MainIndexGui.this.showAll = !MainIndexGui.this.showAll;
@@ -101,6 +103,8 @@ public class MainIndexGui extends ExtendedGui {
                         }).build();
 
                 case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
+                        .noDefaults()
+                        .hideDefaultTooltip()
                         .setName(Text.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.type.name().toLowerCase(Locale.ROOT)))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
@@ -180,7 +184,8 @@ public class MainIndexGui extends ExtendedGui {
             if (id == 0) {
                 var builder = new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .setName(Text.translatable("text.polydex.display_all_items"))
-                        .hideFlags()
+                        .noDefaults()
+                        .hideDefaultTooltip()
                         .setCallback((x, y, z) -> {
                             MainIndexGui.this.entries = PolydexImpl.ITEM_ENTRIES;
                             MainIndexGui.this.indexLayer.updateDisplay();
@@ -201,7 +206,8 @@ public class MainIndexGui extends ExtendedGui {
 
                 var builder = GuiElementBuilder.from(item.icon().apply(player))
                         .setName(item.display())
-                        .hideFlags()
+                        .noDefaults()
+                        .hideDefaultTooltip()
                         .setCallback((x, y, z) -> {
                             MainIndexGui.this.entries = item.entries();
                             MainIndexGui.this.indexLayer.updateDisplay();

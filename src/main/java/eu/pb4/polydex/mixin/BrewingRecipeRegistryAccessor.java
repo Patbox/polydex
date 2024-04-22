@@ -11,12 +11,8 @@ import java.util.List;
 @Mixin(BrewingRecipeRegistry.class)
 public interface BrewingRecipeRegistryAccessor {
     @Accessor
-    static List<BrewingRecipeRegistry.Recipe<Potion>> getPOTION_RECIPES() {
-        throw new UnsupportedOperationException();
-    }
+    List<BrewingRecipeRegistry.Recipe<Potion>> getPotionRecipes();
 
     @Accessor
-    static List<BrewingRecipeRegistry.Recipe<Item>> getITEM_RECIPES() {
-        throw new UnsupportedOperationException();
-    }
+    List<BrewingRecipeRegistry.Recipe<Item>> getItemRecipes();
 }

@@ -2,16 +2,17 @@ package eu.pb4.polydex.impl.book.view;
 
 import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
-import eu.pb4.polydex.mixin.BrewingRecipeAccessor;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -25,13 +26,11 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
     private final Identifier identifier;
     protected final BrewingRecipeRegistry.Recipe<T> recipe;
     private final List<PolydexIngredient<?>> ingredient;
-    protected final BrewingRecipeAccessor<T> access;
 
     public PotionRecipePage(Identifier identifier, BrewingRecipeRegistry.Recipe<T> recipe) {
         this.identifier = identifier;
         this.recipe = recipe;
-        this.access = (BrewingRecipeAccessor<T>) recipe;
-        this.ingredient = List.of(PolydexIngredient.of(((BrewingRecipeAccessor<T>) recipe).getIngredient()), this.customIngredient());
+        this.ingredient = List.of(PolydexIngredient.of(recipe.ingredient()), this.customIngredient());
     }
 
     @Override
@@ -77,7 +76,7 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
         var base = getBaseStack(entry);
         var out = getOutStack(entry);
 
-        builder.setIngredient(3, 1, access.getIngredient());
+        builder.setIngredient(3, 1, this.recipe.ingredient());
         if (!builder.hasTextures()) {
             builder.set(3, 2, new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.empty()));
         }
@@ -99,30 +98,34 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
 
         @Override
         protected boolean isOwnerPotion(ItemStack backing) {
-            return backing.isOf(this.access.getOutput());
+            return backing.isOf(this.recipe.to().value());
         }
 
 
         @Override
         protected ItemStack getBaseStack(@Nullable PolydexEntry entry) {
-            return PotionUtil.setPotion(this.access.getInput().getDefaultStack(), getPotion(entry));
+            var input = this.recipe.from().value().getDefaultStack();
+            input.set(DataComponentTypes.POTION_CONTENTS, getPotion(entry));
+            return input;
         }
 
         @Override
         protected ItemStack getOutStack(@Nullable PolydexEntry entry) {
-            return PotionUtil.setPotion(this.access.getOutput().getDefaultStack(), getPotion(entry));
+            var input = this.recipe.to().value().getDefaultStack();
+            input.set(DataComponentTypes.POTION_CONTENTS, getPotion(entry));
+            return input;
         }
 
         @Override
         protected PolydexIngredient<ItemStack> customIngredient() {
-            return PolydexIngredient.of(Ingredient.ofItems(this.access.getInput()));
+            return PolydexIngredient.of(Ingredient.ofItems(this.recipe.from().value()));
         }
 
-        private Potion getPotion(@Nullable  PolydexEntry entry) {
+        private PotionContentsComponent getPotion(@Nullable PolydexEntry entry) {
             if (entry != null && entry.stack().getBacking() instanceof ItemStack backing) {
-                return PotionUtil.getPotion(backing);
+                return backing.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
             } else {
-                return Potions.EMPTY;
+                return PotionContentsComponent.DEFAULT;
             }
         }
 
@@ -139,22 +142,28 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
 
         @Override
         protected boolean isOwnerPotion(ItemStack backing) {
-            return (PotionUtil.getPotion(backing) == this.access.getOutput()) && ((backing.isOf(Items.POTION) || backing.isOf(Items.SPLASH_POTION) ||backing.isOf(Items.LINGERING_POTION) || backing.isOf(Items.GLASS_BOTTLE)));
+            var x = backing.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+
+            return (x.potion().map(RegistryEntry::value).orElse(null) == this.recipe.to().value())
+                    && ((backing.isOf(Items.POTION) || backing.isOf(Items.SPLASH_POTION) ||backing.isOf(Items.LINGERING_POTION) || backing.isOf(Items.GLASS_BOTTLE)));
         }
 
         @Override
         protected ItemStack getBaseStack(PolydexEntry entry) {
-            return PotionUtil.setPotion(getStack(entry), this.access.getInput());
+            var x = getStack(entry);
+            x.set(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT.with(this.recipe.from()));
+            return x;
         }
 
         @Override
         protected ItemStack getOutStack(@Nullable  PolydexEntry entry) {
-            return PotionUtil.setPotion(getStack(entry), this.access.getOutput());
-        }
+            var x = getStack(entry);
+            x.set(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT.with(this.recipe.to()));
+            return x;        }
 
         @Override
         protected PolydexIngredient<ItemStack> customIngredient() {
-            return PotionIngredient.of(this.access.getInput());
+            return PotionIngredient.of(this.recipe.from());
         }
 
         @Override
@@ -162,13 +171,15 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
             return getOutStack(entry);
         }
 
-        private record PotionIngredient(Potion potion, List<PolydexStack<ItemStack>> stacks) implements PolydexIngredient<ItemStack> {
+        private record PotionIngredient(RegistryEntry<Potion> potion, List<PolydexStack<ItemStack>> stacks) implements PolydexIngredient<ItemStack> {
 
 
-            public static PolydexIngredient<ItemStack> of(Potion input) {
+            public static PolydexIngredient<ItemStack> of(RegistryEntry<Potion> input) {
                 var list = new ArrayList<PolydexStack<ItemStack>>();
                 for (var x : new Item[] { Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION }) {
-                    list.add(PolydexStack.of(PotionUtil.setPotion(x.getDefaultStack(), input)));
+                    var y = x.getDefaultStack();
+                    y.set(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT.with(input));
+                    list.add(PolydexStack.of(y));
                 }
                 return new PotionIngredient(input, list);
             }
@@ -190,8 +201,8 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
 
             @Override
             public boolean matchesDirect(PolydexStack<ItemStack> stack, boolean strict) {
-                var potion = PotionUtil.getPotion(stack.getBacking());
-                return this.potion == potion && correctBase(stack.getBacking());
+                var potion = stack.getBacking().getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+                return this.potion.value() == potion.potion().map(RegistryEntry::value).orElse(null) && correctBase(stack.getBacking());
             }
 
             private boolean correctBase(ItemStack backing) {

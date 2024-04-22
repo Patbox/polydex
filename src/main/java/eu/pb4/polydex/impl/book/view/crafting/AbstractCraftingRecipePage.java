@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> extends AbstractRecipePolydexPage<T> {
-    private static ItemStack CRAFTING_TABLE = PageIcons.CRAFTING_TABLE_RECIPE_ICON;
-    private static ItemStack CRAFTING = PageIcons.CRAFTING_RECIPE_ICON;
+    private static final ItemStack CRAFTING_TABLE = PageIcons.CRAFTING_TABLE_RECIPE_ICON;
+    private static final ItemStack CRAFTING = PageIcons.CRAFTING_RECIPE_ICON;
 
     public AbstractCraftingRecipePage(RecipeEntry<T> recipe) {
         super(recipe);

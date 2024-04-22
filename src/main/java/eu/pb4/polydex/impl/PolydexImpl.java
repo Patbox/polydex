@@ -5,7 +5,9 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.TextParserUtils;
+import eu.pb4.placeholders.api.parsers.NodeParser;
 import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
@@ -16,9 +18,7 @@ import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.polydex.impl.book.view.CustomPage;
 import eu.pb4.polydex.impl.book.view.PotionRecipePage;
-import eu.pb4.polydex.mixin.BrewingRecipeAccessor;
 import eu.pb4.polydex.mixin.BrewingRecipeRegistryAccessor;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -27,16 +27,17 @@ import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.*;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.potion.Potion;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -45,8 +46,6 @@ import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
-import net.minecraft.util.Util;
-import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,6 +59,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class PolydexImpl {
+
+    public static final NodeParser PARSER = NodeParser.builder().simplifiedTextFormat().quickText().staticPreParsing().build();
     public static final Map<Identifier, Function<PolydexTarget, HoverDisplay>> DISPLAYS = new HashMap<>();
     public static final HashMap<Class<?>, Function<RecipeEntry<?>, PolydexPage>> RECIPE_VIEWS = new HashMap<>();
     public static final List<PolydexPage.EntryModifier> ENTRY_MODIFIERS = new ArrayList<>();
@@ -84,10 +85,9 @@ public class PolydexImpl {
     public static final Map<Item, Function<ItemStack, @Nullable PolydexEntry>> ITEM_ENTRY_CREATOR = new HashMap<>();
     private static final Comparator<PolydexPage> PAGE_SORT = Comparator.<PolydexPage>comparingInt((x) -> -x.priority()).thenComparing(PolydexPage::sortingId).thenComparing(PolydexPage::identifier);
     private static final Map<String, Text> MOD_NAMES = new HashMap<>();
-    public static Codec<ItemStack> ITEM_STACK_CODEC = Codec.either(Identifier.CODEC, ItemStack.CODEC).xmap(
-            x -> x.left().isPresent() ? Registries.ITEM.get(x.left().get()).getDefaultStack() : x.right().get(), x -> x.hasNbt() || x.getCount() != 1 ? Either.right(x) : Either.left(Registries.ITEM.getId(x.getItem())));
+    public static Codec<ItemStack> ITEM_STACK_CODEC = ItemStack.VALIDATED_CODEC;
     public static Codec<Text> TEXT = Codec.either(Codec.STRING, TextCodecs.CODEC)
-            .xmap(either -> either.map(TextParserUtils::formatTextSafe, Function.identity()), Either::right);
+            .xmap(either -> either.map(x -> PARSER.parseText(x, ParserContext.of()), Function.identity()), Either::right);
     public static PolydexConfigImpl config = new PolydexConfigImpl();
     @Nullable
     private static CompletableFuture<Void> cacheBuilding = null;
@@ -279,7 +279,7 @@ public class PolydexImpl {
             if (entry.stack().getBackingClass() == ItemStack.class) {
                 ITEM_TO_ENTRIES.computeIfAbsent(((ItemStack) entry.stack().getBacking()).getItem(), (a) -> new ArrayList<>()).add(entry);
             }
-            BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), (x) -> NamespacedEntry.ofMod(x, entry.stack()::toItemStack)).entries.add(entry);
+            BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), (x) -> NamespacedEntry.ofMod(x, entry.stack()::toItemStack, server)).entries.add(entry);
         }
 
 
@@ -304,21 +304,17 @@ public class PolydexImpl {
     }
 
     public static void potionRecipe(MinecraftServer server, Consumer<PolydexPage> consumer) {
-        var itemRecipes = BrewingRecipeRegistryAccessor.getITEM_RECIPES();
-        var potionRecipes = BrewingRecipeRegistryAccessor.getPOTION_RECIPES();
+        var itemRecipes = ((BrewingRecipeRegistryAccessor) server.getBrewingRecipeRegistry()).getItemRecipes();
+        var potionRecipes = ((BrewingRecipeRegistryAccessor) server.getBrewingRecipeRegistry()).getPotionRecipes();
 
         for (var recipe : itemRecipes) {
-            var access = (BrewingRecipeAccessor<Item>) recipe;
-
             consumer.accept(new PotionRecipePage.ItemBase(new Identifier("minecraft:brewing/item/"
-                    + Registries.ITEM.getId(access.getInput()).toUnderscoreSeparatedString() + "/" + Registries.ITEM.getId(access.getOutput()).toUnderscoreSeparatedString()), recipe));
+                    + recipe.from().getKey().get().getValue().toUnderscoreSeparatedString() + "/" + recipe.to().getKey().get().getValue().toUnderscoreSeparatedString()), recipe));
         }
 
         for (var recipe : potionRecipes) {
-            var access = (BrewingRecipeAccessor<Potion>) recipe;
-
             consumer.accept(new PotionRecipePage.PotionBase(new Identifier("minecraft:brewing/potion/"
-                    + Registries.POTION.getId(access.getInput()).toUnderscoreSeparatedString() + "/" + Registries.POTION.getId(access.getOutput()).toUnderscoreSeparatedString()),
+                    + recipe.from().getKey().get().getValue().toUnderscoreSeparatedString() + "/" + recipe.to().getKey().get().getValue().toUnderscoreSeparatedString()),
                     recipe));
         }
 
@@ -354,7 +350,7 @@ public class PolydexImpl {
                     }
 
                     for (var effect : livingEntity.getStatusEffects()) {
-                        effects.add(Text.literal("⚗").setStyle(net.minecraft.text.Style.EMPTY.withColor(effect.getEffectType().getColor())));
+                        effects.add(Text.literal("⚗").setStyle(net.minecraft.text.Style.EMPTY.withColor(effect.getEffectType().value().getColor())));
                     }
 
                     if (!effects.isEmpty()) {
@@ -380,8 +376,8 @@ public class PolydexImpl {
                 }
             } else if (target.blockEntity() instanceof SkullBlockEntity skull) {
                 var owner = skull.getOwner();
-                if (owner != null && owner.getName() != null && !owner.getName().isEmpty()) {
-                    displayBuilder.setComponent(HoverDisplayBuilder.NAME, Text.translatable("block.minecraft.player_head.named", owner.getName()));
+                if (owner != null && owner.name().isPresent()) {
+                    displayBuilder.setComponent(HoverDisplayBuilder.NAME, Text.translatable("block.minecraft.player_head.named", owner.name().get()));
                 } else {
                     displayBuilder.setComponent(HoverDisplayBuilder.NAME, target.blockState().getBlock().getName());
                 }
@@ -467,11 +463,11 @@ public class PolydexImpl {
     }
 
     public static PolydexEntry seperateCustomEnchantments(ItemStack stack) {
-        var ench = EnchantmentHelper.get(stack);
+        var ench = EnchantmentHelper.getEnchantments(stack);
         var string = new StringBuilder();
 
-        ench.forEach((a, b) -> {
-            string.append(Registries.ENCHANTMENT.getId(a).toUnderscoreSeparatedString()).append("/");
+        ench.getEnchantments().forEach((e) -> {
+            string.append(e.getKey().get().getValue().toUnderscoreSeparatedString()).append("/");
         });
 
 
@@ -481,9 +477,9 @@ public class PolydexImpl {
     }
 
     public static PolydexEntry seperateCustomPotion(ItemStack stack) {
-        var potion = PotionUtil.getPotion(stack);
+        var potion = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
         var baseId = Registries.ITEM.getId(stack.getItem());
-        return PolydexEntry.of(baseId.withSuffixedPath("/" + Registries.POTION.getId(potion).toUnderscoreSeparatedString()), stack);
+        return PolydexEntry.of(baseId.withSuffixedPath("/" + potion.potion().get().getKey().map(RegistryKey::getValue).orElse(new Identifier("unknown")).toUnderscoreSeparatedString()), stack);
     }
 
     public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty, Map<Identifier, PolydexEntry> nonEmptyById) {
@@ -534,19 +530,19 @@ public class PolydexImpl {
 
     public record NamespacedEntry(String namespace, Text display, Function<ServerPlayerEntity, ItemStack> icon,
                                   PackedEntries entries) {
-        public static NamespacedEntry ofMod(String namespace) {
-            return ofMod(namespace, PackedEntries.create());
+        public static NamespacedEntry ofMod(String namespace, MinecraftServer server) {
+            return ofMod(namespace, PackedEntries.create(), server);
         }
 
-        public static NamespacedEntry ofMod(String namespace, ItemStack defaultIcon) {
-            return ofMod(namespace, (p) -> defaultIcon);
+        public static NamespacedEntry ofMod(String namespace, ItemStack defaultIcon, MinecraftServer server) {
+            return ofMod(namespace, (p) -> defaultIcon, server);
         }
 
-        public static NamespacedEntry ofMod(String namespace, Function<ServerPlayerEntity, ItemStack> defaultIcon) {
-            return ofMod(namespace, PackedEntries.create(), defaultIcon);
+        public static NamespacedEntry ofMod(String namespace, Function<ServerPlayerEntity, ItemStack> defaultIcon, MinecraftServer server) {
+            return ofMod(namespace, PackedEntries.create(), defaultIcon, server);
         }
 
-        public static NamespacedEntry ofMod(String namespace, PackedEntries entries) {
+        public static NamespacedEntry ofMod(String namespace, PackedEntries entries, MinecraftServer server) {
             ItemStack icon = Items.BOOK.getDefaultStack();
 
             {
@@ -558,10 +554,10 @@ public class PolydexImpl {
             }
 
             ItemStack finalIcon = icon;
-            return ofMod(namespace, entries, (p) -> finalIcon);
+            return ofMod(namespace, entries, (p) -> finalIcon, server);
         }
 
-        public static NamespacedEntry ofMod(String namespace, PackedEntries entries, Function<ServerPlayerEntity, ItemStack> defaultIcon) {
+        public static NamespacedEntry ofMod(String namespace, PackedEntries entries, Function<ServerPlayerEntity, ItemStack> defaultIcon, MinecraftServer server) {
             var icon = defaultIcon;
             for (var mod : FabricLoader.getInstance().getAllMods()) {
                 try {
@@ -570,18 +566,18 @@ public class PolydexImpl {
                         var obj = val.getAsObject();
                         Text display;
                         if (obj.containsKey("name")) {
-                            display = TextParserUtils.formatText(obj.get("name").getAsString());
+                            display = PARSER.parseText(obj.get("name").getAsString(), ParserContext.of());
                         } else {
                             display = Text.literal(mod.getMetadata().getName());
                         }
 
                         if (obj.containsKey("icon")) {
                             try {
-                                var itemStringReader = (ItemStringReader.item(Registries.ITEM.getReadOnlyWrapper(), new StringReader(obj.get("icon").getAsString())));
+                                var itemStringReader = new ItemStringReader(server.getRegistryManager()).consume(new StringReader(obj.get("icon").getAsString()));
 
                                 var iconStack = itemStringReader.item().value().getDefaultStack();
-                                if (itemStringReader.nbt() != null) {
-                                    iconStack.setNbt(itemStringReader.nbt());
+                                if (itemStringReader.components() != null) {
+                                    iconStack.applyComponentsFrom(itemStringReader.components());
                                 }
                                 icon = (p) -> iconStack;
                             } catch (Exception e) {

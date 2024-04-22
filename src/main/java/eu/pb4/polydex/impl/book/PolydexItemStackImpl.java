@@ -2,7 +2,8 @@ package eu.pb4.polydex.impl.book;
 
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -33,7 +34,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
     @Override
     public boolean matchesDirect(PolydexStack<ItemStack> stack, boolean strict) {
-        return (this.isEmpty() && stack.isEmpty()) || (strict ? ItemStack.canCombine(this.stack, stack.getBacking()) : this.stack.isOf(stack.getBacking().getItem()));
+        return (this.isEmpty() && stack.isEmpty()) || (strict ? ItemStack.areItemsAndComponentsEqual(this.stack, stack.getBacking()) : this.stack.isOf(stack.getBacking().getItem()));
     }
 
     @Override
@@ -58,18 +59,18 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
         } else {
             var lore = new ArrayList<Text>();
             try {
-                lore.addAll(this.stack.getTooltip(player, TooltipContext.BASIC));
+                lore.addAll(this.stack.getTooltip(Item.TooltipContext.create(player.getWorld()), player, TooltipType.BASIC));
                 lore.remove(0);
             } catch (Throwable e) {}
 
             Text extra;
 
-            if (this.count > 64 && chance != 1) {
+            if (this.count > this.stack.getMaxCount() && chance != 1) {
                extra = Text.translatable("text.polydex.item_stack.count_chance",
                        Text.literal("" + this.count).formatted(Formatting.WHITE),
                        Text.literal(String.format("%.2f%%", this.chance)).formatted(Formatting.WHITE)
                ).formatted(Formatting.YELLOW);
-            } else if (this.count > 64) {
+            } else if (this.count > this.stack.getMaxCount()) {
                 extra = Text.translatable("text.polydex.item_stack.count",
                         Text.literal("" + this.count).formatted(Formatting.WHITE)
                 ).formatted(Formatting.YELLOW);
@@ -91,8 +92,8 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
             }
 
             return GuiElementBuilder.from(this.stack)
-                    .hideFlags()
-                    .setCount(this.count > 64 ? 1 : (int) this.count)
+                    .hideDefaultTooltip()
+                    .setCount(this.count > this.stack.getMaxCount() ? 1 : (int) this.count)
                     .setLore(lore)
                     .asStack();
         }
