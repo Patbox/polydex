@@ -4,13 +4,23 @@ import eu.pb4.polydex.impl.book.PolydexIngredientImpl;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PolydexIngredient<T> {
     List<PolydexStack<T>> asStacks();
     float chance();
     long amount();
+
+    default Optional<PolydexStack<T>> asFirstStack() {
+        var x = asStacks();
+        if (x.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(x.getFirst());
+    };
 
     default boolean matches(PolydexStack<?> stack, boolean strict) {
         return this.matchesInternal(stack, strict);
@@ -32,16 +42,14 @@ public interface PolydexIngredient<T> {
     Class<T> getBackingClass();
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient) {
-        return new PolydexIngredientImpl(ingredient, 1, 1);
+        return of(ingredient, 1, 1);
     }
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count) {
-        return new PolydexIngredientImpl(ingredient, count, 1);
+        return of(ingredient, count);
     }
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count, float chance) {
-        return new PolydexIngredientImpl(ingredient, count, chance);
+        return PolydexIngredientImpl.of(ingredient, count, chance);
     }
-
-
 }

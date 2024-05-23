@@ -8,6 +8,7 @@ import eu.pb4.polydex.impl.PolydexImplUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import net.minecraft.item.ItemStack;
@@ -16,6 +17,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class LayerBuilder extends Layer implements PageBuilder {
     private final ServerPlayerEntity player;
@@ -49,7 +51,7 @@ public class LayerBuilder extends Layer implements PageBuilder {
         var list = new ArrayList<ItemStack>(stacks.length);
 
         for (var stack : stacks) {
-            list.add(stack.toItemStack(this.player));
+            list.add(stack.toDisplayItemStack(this.player));
         }
 
         setOutput(x, y, list.toArray(new ItemStack[0]));
@@ -71,7 +73,21 @@ public class LayerBuilder extends Layer implements PageBuilder {
         var list = new ArrayList<ItemStack>(stacks.size());
 
         for (var stack : stacks) {
-            list.add(stack.toItemStack(this.player));
+            list.add(stack.toDisplayItemStack(this.player));
+        }
+
+        setOutput(x, y, list.toArray(new ItemStack[0]));
+    }
+
+    @Override
+    public void setIngredient(int x, int y, PolydexIngredient<?> ingredient, Consumer<GuiElementBuilder> builderConsumer) {
+        var stacks = ingredient.asStacks();
+        var list = new ArrayList<ItemStack>(stacks.size());
+
+        for (var stack : stacks) {
+            var t = GuiElementBuilder.from(stack.toDisplayItemStack(this.player));
+            builderConsumer.accept(t);
+            list.add(t.asStack());
         }
 
         setOutput(x, y, list.toArray(new ItemStack[0]));

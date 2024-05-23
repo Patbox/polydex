@@ -38,6 +38,10 @@
   "text.polydex.item_stack.count_chance": "Count: %s, Chance: %s",
   "text.polydex.item_stack.count": "Count: %s",
   "text.polydex.item_stack.chance": "Chance: %s",
+  "text.polydex.use_tool_on_block": "Use on block!",
+  "text.polydex.tool.axe": "Axe",
+  "text.polydex.tool.pickaxe": "Pickaxe",
+  "text.polydex.tool.hoe": "Hoe",
   "recipe_type.minecraft.crafting": "Crafting",
   "recipe_type.minecraft.smelting": "Smelting",
   "recipe_type.minecraft.blasting": "Blasting",
@@ -46,5 +50,6 @@
   "recipe_type.minecraft.stonecutting": "Stonecutting",
   "recipe_type.minecraft.smithing": "Smithing",
   "polydex_category.minecraft.brewing": "Brewing",
+  "polydex_category.minecraft.tool_interaction": "Tool Interaction",
   "polydex_category.polydex.custom": "Custom"
 }

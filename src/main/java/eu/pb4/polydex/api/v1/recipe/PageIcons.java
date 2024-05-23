@@ -15,6 +15,7 @@ public final class PageIcons {
     public static final ItemStack POTION_RECIPE_ICON = Items.BREWING_STAND.getDefaultStack();
     public static final ItemStack SMITING_RECIPE_ICON = Items.SMITHING_TABLE.getDefaultStack();
     public static final ItemStack STONECUTTING_RECIPE_ICON = Items.STONECUTTER.getDefaultStack();
+    public static final ItemStack AXE_ICON = Items.IRON_AXE.getDefaultStack();
 
     public static final ItemStack INVALID_PAGE = new GuiElementBuilder(Items.STRUCTURE_VOID)
             .setName(Text.literal("[INVALID]").formatted(Formatting.RED))

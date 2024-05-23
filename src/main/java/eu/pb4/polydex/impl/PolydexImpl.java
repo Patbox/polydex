@@ -8,23 +8,26 @@ import com.mojang.serialization.JsonOps;
 import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.TextParserUtils;
 import eu.pb4.placeholders.api.parsers.NodeParser;
-import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
+import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
-import eu.pb4.polydex.api.v1.recipe.PolydexCategory;
-import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
-import eu.pb4.polydex.api.v1.recipe.PolydexPage;
-import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.polydex.impl.book.view.CustomPage;
 import eu.pb4.polydex.impl.book.view.PotionRecipePage;
+import eu.pb4.polydex.impl.book.view.ToolUseOnBlockPage;
+import eu.pb4.polydex.mixin.AxeItemAccessor;
 import eu.pb4.polydex.mixin.BrewingRecipeRegistryAccessor;
+import eu.pb4.polydex.mixin.HoeItemAccessor;
+import eu.pb4.polydex.mixin.ShovelItemAccessor;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.registry.StrippableBlockRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.component.DataComponentType;
@@ -33,11 +36,13 @@ import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.*;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -46,6 +51,8 @@ import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -480,6 +487,91 @@ public class PolydexImpl {
         var potion = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
         var baseId = Registries.ITEM.getId(stack.getItem());
         return PolydexEntry.of(baseId.withSuffixedPath("/" + potion.potion().get().getKey().map(RegistryKey::getValue).orElse(new Identifier("unknown")).toUnderscoreSeparatedString()), stack);
+    }
+
+    public static void blockInteractions(MinecraftServer server, Consumer<PolydexPage> polydexPageConsumer) {
+        var axes = PolydexIngredient.of(Ingredient.fromTag(ItemTags.AXES));
+        var shovels = PolydexIngredient.of(Ingredient.fromTag(ItemTags.SHOVELS));
+        var hoes = PolydexIngredient.of(Ingredient.fromTag(ItemTags.HOES));
+        {
+            var map = new Reference2ObjectOpenHashMap<Item, LinkedHashSet<Item>>();
+            for (var entry : AxeItemAccessor.getSTRIPPED_BLOCKS().entrySet()) {
+                var a = entry.getKey().asItem();
+                var b = entry.getValue().asItem();
+                if (a != null && b != null) {
+                    map.computeIfAbsent(b, (c) -> new LinkedHashSet<>()).add(a);
+                }
+            }
+
+            for (var entry : map.entrySet()) {
+                polydexPageConsumer.accept(new ToolUseOnBlockPage(new Identifier("stripping/"
+                        + Registries.ITEM.getId(entry.getKey()).toShortTranslationKey() + "/" + Registries.ITEM.getId(entry.getValue().getFirst()).toShortTranslationKey()),
+                        axes, PolydexIngredient.of(Ingredient.ofItems(entry.getValue().toArray(new ItemConvertible[0]))), PolydexStack.of(entry.getKey())));
+            }
+        }
+        {
+            var map = new Reference2ObjectOpenHashMap<Item, LinkedHashSet<Item>>();
+            for (var entry : ShovelItemAccessor.getPATH_STATES().entrySet()) {
+                var a = entry.getKey().asItem();
+                var b = entry.getValue().getBlock().asItem();
+                if (a != null && b != null) {
+                    map.computeIfAbsent(b, (c) -> new LinkedHashSet<>()).add(a);
+                }
+
+            }
+
+            for (var entry : map.entrySet()) {
+                polydexPageConsumer.accept(new ToolUseOnBlockPage(new Identifier("flattening/"
+                        + Registries.ITEM.getId(entry.getKey()).toShortTranslationKey() + "/" + Registries.ITEM.getId(entry.getValue().getFirst()).toShortTranslationKey()),
+                        shovels, PolydexIngredient.of(Ingredient.ofItems(entry.getValue().toArray(new ItemConvertible[0]))), PolydexStack.of(entry.getKey())));
+            }
+        }
+
+        try {
+            var world = new FakeWorld(server) {
+                BlockState state = Blocks.AIR.getDefaultState();
+                @Override
+                public boolean setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
+                    if (state != this.state) {
+                        this.state = state;
+                        return true;
+                    }
+                    return false;
+                }
+
+                @Override
+                public BlockState getBlockState(BlockPos pos) {
+                    return this.state;
+                }
+            };
+            var placement = new AutomaticItemPlacementContext(world, BlockPos.ORIGIN, Direction.DOWN, Items.DIAMOND_HOE.getDefaultStack(), Direction.DOWN);
+            var map = new Reference2ObjectOpenHashMap<Item, LinkedHashSet<Item>>();
+
+            for (var entry : HoeItemAccessor.getTILLING_ACTIONS().entrySet()) {
+                try {
+                    var a = entry.getKey().asItem();
+                    world.state = entry.getKey().getDefaultState();
+                    var of = world.state;
+                    entry.getValue().getSecond().accept(placement);
+                    var b = world.state.getBlock().asItem();
+                    if (a != null && of.getBlock() != world.state.getBlock()) {
+                        map.computeIfAbsent(b, (c) -> new LinkedHashSet<>()).add(a);
+                    }
+                } catch (Throwable e) {
+
+                }
+            }
+
+            for (var entry : map.entrySet()) {
+                polydexPageConsumer.accept(new ToolUseOnBlockPage(new Identifier("tilling/"
+                        + Registries.ITEM.getId(entry.getKey()).toShortTranslationKey() + "/" + Registries.ITEM.getId(entry.getValue().getFirst()).toShortTranslationKey()),
+                        hoes, PolydexIngredient.of(Ingredient.ofItems(entry.getValue().toArray(new ItemConvertible[0]))), PolydexStack.of(entry.getKey())));
+            }
+        } catch (Throwable e) {
+
+        }
+
+
     }
 
     public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty, Map<Identifier, PolydexEntry> nonEmptyById) {

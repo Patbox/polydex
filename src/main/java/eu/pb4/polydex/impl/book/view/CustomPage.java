@@ -28,11 +28,11 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
         var builder = GuiElementBuilder.from(object.icon);
         if (object.name.isPresent()) {
             builder.setName(object.name.get());
-            builder.hideFlags();
+            builder.hideDefaultTooltip();
         }
 
         if (!object.lore.isEmpty()) {
-            builder.hideFlags();
+            builder.hideDefaultTooltip();
             builder.setLore(object.lore);
         }
 
@@ -59,11 +59,11 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
             var builder = GuiElementBuilder.from(element.icon);
             if (element.name.isPresent()) {
                 builder.setName(object.name.get());
-                builder.hideFlags();
+                builder.hideDefaultTooltip();
             }
 
             if (!element.lore.isEmpty()) {
-                builder.hideFlags();
+                builder.hideDefaultTooltip();
                 builder.setLore(object.lore);
             }
 

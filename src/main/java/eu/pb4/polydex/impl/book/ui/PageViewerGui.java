@@ -190,7 +190,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
                     list.add(iconGetter.getIcon(page, entry, player));
                 }
 
-                return new AnimatedGuiElement(list.toArray(new ItemStack[0]), 5, false, (x, type, z) -> {
+                return new AnimatedGuiElement(list.toArray(new ItemStack[0]), 10, false, (x, type, z) -> {
                     PageViewerGui.this.setPage(group.index);
                     GuiUtils.playClickSound(this.player);
                 });

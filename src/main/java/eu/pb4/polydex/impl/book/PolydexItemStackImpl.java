@@ -1,5 +1,7 @@
 package eu.pb4.polydex.impl.book;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.client.item.TooltipType;
@@ -12,6 +14,8 @@ import net.minecraft.util.Formatting;
 import java.util.ArrayList;
 
 public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
+    private static final Interner<PolydexItemStackImpl> INTERNER = Interners.newWeakInterner();
+
     private final ItemStack stack;
     private final float chance;
     private final long count;
@@ -20,6 +24,10 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
         this.stack = stack.copyWithCount((int) Math.min(count, 64));
         this.chance = chance;
         this.count = count;
+    }
+
+    public static PolydexStack<ItemStack> of(ItemStack stack, long count, float chance) {
+        return INTERNER.intern(new PolydexItemStackImpl(stack, count, chance));
     }
 
     @Override
@@ -54,7 +62,12 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
     @Override
     public ItemStack toItemStack(ServerPlayerEntity player) {
-        if (this.count == this.stack.getCount() && this.chance == 1) {
+        return this.stack.copy();
+    }
+
+    @Override
+    public ItemStack toDisplayItemStack(ServerPlayerEntity player) {
+        if (this.count == this.stack.getCount() && this.chance >= 1) {
             return this.stack.copy();
         } else {
             var lore = new ArrayList<Text>();
@@ -68,7 +81,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
             if (this.count > this.stack.getMaxCount() && chance != 1) {
                extra = Text.translatable("text.polydex.item_stack.count_chance",
                        Text.literal("" + this.count).formatted(Formatting.WHITE),
-                       Text.literal(String.format("%.2f%%", this.chance)).formatted(Formatting.WHITE)
+                       Text.literal(String.format("%.2f%%", this.chance * 100)).formatted(Formatting.WHITE)
                ).formatted(Formatting.YELLOW);
             } else if (this.count > this.stack.getMaxCount()) {
                 extra = Text.translatable("text.polydex.item_stack.count",

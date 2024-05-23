@@ -68,7 +68,7 @@ public class MainIndexGui extends ExtendedGui {
             if (id < MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size()) {
                 var item = MainIndexGui.this.entries.get(MainIndexGui.this.showAll).get(id);
 
-                return GuiElementBuilder.from(item.stack().toItemStack(player))
+                return GuiElementBuilder.from(item.stack().toDisplayItemStack(player))
                         .setCallback((x, type, z) -> {
                             /*if (player.isCreative() && type.isMiddle) {
                                 var cursor = this.player.currentScreenHandler.getCursorStack();

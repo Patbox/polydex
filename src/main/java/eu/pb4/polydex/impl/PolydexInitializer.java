@@ -46,6 +46,7 @@ public class PolydexInitializer implements ModInitializer {
         HoverDisplay.register(id("sidebar"), SidebarTargetDisplay::new);
 
         PolydexPage.register(PolydexImpl::potionRecipe);
+        PolydexPage.register(PolydexImpl::blockInteractions);
 
         PolydexPage.registerRecipeViewer(ShapedRecipe.class, ShapedCraftingRecipePage::new);
         PolydexPage.registerRecipeViewer(ShapelessRecipe.class, ShapelessCraftingRecipePage::new);

@@ -15,6 +15,7 @@ public interface PolydexCategory {
     PolydexCategory STONECUTTING = of(RecipeType.STONECUTTING);
     PolydexCategory SMITHING = of(RecipeType.SMITHING);
     PolydexCategory BREWING = of(new Identifier("brewing"));
+    PolydexCategory TOOL_INTERACTION = of(new Identifier("tool_interaction"));
     PolydexCategory CUSTOM = of(new Identifier("polydex:custom"));
 
 

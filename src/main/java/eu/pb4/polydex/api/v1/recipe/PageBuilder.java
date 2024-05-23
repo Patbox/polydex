@@ -4,6 +4,9 @@ import eu.pb4.sgui.api.elements.AnimatedGuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.text.Text;
+
+import java.util.function.Consumer;
 
 public interface PageBuilder {
     void set(int x, int y, ItemStack stack);
@@ -16,6 +19,7 @@ public interface PageBuilder {
     void setIngredient(int x, int y, ItemStack... stacks);
     void setIngredient(int x, int y, Ingredient ingredient);
     void setIngredient(int x, int y, PolydexIngredient<?> ingredient);
+    void setIngredient(int x, int y, PolydexIngredient<?> ingredient, Consumer<GuiElementBuilder> builderConsumer);
     void setEmpty(int x, int y);
 
     default int width() {
