@@ -12,8 +12,8 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public class ExtendedGui extends LayeredGui {
-    private static final Style INFO_STYLE = Style.EMPTY.withFont(new Identifier("uniform"));
-    private static final Style TEXTURE_STYLE = Style.EMPTY.withFont(new Identifier("polydex:gui")).withColor(Formatting.WHITE);
+    private static final Style INFO_STYLE = Style.EMPTY.withFont(Identifier.of("uniform"));
+    private static final Style TEXTURE_STYLE = Style.EMPTY.withFont(Identifier.of("polydex:gui")).withColor(Formatting.WHITE);
     private Text text = Text.empty();
     private Text texture;
     private Text overlayTexture;

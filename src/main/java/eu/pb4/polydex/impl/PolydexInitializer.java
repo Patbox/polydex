@@ -91,7 +91,7 @@ public class PolydexInitializer implements ModInitializer {
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public Identifier getFabricId() {
-                return new Identifier(PolydexImpl.ID, "polydex_page");
+                return Identifier.of(PolydexImpl.ID, "polydex_page");
             }
 
             @Override

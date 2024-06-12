@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import eu.pb4.placeholders.api.ParserContext;
-import eu.pb4.placeholders.api.TextParserUtils;
 import eu.pb4.placeholders.api.parsers.NodeParser;
 import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
@@ -22,7 +21,6 @@ import eu.pb4.polydex.mixin.ShovelItemAccessor;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.fabricmc.fabric.api.registry.StrippableBlockRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.Block;
@@ -30,7 +28,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -109,7 +107,7 @@ public class PolydexImpl {
     }
 
     public static Identifier id(String path) {
-        return new Identifier(ID, path);
+        return Identifier.of(ID, path);
     }
 
     public static PolydexEntry getEntry(ItemStack stack) {
@@ -307,7 +305,7 @@ public class PolydexImpl {
         ITEM_GROUP_ENTRIES.addAll(BY_ITEMGROUP.values());
         ITEM_GROUP_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
 
-        config = PolydexConfigImpl.loadOrCreateConfig();
+        config = PolydexConfigImpl.loadOrCreateConfig(server.getRegistryManager());
     }
 
     public static void potionRecipe(MinecraftServer server, Consumer<PolydexPage> consumer) {
@@ -315,12 +313,12 @@ public class PolydexImpl {
         var potionRecipes = ((BrewingRecipeRegistryAccessor) server.getBrewingRecipeRegistry()).getPotionRecipes();
 
         for (var recipe : itemRecipes) {
-            consumer.accept(new PotionRecipePage.ItemBase(new Identifier("minecraft:brewing/item/"
+            consumer.accept(new PotionRecipePage.ItemBase(Identifier.of("minecraft:brewing/item/"
                     + recipe.from().getKey().get().getValue().toUnderscoreSeparatedString() + "/" + recipe.to().getKey().get().getValue().toUnderscoreSeparatedString()), recipe));
         }
 
         for (var recipe : potionRecipes) {
-            consumer.accept(new PotionRecipePage.PotionBase(new Identifier("minecraft:brewing/potion/"
+            consumer.accept(new PotionRecipePage.PotionBase(Identifier.of("minecraft:brewing/potion/"
                     + recipe.from().getKey().get().getValue().toUnderscoreSeparatedString() + "/" + recipe.to().getKey().get().getValue().toUnderscoreSeparatedString()),
                     recipe));
         }
@@ -486,7 +484,7 @@ public class PolydexImpl {
     public static PolydexEntry seperateCustomPotion(ItemStack stack) {
         var potion = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
         var baseId = Registries.ITEM.getId(stack.getItem());
-        return PolydexEntry.of(baseId.withSuffixedPath("/" + potion.potion().get().getKey().map(RegistryKey::getValue).orElse(new Identifier("unknown")).toUnderscoreSeparatedString()), stack);
+        return PolydexEntry.of(baseId.withSuffixedPath("/" + potion.potion().get().getKey().map(RegistryKey::getValue).orElse(Identifier.of("unknown")).toUnderscoreSeparatedString()), stack);
     }
 
     public static void blockInteractions(MinecraftServer server, Consumer<PolydexPage> polydexPageConsumer) {
@@ -504,7 +502,7 @@ public class PolydexImpl {
             }
 
             for (var entry : map.entrySet()) {
-                polydexPageConsumer.accept(new ToolUseOnBlockPage(new Identifier("stripping/"
+                polydexPageConsumer.accept(new ToolUseOnBlockPage(Identifier.of("stripping/"
                         + Registries.ITEM.getId(entry.getKey()).toShortTranslationKey() + "/" + Registries.ITEM.getId(entry.getValue().getFirst()).toShortTranslationKey()),
                         axes, PolydexIngredient.of(Ingredient.ofItems(entry.getValue().toArray(new ItemConvertible[0]))), PolydexStack.of(entry.getKey())));
             }
@@ -521,7 +519,7 @@ public class PolydexImpl {
             }
 
             for (var entry : map.entrySet()) {
-                polydexPageConsumer.accept(new ToolUseOnBlockPage(new Identifier("flattening/"
+                polydexPageConsumer.accept(new ToolUseOnBlockPage(Identifier.of("flattening/"
                         + Registries.ITEM.getId(entry.getKey()).toShortTranslationKey() + "/" + Registries.ITEM.getId(entry.getValue().getFirst()).toShortTranslationKey()),
                         shovels, PolydexIngredient.of(Ingredient.ofItems(entry.getValue().toArray(new ItemConvertible[0]))), PolydexStack.of(entry.getKey())));
             }
@@ -563,7 +561,7 @@ public class PolydexImpl {
             }
 
             for (var entry : map.entrySet()) {
-                polydexPageConsumer.accept(new ToolUseOnBlockPage(new Identifier("tilling/"
+                polydexPageConsumer.accept(new ToolUseOnBlockPage(Identifier.of("tilling/"
                         + Registries.ITEM.getId(entry.getKey()).toShortTranslationKey() + "/" + Registries.ITEM.getId(entry.getValue().getFirst()).toShortTranslationKey()),
                         hoes, PolydexIngredient.of(Ingredient.ofItems(entry.getValue().toArray(new ItemConvertible[0]))), PolydexStack.of(entry.getKey())));
             }
@@ -669,7 +667,7 @@ public class PolydexImpl {
 
                                 var iconStack = itemStringReader.item().value().getDefaultStack();
                                 if (itemStringReader.components() != null) {
-                                    iconStack.applyComponentsFrom(itemStringReader.components());
+                                    iconStack.applyChanges(itemStringReader.components());
                                 }
                                 icon = (p) -> iconStack;
                             } catch (Exception e) {

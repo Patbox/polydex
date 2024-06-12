@@ -195,7 +195,7 @@ public class MainIndexGui extends ExtendedGui {
                         });
 
                 if (MainIndexGui.this.entries == PolydexImpl.ITEM_ENTRIES) {
-                    builder.enchant(Enchantments.LURE, 1);
+                    builder.glow();
                 }
 
                 return builder.build();
@@ -217,7 +217,7 @@ public class MainIndexGui extends ExtendedGui {
                         });
 
                 if (item.entries() == MainIndexGui.this.entries) {
-                    builder.enchant(Enchantments.LURE, 1);
+                    builder.glow();
                 }
 
 

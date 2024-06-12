@@ -183,7 +183,7 @@ public class FakeWorld extends World implements LightSourceView {
     public FakeWorld(MinecraftServer server) {
         this(
                 new FakeWorldProperties(),
-                RegistryKey.of(RegistryKeys.WORLD, new Identifier("polydex", "fake_world")),
+                RegistryKey.of(RegistryKeys.WORLD, Identifier.of("polydex", "fake_world")),
                 server.getRegistryManager(),
                 server.getBrewingRecipeRegistry(),
                 server.getOverworld().getEnabledFeatures(),
@@ -249,7 +249,7 @@ public class FakeWorld extends World implements LightSourceView {
     }
 
     @Override
-    public MapIdComponent getNextMapId() {
+    public MapIdComponent increaseAndGetMapId() {
         return null;
     }
 

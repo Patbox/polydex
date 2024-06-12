@@ -201,7 +201,7 @@ public class Commands {
     }
 
     private static int reload(CommandContext<ServerCommandSource> context) {
-        PolydexImpl.config = PolydexConfigImpl.loadOrCreateConfig();
+        PolydexImpl.config = PolydexConfigImpl.loadOrCreateConfig(context.getSource().getRegistryManager());
         context.getSource().sendFeedback(() -> Text.translatable("text.polydex.config_reloaded"), false);
         return 1;
     }

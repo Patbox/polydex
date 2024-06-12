@@ -9,6 +9,7 @@ import eu.pb4.predicate.api.BuiltinPredicates;
 import eu.pb4.predicate.api.GsonPredicateSerializer;
 import eu.pb4.predicate.api.MinecraftPredicate;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
@@ -22,11 +23,6 @@ import static eu.pb4.polydex.impl.PolydexImpl.id;
 
 public class PolydexConfigImpl {
     public static final Identifier DEFAULT_DISPLAY = id(getDefaultDisplay());
-    private static final Gson GSON = new GsonBuilder()
-            .disableHtmlEscaping().setLenient().setPrettyPrinting()
-            .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
-            .registerTypeHierarchyAdapter(MinecraftPredicate.class, GsonPredicateSerializer.INSTANCE)
-            .create();
 
     private static String getDefaultDisplay() {
         if (FabricLoader.getInstance().isModLoaded("wthit") || FabricLoader.getInstance().isModLoaded("jade")) {
@@ -92,8 +88,14 @@ public class PolydexConfigImpl {
     }
 
 
-    public static PolydexConfigImpl loadOrCreateConfig() {
+    public static PolydexConfigImpl loadOrCreateConfig(RegistryWrapper.WrapperLookup lookup) {
         try {
+            Gson GSON = new GsonBuilder()
+                    .disableHtmlEscaping().setLenient().setPrettyPrinting()
+                    .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
+                    .registerTypeHierarchyAdapter(MinecraftPredicate.class, GsonPredicateSerializer.create(lookup))
+                    .create();
+
             PolydexConfigImpl config;
             File configFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "polydex.json");
 
@@ -107,7 +109,7 @@ public class PolydexConfigImpl {
 
             config.fillDefaults();
 
-            saveConfig(config);
+            saveConfig(config, lookup);
             return config;
         } catch (IOException exception) {
             PolydexImpl.LOGGER.error("Something went wrong while reading config!");
@@ -116,9 +118,15 @@ public class PolydexConfigImpl {
         }
     }
 
-    public static void saveConfig(PolydexConfigImpl config) {
+    public static void saveConfig(PolydexConfigImpl config, RegistryWrapper.WrapperLookup lookup) {
         File configFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "polydex.json");
         try {
+            Gson GSON = new GsonBuilder()
+                    .disableHtmlEscaping().setLenient().setPrettyPrinting()
+                    .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
+                    .registerTypeHierarchyAdapter(MinecraftPredicate.class, GsonPredicateSerializer.create(lookup))
+                    .create();
+
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(configFile), StandardCharsets.UTF_8));
             writer.write(GSON.toJson(config));
             writer.close();
