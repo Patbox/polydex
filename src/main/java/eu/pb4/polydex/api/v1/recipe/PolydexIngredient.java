@@ -46,7 +46,7 @@ public interface PolydexIngredient<T> {
     }
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count) {
-        return of(ingredient, count);
+        return of(ingredient, count, 1);
     }
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count, float chance) {
