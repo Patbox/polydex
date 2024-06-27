@@ -12,6 +12,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class PolydexPageUtils {
@@ -50,6 +51,10 @@ public class PolydexPageUtils {
     }
     public static List<PolydexEntry> getAllEntries(boolean withEmpty) {
         return PolydexImpl.ITEM_ENTRIES.get(withEmpty);
+    }
+
+    public static Collection<PolydexPage> getAllPages() {
+        return PolydexImpl.ID_TO_PAGE.values();
     }
 
     @Nullable
