@@ -7,6 +7,7 @@
     "AxeItemAccessor",
     "BrewingRecipeRegistryAccessor",
     "HoeItemAccessor",
+    "ItemGroupAccessor",
     "ItemStackSetAccessor",
     "ServerPlayerInteractionManagerMixin",
     "ServerPlayNetworkHandlerMixin",

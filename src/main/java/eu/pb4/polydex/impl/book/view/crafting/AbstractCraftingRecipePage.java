@@ -36,13 +36,13 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
             var x = i % 3;
             var y = i / 3;
 
-            builder.setIngredient(x + 2,  y + 1, getStacksAt(recipe, x, y));
+            builder.setIngredient(x + 2,  y + 1, getStacksAt(recipe, x, y, entry));
         }
 
-        builder.setOutput(6, 2, getOutput(recipe, player));
+        builder.setOutput(6, 2, getOutput(recipe, player, entry));
     }
 
-    protected ItemStack[] getOutput(T recipe, ServerPlayerEntity player) {
+    protected ItemStack[] getOutput(T recipe, ServerPlayerEntity player, @Nullable PolydexEntry entry) {
         return new ItemStack[] { recipe.getResult(player.server.getRegistryManager()) };
     }
 
@@ -51,12 +51,12 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
         return false;
     }
 
-    protected abstract Ingredient getStacksAt(T recipe, int x, int y);
+    protected abstract Ingredient getStacksAt(T recipe, int x, int y, @Nullable PolydexEntry entry);
 
     public static <T extends CraftingRecipe> Function<RecipeEntry<T>, AbstractCraftingRecipePage<T>> of(StackGetter<T> getter) {
         return (r) -> new AbstractCraftingRecipePage<T>(r) {
             @Override
-            protected Ingredient getStacksAt(T recipe, int x, int y) {
+            protected Ingredient getStacksAt(T recipe, int x, int y, @Nullable PolydexEntry entry) {
                 return getter.getStacksAt(recipe, x, y);
             }
         };

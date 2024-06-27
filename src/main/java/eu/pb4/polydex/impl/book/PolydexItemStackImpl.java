@@ -4,12 +4,14 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
@@ -63,6 +65,21 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     @Override
     public ItemStack toItemStack(ServerPlayerEntity player) {
         return this.stack.copy();
+    }
+
+    @Override
+    public <E> @Nullable E get(ComponentType<E> type) {
+        return this.stack.get(type);
+    }
+
+    @Override
+    public <E> E getOrDefault(ComponentType<E> type, E fallback) {
+        return this.stack.getOrDefault(type, fallback);
+    }
+
+    @Override
+    public boolean contains(ComponentType<?> type) {
+        return this.stack.contains(type);
     }
 
     @Override

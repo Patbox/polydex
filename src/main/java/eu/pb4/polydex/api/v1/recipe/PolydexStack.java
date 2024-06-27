@@ -2,11 +2,14 @@ package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.book.PolydexItemStackImpl;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +33,19 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
     }
 
     T getBacking();
+
+    @Nullable
+    default <E> E get(ComponentType<E> type) {
+        return null;
+    }
+
+    default <E> E getOrDefault(ComponentType<E> type, E fallback) {
+        return fallback;
+    }
+
+    default boolean contains(ComponentType<?> type) {
+        return false;
+    }
 
     @Override
     default boolean matches(PolydexStack<?> stack, boolean strict) {

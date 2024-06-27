@@ -13,6 +13,7 @@ import net.minecraft.recipe.ShulkerBoxColoringRecipe;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class ShulkerBoxColoringRecipePage extends AbstractCraftingRecipePage<Shu
     }
 
     @Override
-    protected Ingredient getStacksAt(ShulkerBoxColoringRecipe recipe, int x, int y) {
+    protected Ingredient getStacksAt(ShulkerBoxColoringRecipe recipe, int x, int y, @Nullable PolydexEntry entry) {
         return y == 0 ? switch (x) {
             case 0 -> SHULKERS_ANY;
             case 1 -> DYES;
@@ -46,7 +47,7 @@ public class ShulkerBoxColoringRecipePage extends AbstractCraftingRecipePage<Shu
     }
 
     @Override
-    protected ItemStack[] getOutput(ShulkerBoxColoringRecipe recipe, ServerPlayerEntity player) {
+    protected ItemStack[] getOutput(ShulkerBoxColoringRecipe recipe, ServerPlayerEntity player, @Nullable PolydexEntry entry) {
         return SHULKERS_DYES;
     }
 

@@ -9,6 +9,7 @@ import eu.pb4.polydex.impl.book.view.*;
 import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.ShulkerBoxColoringRecipePage;
+import eu.pb4.polydex.impl.book.view.crafting.TippedArrowRecipePage;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTransformRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipePage;
 import eu.pb4.polydex.impl.compat.LibMultiPartCompatibility;
@@ -51,6 +52,7 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerRecipeViewer(ShapedRecipe.class, ShapedCraftingRecipePage::new);
         PolydexPage.registerRecipeViewer(ShapelessRecipe.class, ShapelessCraftingRecipePage::new);
         PolydexPage.registerRecipeViewer(ShulkerBoxColoringRecipe.class, ShulkerBoxColoringRecipePage::new);
+        PolydexPage.registerRecipeViewer(TippedArrowRecipe.class, TippedArrowRecipePage::new);
 
         PolydexPage.registerRecipeViewer(BlastingRecipe.class, AbstractCookingRecipePage.of(Items.BLAST_FURNACE));
         PolydexPage.registerRecipeViewer(SmeltingRecipe.class, AbstractCookingRecipePage.of(Items.FURNACE));

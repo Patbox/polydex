@@ -2,6 +2,8 @@ package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.ui.PageViewerGui;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,6 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PolydexPageUtils {
+    public static Event<Runnable> BEFORE_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
+        for (var r : x) {
+            r.run();
+        }
+    });
+
+    public static Event<Runnable> AFTER_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
+        for (var r : x) {
+            r.run();
+        }
+    });
 
     public static Identifier identifierFromRecipe(Identifier identifier) {
         return identifier.withPrefixedPath("recipe/");
@@ -30,6 +43,13 @@ public class PolydexPageUtils {
 
     public static boolean isReady() {
         return PolydexImpl.isReady();
+    }
+
+    public static List<PolydexEntry> getAllEntries() {
+        return getAllEntries(true);
+    }
+    public static List<PolydexEntry> getAllEntries(boolean withEmpty) {
+        return PolydexImpl.ITEM_ENTRIES.get(withEmpty);
     }
 
     @Nullable
@@ -59,7 +79,7 @@ public class PolydexPageUtils {
             }
         }
 
-        if (entry.size() > 0) {
+        if (!entry.isEmpty()) {
             PageViewerGui.openCategory(player, category, list, closeCallback);
             return true;
         }

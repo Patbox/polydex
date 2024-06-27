@@ -14,10 +14,8 @@ import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.impl.book.view.CustomPage;
 import eu.pb4.polydex.impl.book.view.PotionRecipePage;
 import eu.pb4.polydex.impl.book.view.ToolUseOnBlockPage;
-import eu.pb4.polydex.mixin.AxeItemAccessor;
-import eu.pb4.polydex.mixin.BrewingRecipeRegistryAccessor;
-import eu.pb4.polydex.mixin.HoeItemAccessor;
-import eu.pb4.polydex.mixin.ShovelItemAccessor;
+import eu.pb4.polydex.mixin.*;
+import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -28,7 +26,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -42,6 +39,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -64,7 +62,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class PolydexImpl {
-
+    private static final boolean POLYMER_CORE_LOADED = FabricLoader.getInstance().isModLoaded("polymer-core");
     public static final NodeParser PARSER = NodeParser.builder().simplifiedTextFormat().quickText().staticPreParsing().build();
     public static final Map<Identifier, Function<PolydexTarget, HoverDisplay>> DISPLAYS = new HashMap<>();
     public static final HashMap<Class<?>, Function<RecipeEntry<?>, PolydexPage>> RECIPE_VIEWS = new HashMap<>();
@@ -115,7 +113,7 @@ public class PolydexImpl {
             return null;
         }
         var pStack = PolydexStack.of(stack);
-        var x = STACK_TO_ENTRY.get(stack);
+        var x = STACK_TO_ENTRY.get(pStack);
         if (x == null) {
             var list = ITEM_TO_ENTRIES.getOrDefault(stack.getItem(), Collections.emptyList());
 
@@ -129,12 +127,6 @@ public class PolydexImpl {
     }
 
     public static void rebuild(MinecraftServer server) {
-        try {
-            ItemGroups.updateDisplayContext(server.getOverworld().getEnabledFeatures(), false, server.getRegistryManager());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
         if (cacheBuilding != null) {
             LOGGER.warn("[Polydex] Cancelling unfinished matching");
             cacheBuilding.cancel(true);
@@ -142,7 +134,7 @@ public class PolydexImpl {
         isReady = false;
         LOGGER.info("[Polydex] Started matching recipes and items...");
         var time = System.currentTimeMillis();
-
+        PolydexPageUtils.BEFORE_LOADING.invoker().run();
         var recipes = server.getRecipeManager().values();
         cacheBuilding = CompletableFuture.runAsync(() -> {
             try {
@@ -154,7 +146,31 @@ public class PolydexImpl {
             LOGGER.info("[Polydex] Done! It took {} ms", (System.currentTimeMillis() - time));
             isReady = true;
             cacheBuilding = null;
+            PolydexPageUtils.AFTER_LOADING.invoker().run();
         }, server);
+    }
+
+    private static List<ItemGroupData> getItemGroupEntries(MinecraftServer server) {
+        var list = new ArrayList<ItemGroupData>();
+        var context = new ItemGroup.DisplayContext(server.getOverworld().getEnabledFeatures(), false, server.getRegistryManager());
+        for (var group : Registries.ITEM_GROUP) {
+            var data = new ItemGroupData(Registries.ITEM_GROUP.getId(group), group, context.enabledFeatures());
+            ((ItemGroupAccessor) group).getEntryCollector().accept(context, data);
+            if (!data.stacks.isEmpty()) {
+                list.add(data);
+            }
+        }
+
+        if (POLYMER_CORE_LOADED) {
+            for (var group : PolymerItemGroupUtils.REGISTRY) {
+                var data = new ItemGroupData(PolymerItemGroupUtils.REGISTRY.getId(group), group, context.enabledFeatures());
+                ((ItemGroupAccessor) group).getEntryCollector().accept(context, data);
+                if (!data.stacks.isEmpty()) {
+                    list.add(data);
+                }
+            }
+        }
+        return list;
     }
 
     public static void updateCaches(MinecraftServer server, Collection<RecipeEntry<?>> recipes) {
@@ -172,26 +188,14 @@ public class PolydexImpl {
 
         var entries = new ObjectLinkedOpenHashSet<PolydexEntry>();
 
-        var allGroups = new ArrayList<>(ItemGroups.getGroups());
+        var allGroups = getItemGroupEntries(server);
 
         for (var group : allGroups) {
-            if (group.getType() == ItemGroup.Type.CATEGORY) {
+            if (group.group.getType() == ItemGroup.Type.CATEGORY) {
                 var groupEntries = new ObjectLinkedOpenHashSet<PolydexEntry>();
-                var namespacedEntry = NamespacedEntry.ofItemGroup(group);
+                var namespacedEntry = NamespacedEntry.ofItemGroup(group.group);
 
-                for (var item : group.getDisplayStacks()) {
-                    var x = ITEM_ENTRY_CREATOR.get(item.getItem());
-
-                    if (x != null) {
-                        var y = x.apply(item);
-                        if (y != null) {
-                            groupEntries.add(y);
-                        }
-                    } else {
-                        groupEntries.add(PolydexEntry.of(item));
-                    }
-                }
-                for (var item : group.getSearchTabStacks()) {
+                for (var item : group.stacks) {
                     var x = ITEM_ENTRY_CREATOR.get(item.getItem());
 
                     if (x != null) {
@@ -206,7 +210,7 @@ public class PolydexImpl {
 
                 entries.addAll(groupEntries);
                 namespacedEntry.entries.addAll(groupEntries);
-                BY_ITEMGROUP.put(group, namespacedEntry);
+                BY_ITEMGROUP.put(group.group, namespacedEntry);
             }
         }
 
@@ -695,4 +699,28 @@ public class PolydexImpl {
             return new NamespacedEntry(group.getDisplayName().getString(), group.getDisplayName(), (p) -> group.getIcon(), PackedEntries.create());
         }
     }
+
+    public static class ItemGroupData implements ItemGroup.Entries {
+        public final Set<ItemStack> stacks = ItemStackSet.create();
+        public final ItemGroup group;
+        private final FeatureSet enabledFeatures;
+        public final Identifier id;
+
+        public ItemGroupData(Identifier id, ItemGroup group, FeatureSet enabledFeatures) {
+            this.group = group;
+            this.id = id;
+            this.enabledFeatures = enabledFeatures;
+        }
+
+        public void add(ItemStack stack, ItemGroup.StackVisibility visibility) {
+            if (stack.getCount() != 1) {
+                throw new IllegalArgumentException("Stack size must be exactly 1");
+            } else {
+                if (stack.getItem().isEnabled(this.enabledFeatures)) {
+                    this.stacks.add(stack);
+                }
+            }
+        }
+    }
+
 }

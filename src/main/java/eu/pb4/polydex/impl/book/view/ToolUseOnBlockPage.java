@@ -18,7 +18,11 @@ public record ToolUseOnBlockPage(Identifier identifier, PolydexIngredient<ItemSt
     @Override
     public ItemStack typeIcon(ServerPlayerEntity player) {
         //noinspection unchecked
-        return tool.asFirstStack().orElse((PolydexStack<ItemStack>) PolydexStack.EMPTY).toItemStack(player);
+        return GuiElementBuilder.from(tool.asFirstStack().orElse((PolydexStack<ItemStack>) PolydexStack.EMPTY).toItemStack(player))
+                .hideDefaultTooltip()
+                .setName(Text.translatable("polydex_category.minecraft.tool_interaction"))
+                .asStack();
+
     }
 
     @Override
