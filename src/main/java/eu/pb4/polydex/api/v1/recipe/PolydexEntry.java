@@ -6,6 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.ApiStatus;
@@ -14,7 +15,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @ApiStatus.NonExtendable
@@ -31,12 +34,24 @@ public interface PolydexEntry {
         return new PolydexEntryImpl(identifier, PolydexStack.of(stack), new ArrayList<>(), new ArrayList<>(), PolydexEntryImpl.STRICT_CHECK);
     }
 
+    static PolydexEntry of(Identifier identifier, PolydexStack<?> stack) {
+        return new PolydexEntryImpl(identifier, stack, new ArrayList<>(), new ArrayList<>(), PolydexEntryImpl.STRICT_CHECK);
+    }
+
     static PolydexEntry of(Identifier identifier, ItemStack stack, BiPredicate<PolydexEntry, PolydexStack<?>> isPartOf) {
         return new PolydexEntryImpl(identifier, PolydexStack.of(stack), new ArrayList<>(), new ArrayList<>(), isPartOf);
     }
 
+    static PolydexEntry of(Identifier identifier, PolydexStack<?> stack, BiPredicate<PolydexEntry, PolydexStack<?>> isPartOf) {
+        return new PolydexEntryImpl(identifier, stack, new ArrayList<>(), new ArrayList<>(), isPartOf);
+    }
+
     static void registerEntryCreator(Item item, Function<ItemStack, @Nullable PolydexEntry> builder) {
         PolydexImpl.ITEM_ENTRY_CREATOR.put(item, builder);
+    }
+
+    static void registerProvider(BiConsumer<MinecraftServer, EntryConsumer> builder) {
+        PolydexImpl.ENTRY_PROVIDERS.add(builder);
     }
 
     static void registerBuilder(Item item, Function<Item, @Nullable Collection<PolydexEntry>> builder) {
@@ -96,4 +111,11 @@ public interface PolydexEntry {
 
     boolean isPartOf(PolydexStack<?> stack);
 
+
+    interface EntryConsumer extends Consumer<PolydexEntry> {
+        void accept(PolydexEntry entry);
+        void accept(PolydexEntry entry, ItemGroup group);
+        void acceptAll(Collection<PolydexEntry> entries);
+        void acceptAll(Collection<PolydexEntry> entries, ItemGroup group);
+    }
 }

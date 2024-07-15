@@ -17,6 +17,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class LayerBuilder extends Layer implements PageBuilder {
@@ -48,13 +49,7 @@ public class LayerBuilder extends Layer implements PageBuilder {
 
     @Override
     public void setOutput(int x, int y, PolydexStack<?>... stacks) {
-        var list = new ArrayList<ItemStack>(stacks.length);
-
-        for (var stack : stacks) {
-            list.add(stack.toDisplayItemStack(this.player));
-        }
-
-        setOutput(x, y, list.toArray(new ItemStack[0]));
+        this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(List.of(stacks), null));
     }
 
     @Override
@@ -69,28 +64,12 @@ public class LayerBuilder extends Layer implements PageBuilder {
 
     @Override
     public void setIngredient(int x, int y, PolydexIngredient<?> ingredient) {
-        var stacks = ingredient.asStacks();
-        var list = new ArrayList<ItemStack>(stacks.size());
-
-        for (var stack : stacks) {
-            list.add(stack.toDisplayItemStack(this.player));
-        }
-
-        setOutput(x, y, list.toArray(new ItemStack[0]));
+        this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(ingredient, null));
     }
 
     @Override
     public void setIngredient(int x, int y, PolydexIngredient<?> ingredient, Consumer<GuiElementBuilder> builderConsumer) {
-        var stacks = ingredient.asStacks();
-        var list = new ArrayList<ItemStack>(stacks.size());
-
-        for (var stack : stacks) {
-            var t = GuiElementBuilder.from(stack.toDisplayItemStack(this.player));
-            builderConsumer.accept(t);
-            list.add(t.asStack());
-        }
-
-        setOutput(x, y, list.toArray(new ItemStack[0]));
+        this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(ingredient, builderConsumer));
     }
 
     @Override

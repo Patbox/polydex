@@ -41,7 +41,7 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
 
     @Override
     public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
-        return entry != null ? entry.stack().toItemStack(player) : ItemStack.EMPTY;
+        return entry != null ? entry.stack().toTypeDisplayItemStack(player) : ItemStack.EMPTY;
     }
 
     @Override

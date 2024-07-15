@@ -64,6 +64,7 @@ public class PolydexInitializer implements ModInitializer {
 
         PolydexPage.registerModifier(PolydexImpl::addCustomPages);
 
+        PolydexEntry.registerProvider(PolydexImpl::defaultEntries);
         PolydexEntry.registerEntryCreator(Items.ENCHANTED_BOOK, PolydexImpl::seperateCustomEnchantments);
         PolydexEntry.registerEntryCreator(Items.POTION, PolydexImpl::seperateCustomPotion);
         PolydexEntry.registerEntryCreator(Items.SPLASH_POTION, PolydexImpl::seperateCustomPotion);

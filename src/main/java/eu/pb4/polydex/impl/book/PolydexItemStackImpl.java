@@ -133,4 +133,9 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     public ItemStack getBacking() {
         return this.stack;
     }
+
+    @Override
+    public int getSourceHashCode() {
+        return System.identityHashCode(this.stack.getItem());
+    }
 }

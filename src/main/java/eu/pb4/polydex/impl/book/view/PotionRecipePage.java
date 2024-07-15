@@ -80,7 +80,7 @@ public abstract class PotionRecipePage<T> implements PolydexPage {
         if (!builder.hasTextures()) {
             builder.set(3, 2, new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).hideTooltip());
         }
-        builder.set(3, 3, base);
+        builder.setIngredient(3, 3, base);
         builder.setOutput(5, 2, out);
 
     }

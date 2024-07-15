@@ -16,6 +16,8 @@ import eu.pb4.polydex.impl.book.view.PotionRecipePage;
 import eu.pb4.polydex.impl.book.view.ToolUseOnBlockPage;
 import eu.pb4.polydex.mixin.*;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -58,6 +60,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -70,13 +73,24 @@ public class PolydexImpl {
     public static final List<PolydexPage.PageCreator> PAGE_CREATORS = new ArrayList<>();
     public static final String ID = "polydex";
     public static final Map<Item, Function<Item, @Nullable Collection<PolydexEntry>>> ITEM_ENTRY_BUILDERS = new HashMap<>();
+    public static final List<BiConsumer<MinecraftServer, PolydexEntry.EntryConsumer>> ENTRY_PROVIDERS = new ArrayList<>();
     public static final PackedEntries ITEM_ENTRIES = PackedEntries.create();
     public static final Map<String, NamespacedEntry> BY_NAMESPACE = new HashMap<>();
     public static final Map<ItemGroup, NamespacedEntry> BY_ITEMGROUP = new HashMap<>();
     public static final List<NamespacedEntry> NAMESPACED_ENTRIES = new ArrayList<>();
     public static final List<NamespacedEntry> ITEM_GROUP_ENTRIES = new ArrayList<>();
     public static final Map<PolydexCategory, List<PolydexPage>> CATEGORY_TO_PAGES = new Object2ObjectOpenHashMap<>();
-    public static final Map<PolydexStack<?>, PolydexEntry> STACK_TO_ENTRY = new Object2ObjectOpenHashMap<>();
+    public static final Map<PolydexStack<?>, PolydexEntry> STACK_TO_ENTRY = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<>() {
+        @Override
+        public int hashCode(PolydexStack<?> o) {
+            return o.getSourceHashCode();
+        }
+
+        @Override
+        public boolean equals(PolydexStack<?> a, PolydexStack<?> b) {
+            return a != null && b != null && a.matches(b, true);
+        }
+    });
     public static final Map<Identifier, PolydexPage> ID_TO_PAGE = new Object2ObjectOpenHashMap<>();
     public static final Map<Item, List<PolydexEntry>> ITEM_TO_ENTRIES = new Reference2ObjectOpenHashMap<>();
     public static final Logger LOGGER = LogManager.getLogger("Polydex");
@@ -134,7 +148,7 @@ public class PolydexImpl {
         isReady = false;
         LOGGER.info("[Polydex] Started matching recipes and items...");
         var time = System.currentTimeMillis();
-        PolydexPageUtils.BEFORE_LOADING.invoker().run();
+        PolydexPageUtils.BEFORE_PAGE_LOADING.invoker().accept(server);
         var recipes = server.getRecipeManager().values();
         cacheBuilding = CompletableFuture.runAsync(() -> {
             try {
@@ -146,7 +160,7 @@ public class PolydexImpl {
             LOGGER.info("[Polydex] Done! It took {} ms", (System.currentTimeMillis() - time));
             isReady = true;
             cacheBuilding = null;
-            PolydexPageUtils.AFTER_LOADING.invoker().run();
+            PolydexPageUtils.AFTER_PAGE_LOADING.invoker().accept(server);
         }, server);
     }
 
@@ -186,46 +200,33 @@ public class PolydexImpl {
         NAMESPACED_ENTRIES.clear();
         ITEM_GROUP_ENTRIES.clear();
 
-        var entries = new ObjectLinkedOpenHashSet<PolydexEntry>();
-
-        var allGroups = getItemGroupEntries(server);
-
-        for (var group : allGroups) {
-            if (group.group.getType() == ItemGroup.Type.CATEGORY) {
-                var groupEntries = new ObjectLinkedOpenHashSet<PolydexEntry>();
-                var namespacedEntry = NamespacedEntry.ofItemGroup(group.group);
-
-                for (var item : group.stacks) {
-                    var x = ITEM_ENTRY_CREATOR.get(item.getItem());
-
-                    if (x != null) {
-                        var y = x.apply(item);
-                        if (y != null) {
-                            groupEntries.add(y);
-                        }
-                    } else {
-                        groupEntries.add(PolydexEntry.of(item));
-                    }
-                }
-
-                entries.addAll(groupEntries);
-                namespacedEntry.entries.addAll(groupEntries);
-                BY_ITEMGROUP.put(group.group, namespacedEntry);
-            }
-        }
-
-        for (var item : Registries.ITEM) {
-            if (item == Items.AIR) {
-                continue;
+        var polydexEntries = new ObjectLinkedOpenHashSet<PolydexEntry>();
+        var consumer = new PolydexEntry.EntryConsumer() {
+            @Override
+            public void accept(PolydexEntry entry) {
+                polydexEntries.add(entry);
             }
 
-            var func = ITEM_ENTRY_BUILDERS.get(item);
-            if (func != null) {
-                var custom = func.apply(item);
-                if (custom != null) {
-                    entries.addAll(custom);
-                }
+            @Override
+            public void accept(PolydexEntry entry, ItemGroup group) {
+                BY_ITEMGROUP.computeIfAbsent(group, NamespacedEntry::ofItemGroup).entries.add(entry);
+                polydexEntries.add(entry);
             }
+
+            @Override
+            public void acceptAll(Collection<PolydexEntry> entries) {
+                polydexEntries.addAll(entries);
+            }
+
+            @Override
+            public void acceptAll(Collection<PolydexEntry> entries, ItemGroup group) {
+                BY_ITEMGROUP.computeIfAbsent(group, NamespacedEntry::ofItemGroup).entries.addAll(entries);
+                polydexEntries.addAll(entries);
+            }
+        };
+
+        for (var provider : ENTRY_PROVIDERS) {
+            provider.accept(server, consumer);
         }
 
         var globalPages = new ArrayList<PolydexPage>(recipes.size());
@@ -248,11 +249,14 @@ public class PolydexImpl {
         }
 
         for (var creator : PAGE_CREATORS) {
-            creator.createPages(server, globalPages::add);
+            creator.createPages(server, (page) -> {
+                globalPages.add(page);
+                ID_TO_PAGE.put(page.identifier(), page);
+            });
         }
 
         for (var globalPage : globalPages) {
-            for (var entry : entries) {
+            for (var entry : polydexEntries) {
                 if (globalPage.isOwner(server, entry)) {
                     entry.outputPages().add(globalPage);
                 }
@@ -273,13 +277,13 @@ public class PolydexImpl {
             }
         }
 
-        for (var entry : entries) {
+        for (var entry : polydexEntries) {
             for (var viewBuilder : ENTRY_MODIFIERS) {
                 viewBuilder.entryModifier(server, entry);
             }
         }
 
-        for (var entry : entries) {
+        for (var entry : polydexEntries) {
             entry.outputPages().sort(PAGE_SORT);
             entry.ingredientPages().sort(PAGE_SORT);
 
@@ -288,7 +292,7 @@ public class PolydexImpl {
             if (entry.stack().getBackingClass() == ItemStack.class) {
                 ITEM_TO_ENTRIES.computeIfAbsent(((ItemStack) entry.stack().getBacking()).getItem(), (a) -> new ArrayList<>()).add(entry);
             }
-            BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), (x) -> NamespacedEntry.ofMod(x, entry.stack()::toItemStack, server)).entries.add(entry);
+            BY_NAMESPACE.computeIfAbsent(entry.identifier().getNamespace(), (x) -> NamespacedEntry.ofMod(x, entry.stack()::toTypeDisplayItemStack, server)).entries.add(entry);
         }
 
 
@@ -310,6 +314,44 @@ public class PolydexImpl {
         ITEM_GROUP_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
 
         config = PolydexConfigImpl.loadOrCreateConfig(server.getRegistryManager());
+    }
+
+    public static void defaultEntries(MinecraftServer server, PolydexEntry.EntryConsumer consumer) {
+        var allGroups = getItemGroupEntries(server);
+
+        for (var group : allGroups) {
+            if (group.group.getType() == ItemGroup.Type.CATEGORY) {
+                var groupEntries = new ObjectLinkedOpenHashSet<PolydexEntry>();
+                for (var item : group.stacks) {
+                    var x = ITEM_ENTRY_CREATOR.get(item.getItem());
+
+                    if (x != null) {
+                        var y = x.apply(item);
+                        if (y != null) {
+                            groupEntries.add(y);
+                        }
+                    } else {
+                        groupEntries.add(PolydexEntry.of(item));
+                    }
+                }
+
+                consumer.acceptAll(groupEntries, group.group);
+            }
+        }
+
+        for (var item : Registries.ITEM) {
+            if (item == Items.AIR) {
+                continue;
+            }
+
+            var func = ITEM_ENTRY_BUILDERS.get(item);
+            if (func != null) {
+                var custom = func.apply(item);
+                if (custom != null) {
+                    consumer.acceptAll(custom);
+                }
+            }
+        }
     }
 
     public static void potionRecipe(MinecraftServer server, Consumer<PolydexPage> consumer) {

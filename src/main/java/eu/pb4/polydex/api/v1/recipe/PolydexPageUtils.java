@@ -5,7 +5,7 @@ import eu.pb4.polydex.impl.book.ui.PageViewerGui;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -14,17 +14,18 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class PolydexPageUtils {
-    public static Event<Runnable> BEFORE_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
+    public static Event<Consumer<MinecraftServer>> BEFORE_PAGE_LOADING = EventFactory.createArrayBacked(Consumer.class, x -> (server) -> {
         for (var r : x) {
-            r.run();
+            r.accept(server);
         }
     });
 
-    public static Event<Runnable> AFTER_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
+    public static Event<Consumer<MinecraftServer>> AFTER_PAGE_LOADING = EventFactory.createArrayBacked(Consumer.class, x -> (server) -> {
         for (var r : x) {
-            r.run();
+            r.accept(server);
         }
     });
 
@@ -119,6 +120,24 @@ public class PolydexPageUtils {
         return false;
     }
 
+    public static boolean openRecipeListUi(ServerPlayerEntity player, PolydexStack<?> stack, @Nullable Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
+        var entry = PolydexImpl.STACK_TO_ENTRY.get(stack);
+        if (entry == null) {
+            return false;
+        }
+
+        if (entry.getVisiblePagesSize(player) > 0) {
+            PageViewerGui.openEntry(player, entry, false, closeCallback);
+            return true;
+        }
+
+        return false;
+    }
+
     public static boolean openRecipeListUi(ServerPlayerEntity player, PolydexEntry entry, @Nullable Runnable closeCallback) {
         if (!isReady()) {
             return false;
@@ -150,6 +169,24 @@ public class PolydexPageUtils {
         return false;
     }
 
+    public static boolean openUsagesListUi(ServerPlayerEntity player, PolydexStack<?> stack, @Nullable  Runnable closeCallback) {
+        if (!isReady()) {
+            return false;
+        }
+
+        var entry = PolydexImpl.STACK_TO_ENTRY.get(stack);
+        if (entry == null) {
+            return false;
+        }
+
+        if (entry.getVisibleIngredientPagesSize(player) > 0) {
+            PageViewerGui.openEntry(player, entry, true, closeCallback);
+            return true;
+        }
+
+        return false;
+    }
+
     public static boolean openUsagesListUi(ServerPlayerEntity player, PolydexEntry entry, @Nullable  Runnable closeCallback) {
         if (!isReady()) {
             return false;
@@ -169,11 +206,31 @@ public class PolydexPageUtils {
         }
 
 
-        if (pages.size() > 0) {
+        if (!pages.isEmpty()) {
             PageViewerGui.openCustom(player, text, pages, useTypeIcon, closeCallback);
             return true;
         }
 
         return false;
+    }
+
+
+    @Deprecated
+    public static Event<Runnable> BEFORE_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
+        for (var r : x) {
+            r.run();
+        }
+    });
+    @Deprecated
+    public static Event<Runnable> AFTER_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
+        for (var r : x) {
+            r.run();
+        }
+    });
+
+
+    static {
+        BEFORE_PAGE_LOADING.register((s) -> BEFORE_LOADING.invoker().run());
+        AFTER_PAGE_LOADING.register((s) -> AFTER_LOADING.invoker().run());
     }
 }

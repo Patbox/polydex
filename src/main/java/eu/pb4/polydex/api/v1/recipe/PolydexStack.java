@@ -3,7 +3,6 @@ package eu.pb4.polydex.api.v1.recipe;
 import eu.pb4.polydex.impl.book.PolydexItemStackImpl;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -29,6 +28,9 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
 
     ItemStack toItemStack(ServerPlayerEntity player);
     default ItemStack toDisplayItemStack(ServerPlayerEntity player) {
+        return toItemStack(player);
+    }
+    default ItemStack toTypeDisplayItemStack(ServerPlayerEntity player) {
         return toItemStack(player);
     }
 
@@ -83,4 +85,8 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
     boolean isEmpty();
 
     Text getName();
+
+    default int getSourceHashCode() {
+        return this.getBacking().hashCode();
+    };
 }
