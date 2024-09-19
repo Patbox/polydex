@@ -21,6 +21,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.block.Block;
@@ -39,6 +42,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.featuretoggle.FeatureSet;
@@ -170,6 +174,10 @@ public class PolydexImpl {
         for (var group : Registries.ITEM_GROUP) {
             var data = new ItemGroupData(Registries.ITEM_GROUP.getId(group), group, context.enabledFeatures());
             ((ItemGroupAccessor) group).getEntryCollector().accept(context, data);
+            var tmp = new ArrayList<>(data.stacks);
+            data.stacks.clear();
+            callItemGroupEvents(data.id, group, tmp, tmp, context);
+            data.stacks.addAll(tmp);
             if (!data.stacks.isEmpty()) {
                 list.add(data);
             }
@@ -179,6 +187,10 @@ public class PolydexImpl {
             for (var group : PolymerItemGroupUtils.REGISTRY) {
                 var data = new ItemGroupData(PolymerItemGroupUtils.REGISTRY.getId(group), group, context.enabledFeatures());
                 ((ItemGroupAccessor) group).getEntryCollector().accept(context, data);
+                var tmp = new ArrayList<>(data.stacks);
+                data.stacks.clear();
+                callItemGroupEvents(data.id, group, tmp, tmp, context);
+                data.stacks.addAll(tmp);
                 if (!data.stacks.isEmpty()) {
                     list.add(data);
                 }
@@ -186,6 +198,20 @@ public class PolydexImpl {
         }
         return list;
     }
+
+    public static void callItemGroupEvents(Identifier id, ItemGroup itemGroup, List<ItemStack> parentTabStacks, List<ItemStack> searchTabStacks, ItemGroup.DisplayContext context) {
+        FabricItemGroupEntries fabricCollector = new FabricItemGroupEntries(context, parentTabStacks, searchTabStacks);
+        try {
+            ItemGroupEvents.modifyEntriesEvent(RegistryKey.of(RegistryKeys.ITEM_GROUP, id)).invoker().modifyEntries(fabricCollector);
+        } catch (Throwable ignored) {}
+
+        try {
+            ItemGroupEvents.MODIFY_ENTRIES_ALL.invoker().modifyEntries(itemGroup, fabricCollector);
+        } catch (Throwable e) {
+
+        }
+    }
+
 
     public static void updateCaches(MinecraftServer server, Collection<RecipeEntry<?>> recipes) {
         ITEM_ENTRIES.clear();
@@ -323,6 +349,10 @@ public class PolydexImpl {
             if (group.group.getType() == ItemGroup.Type.CATEGORY) {
                 var groupEntries = new ObjectLinkedOpenHashSet<PolydexEntry>();
                 for (var item : group.stacks) {
+                    if (item.isIn(ConventionalItemTags.HIDDEN_FROM_RECIPE_VIEWERS)) {
+                        continue;
+                    }
+
                     var x = ITEM_ENTRY_CREATOR.get(item.getItem());
 
                     if (x != null) {
@@ -340,7 +370,8 @@ public class PolydexImpl {
         }
 
         for (var item : Registries.ITEM) {
-            if (item == Items.AIR) {
+            //noinspection deprecation
+            if (item == Items.AIR || item.getRegistryEntry().isIn(ConventionalItemTags.HIDDEN_FROM_RECIPE_VIEWERS)) {
                 continue;
             }
 
@@ -383,7 +414,7 @@ public class PolydexImpl {
             }
             if (entity instanceof LivingEntity livingEntity) {
                 if (PolydexImpl.config.displayEntityHealth) {
-                    displayBuilder.setComponent(HoverDisplayBuilder.HEALTH, Text.literal("").append(Text.literal("♥ ").formatted(Formatting.RED))
+                    displayBuilder.setComponent(HoverDisplayBuilder.HEALTH, Text.literal("").append(Text.literal("❤ ").formatted(Formatting.RED))
                             .append("" + Math.min(MathHelper.ceil(livingEntity.getHealth()), MathHelper.ceil(livingEntity.getMaxHealth())))
                             .append(Text.literal("/").formatted(Formatting.GRAY))
                             .append("" + MathHelper.ceil(livingEntity.getMaxHealth())));
@@ -618,23 +649,29 @@ public class PolydexImpl {
 
     }
 
-    public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty, Map<Identifier, PolydexEntry> nonEmptyById) {
+    public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty, Map<Identifier, PolydexEntry> byId, Map<Identifier, PolydexEntry> nonEmptyById) {
         public static PackedEntries create() {
-            return new PackedEntries(new ArrayList<>(), new ArrayList<>(), new HashMap<>());
+            return new PackedEntries(new ArrayList<>(), new ArrayList<>(), new HashMap<>(), new HashMap<>());
         }
 
         public List<PolydexEntry> get(boolean all) {
             return all ? this.all : this.nonEmpty;
         }
+        @Nullable
+        public PolydexEntry get(Identifier identifier, boolean all) {
+            return all ? this.byId.get(identifier) : this.nonEmptyById.get(identifier);
+        }
 
         public void clear() {
             this.all.clear();
+            this.byId.clear();
             this.nonEmpty.clear();
             this.nonEmptyById.clear();
         }
 
         public void add(PolydexEntry entry) {
             this.all.add(entry);
+            this.byId.put(entry.identifier(), entry);
             if (!entry.outputPages().isEmpty() || !entry.ingredientPages().isEmpty()) {
                 this.nonEmpty.add(entry);
                 this.nonEmptyById.put(entry.identifier(), entry);
@@ -644,6 +681,7 @@ public class PolydexImpl {
         public void recalculateEmpty() {
             this.nonEmpty.clear();
             this.nonEmptyById.clear();
+            this.byId.clear();
             for (var entry : this.all) {
                 if (!entry.outputPages().isEmpty() || !entry.ingredientPages().isEmpty()) {
                     this.nonEmpty.add(entry);
@@ -656,6 +694,7 @@ public class PolydexImpl {
             this.all.addAll(groupEntries);
 
             for (var entry : groupEntries) {
+                this.byId.put(entry.identifier(), entry);
                 if (!entry.outputPages().isEmpty() || !entry.ingredientPages().isEmpty()) {
                     this.nonEmpty.add(entry);
                     this.nonEmptyById.put(entry.identifier(), entry);

@@ -1,5 +1,6 @@
 package eu.pb4.polydex.api.v1.recipe;
 
+import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.ui.PageViewerGui;
 import net.fabricmc.fabric.api.event.Event;
@@ -61,6 +62,10 @@ public class PolydexPageUtils {
     @Nullable
     public static PolydexEntry getItemEntryFor(ItemStack stack) {
         return PolydexImpl.getEntry(stack);
+    }
+    @Nullable
+    public static PolydexEntry getEntry(Identifier identifier) {
+        return PolydexImpl.ITEM_ENTRIES.byId().get(identifier);
     }
 
     @Nullable

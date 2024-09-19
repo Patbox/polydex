@@ -9,6 +9,8 @@ import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
 import eu.pb4.polymer.core.impl.PolymerImpl;
 import eu.pb4.predicate.api.PredicateContext;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.Packet;
@@ -25,6 +27,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
@@ -40,6 +44,8 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     private ServerPlayerEntity polydex_oldPlayer;
     @Unique
     private int polydex_tick = 0;
+    @Unique
+    private final List<Identifier> polydex$lastViewed = new ArrayList<>();
     @Unique
     private boolean polydex_globalEnabled = true;
 
@@ -61,6 +67,30 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
             }
         } else {
             this.polydex_display = NoopTargetDisplay.INSTANCE;
+        }
+
+        var list = PlayerDataApi.getGlobalDataFor(player, id("last_viewed"), NbtList.TYPE);
+
+        if (list != null) {
+            for (var x : list) {
+                var y = Identifier.tryParse(x.asString());
+                this.polydex$lastViewed.add(y);
+            }
+        }
+    }
+
+    @Inject(method = "cleanUp", at = @At("HEAD"))
+    private void saveList(CallbackInfo ci) {
+        try {
+            var list = new NbtList();
+
+            for (var x : this.polydex$lastViewed) {
+                list.add(NbtString.of(x.toString()));
+            }
+
+            PlayerDataApi.setGlobalDataFor(player, id("last_viewed"), list);
+        } catch (Throwable e) {
+            // ignored
         }
     }
 
@@ -121,6 +151,11 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     @Override
     public HoverDisplay polydex_getDisplay() {
         return this.polydex_display;
+    }
+
+    @Override
+    public List<Identifier> polydex_lastViewed() {
+        return this.polydex$lastViewed;
     }
 
     @Override

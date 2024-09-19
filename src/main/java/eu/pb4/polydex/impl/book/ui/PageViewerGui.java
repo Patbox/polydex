@@ -3,11 +3,11 @@ package eu.pb4.polydex.impl.book.ui;
 import eu.pb4.polydex.api.v1.recipe.PolydexCategory;
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PolydexPage;
+import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -17,7 +17,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class PageViewerGui extends ExtendedGui implements PageAware {
     public static final int PAGE_SIZE = 9 * 5;
@@ -61,6 +60,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
     }
 
     public static void openEntry(ServerPlayerEntity player, PolydexEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
+        PlayerInterface.addViewed(player, entry.identifier());
         var pages = ingredients ? entry.getVisibleIngredientPages(player) : entry.getVisiblePages(player);
         var title = Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", entry.stack().getName());
         new PageViewerGui(player, title, entry, pages, ingredients ? PolydexPage::entryIcon : PolydexPage::typeIcon, closeCallback);

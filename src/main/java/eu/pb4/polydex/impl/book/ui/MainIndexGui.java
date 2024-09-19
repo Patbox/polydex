@@ -1,18 +1,18 @@
 package eu.pb4.polydex.impl.book.ui;
 
+import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
+import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.LayerView;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.List;
@@ -42,6 +42,13 @@ public class MainIndexGui extends ExtendedGui {
 
         this.setOverlayTexture(InternalPageTextures.MAIN_INVENTORY);
         this.setText(Text.translatable("text.polydex.index_title"));
+    }
+
+    @Override
+    public void onOpen() {
+        super.onOpen();
+        this.mainLayer.updateDisplay();
+        this.indexLayer.updateDisplay();
     }
 
     @Override
@@ -135,19 +142,22 @@ public class MainIndexGui extends ExtendedGui {
 
     public class NamespaceLayer extends PagedLayer {
         private Type type = Type.INVENTORY;
-
         public NamespaceLayer(int height) {
             super(MainIndexGui.this.getPlayer(), height, 9, true);
         }
 
         @Override
         protected int getEntryCount() {
-            return this.type == Type.INVENTORY ? 1 : this.type.entries.size();
+            return switch (this.type) {
+                case INVENTORY -> 1;
+                case LAST_VIEW -> ((PlayerInterface) player.networkHandler).polydex_lastViewed().size();
+                default -> this.type.entries.size() + 1;
+            };
         }
 
         @Override
         public int getPageAmount() {
-            return this.type == Type.INVENTORY ? 1 : MathHelper.ceil(((double) this.type.entries.size() + 1) / this.pageSize);
+            return this.type == Type.INVENTORY ? 1 : MathHelper.ceil(((double) getEntryCount()) / this.pageSize);
         }
 
         @Override
@@ -156,19 +166,19 @@ public class MainIndexGui extends ExtendedGui {
                 var inventory = this.player.getInventory();
                 for (var i = 0; i < 3; ++i) {
                     for (var j = 0; j < 9; ++j) {
-                        this.setSlot(i * 9 + j, createSlot(inventory.getStack(j + (i + 1) * 9)));
+                        this.setSlot(i * 9 + j, createDirect(inventory.getStack(j + (i + 1) * 9)));
                     }
                 }
 
                 for (var i = 0; i < 9; ++i) {
-                    this.setSlot(i + 3 * 9, createSlot(inventory.getStack(i)));
+                    this.setSlot(i + 3 * 9, createDirect(inventory.getStack(i)));
                 }
             } else {
                 super.updateDisplay();
             }
         }
 
-        private GuiElement createSlot(ItemStack stack) {
+        private GuiElement createDirect(ItemStack stack) {
             return new GuiElement(stack, (x, type, z) -> {
                 var page = PolydexPageUtils.getItemEntryFor(stack);
                 if (page != null && ((type.isLeft && page.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && page.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0))) {
@@ -179,8 +189,36 @@ public class MainIndexGui extends ExtendedGui {
             });
         }
 
+        private GuiElement createDirect(PolydexEntry page) {
+            return new GuiElement(page.stack().toItemStack(player), (x, type, z) -> {
+                if ((type.isLeft && page.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && page.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
+                    MainIndexGui.this.close(true);
+                    PageViewerGui.openEntry(player, page, type.isRight, MainIndexGui.this::open);
+                    GuiUtils.playClickSound(this.player);
+                }
+            });
+        }
+
         @Override
         protected GuiElement getElement(int id) {
+            return switch (this.type) {
+                case LAST_VIEW -> {
+                    var list = ((PlayerInterface) player.networkHandler).polydex_lastViewed();
+                    if (id >= list.size()) {
+                        yield GuiElement.EMPTY;
+                    }
+                    var x = PolydexPageUtils.getEntry(list.get(id));
+                    if (x != null) {
+                        yield createDirect(x);
+                    }
+                    yield GuiElement.EMPTY;
+                }
+                case INVENTORY -> GuiElement.EMPTY;
+                default -> getElementTypeSelector(id);
+            };
+        }
+
+        private GuiElement getElementTypeSelector(int id) {
             if (id == 0) {
                 var builder = new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .setName(Text.translatable("text.polydex.display_all_items"))
@@ -239,6 +277,7 @@ public class MainIndexGui extends ExtendedGui {
 
         private enum Type {
             INVENTORY(null),
+            LAST_VIEW(null),
             ITEM_GROUP(PolydexImpl.ITEM_GROUP_ENTRIES),
             NAMESPACES(PolydexImpl.NAMESPACED_ENTRIES),
             ;
