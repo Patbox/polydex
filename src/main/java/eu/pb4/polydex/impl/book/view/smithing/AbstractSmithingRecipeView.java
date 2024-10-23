@@ -6,11 +6,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.SmithingRecipe;
+import net.minecraft.recipe.display.SlotDisplay;
+import net.minecraft.recipe.input.SmithingRecipeInput;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 
 public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> extends AbstractRecipePolydexPage<T> {
@@ -33,14 +38,10 @@ public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> exten
 
     @Override
     public void createPage(@Nullable PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
-        builder.setIngredient(2, 2,this.getTemplate());
+        builder.setIngredient(2, 2, this.getTemplate());
         builder.setIngredient(3, 2, this.getBaseItem(entry));
         builder.setIngredient(4, 2, this.getAddition());
-        builder.setOutput(6, 2, this.getOutput(entry, player));
-    }
-
-    protected ItemStack[] getOutput(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
-        return new ItemStack[] { recipe.getResult(player.server.getRegistryManager()) };
+        builder.setOutput(6, 2, this.getOutput(entry, Objects.requireNonNull(player.getServer())));
     }
 
     @Override
@@ -48,8 +49,8 @@ public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> exten
         return this.ingrendients;
     }
 
-    protected Ingredient getBaseItem(@Nullable PolydexEntry entry) {
-        return getBase();
+    protected SlotDisplay getBaseItem(@Nullable PolydexEntry entry) {
+        return getBase().toDisplay();
     }
 
     protected abstract Ingredient getTemplate();

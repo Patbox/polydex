@@ -1,12 +1,12 @@
 package eu.pb4.polydex.mixin;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.SmithingTransformRecipe;
+import net.minecraft.recipe.ShapelessRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(SmithingTransformRecipe.class)
-public interface SmithingTransformRecipeAccessor {
+@Mixin(ShapelessRecipe.class)
+public interface ShapelessRecipeAccessor {
     @Accessor
     ItemStack getResult();
 }

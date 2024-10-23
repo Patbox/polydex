@@ -6,10 +6,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.display.SlotDisplay;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> extends AbstractRecipePolydexPage<T> {
@@ -27,7 +29,7 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
 
     @Override
     public ItemStack typeIcon(ServerPlayerEntity player) {
-        return recipe.fits(2, 2) ? CRAFTING : CRAFTING_TABLE;
+        return CRAFTING;
     }
 
     @Override
@@ -39,11 +41,7 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
             builder.setIngredient(x + 2,  y + 1, getStacksAt(recipe, x, y, entry));
         }
 
-        builder.setOutput(6, 2, getOutput(recipe, player, entry));
-    }
-
-    protected ItemStack[] getOutput(T recipe, ServerPlayerEntity player, @Nullable PolydexEntry entry) {
-        return new ItemStack[] { recipe.getResult(player.server.getRegistryManager()) };
+        builder.setOutput(6, 2, getOutput(entry, player.getServer()));
     }
 
     @Override
@@ -51,16 +49,17 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
         return false;
     }
 
-    protected abstract Ingredient getStacksAt(T recipe, int x, int y, @Nullable PolydexEntry entry);
 
-    public static <T extends CraftingRecipe> Function<RecipeEntry<T>, AbstractCraftingRecipePage<T>> of(StackGetter<T> getter) {
+    protected abstract SlotDisplay getStacksAt(T recipe, int x, int y, @Nullable PolydexEntry entry);
+
+    /*public static <T extends CraftingRecipe> Function<RecipeEntry<T>, AbstractCraftingRecipePage<T>> of(StackGetter<T> getter) {
         return (r) -> new AbstractCraftingRecipePage<T>(r) {
             @Override
             protected Ingredient getStacksAt(T recipe, int x, int y, @Nullable PolydexEntry entry) {
                 return getter.getStacksAt(recipe, x, y);
             }
         };
-    };
+    };*/
 
     public interface StackGetter<T> {
         Ingredient getStacksAt(T recipe, int x, int y);

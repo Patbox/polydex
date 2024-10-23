@@ -8,7 +8,7 @@ import eu.pb4.polydex.impl.book.ui.GuiUtils;
 import eu.pb4.polydex.impl.book.view.*;
 import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipePage;
-import eu.pb4.polydex.impl.book.view.crafting.ShulkerBoxColoringRecipePage;
+import eu.pb4.polydex.impl.book.view.crafting.TransmuteRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.TippedArrowRecipePage;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTransformRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipePage;
@@ -51,7 +51,7 @@ public class PolydexInitializer implements ModInitializer {
 
         PolydexPage.registerRecipeViewer(ShapedRecipe.class, ShapedCraftingRecipePage::new);
         PolydexPage.registerRecipeViewer(ShapelessRecipe.class, ShapelessCraftingRecipePage::new);
-        PolydexPage.registerRecipeViewer(ShulkerBoxColoringRecipe.class, ShulkerBoxColoringRecipePage::new);
+        PolydexPage.registerRecipeViewer(TransmuteRecipe.class, TransmuteRecipePage::new);
         PolydexPage.registerRecipeViewer(TippedArrowRecipe.class, TippedArrowRecipePage::new);
 
         PolydexPage.registerRecipeViewer(BlastingRecipe.class, AbstractCookingRecipePage.of(Items.BLAST_FURNACE));
@@ -80,7 +80,7 @@ public class PolydexInitializer implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        GenericModInfo.build(FabricLoader.getInstance().getModContainer("polydex2").get());
+        GenericModInfo.build(FabricLoader.getInstance().getModContainer("polydex").get());
         CommandRegistrationCallback.EVENT.register(Commands::register);
         ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(Event.DEFAULT_PHASE, EVENT_ID);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.addPhaseOrdering(Event.DEFAULT_PHASE, EVENT_ID);
@@ -88,7 +88,8 @@ public class PolydexInitializer implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(EVENT_ID, (server, manager, b) -> PolydexImpl.rebuild(server));
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
-        PolymerResourcePackUtils.addModAssets("polydex2");
+        PolymerResourcePackUtils.addModAssets("polydex");
+        PolymerResourcePackUtils.addBridgedModelsFolder(Identifier.of("polydex", "sgui"));
         GuiUtils.register();
 
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {

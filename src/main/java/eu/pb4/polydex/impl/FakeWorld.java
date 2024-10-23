@@ -6,9 +6,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.item.FuelRegistry;
 import net.minecraft.item.map.MapState;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.BuiltinRegistries;
@@ -43,6 +46,7 @@ import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.explosion.ExplosionBehavior;
 import net.minecraft.world.tick.OrderedTick;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import net.minecraft.world.tick.TickManager;
@@ -172,9 +176,9 @@ public class FakeWorld extends World implements LightSourceView {
 
     public FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager manager,
                       BrewingRecipeRegistry brewingRecipeRegistry, FeatureSet featureSet,
-                      RecipeManager recipeManager, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler,
+                      RecipeManager recipeManager, RegistryEntry<DimensionType> dimensionType,
                       boolean isClient, boolean debugWorld, long seed) {
-        super(properties, registryRef, manager, dimensionType, profiler, isClient, debugWorld, seed, 0);
+        super(properties, registryRef, manager, dimensionType, isClient, debugWorld, seed, 0);
         this.brewingRecipeRegistry = brewingRecipeRegistry;
         this.recipeManager = recipeManager;
         this.featureSet = featureSet;
@@ -189,7 +193,6 @@ public class FakeWorld extends World implements LightSourceView {
                 server.getOverworld().getEnabledFeatures(),
                 server.getRecipeManager(),
                 RegistryEntry.of(server.getOverworld().getDimension()),
-                () -> new ProfilerSystem(() -> 0L, () -> 0, false),
                 false,
                 true,
                 1
@@ -218,6 +221,11 @@ public class FakeWorld extends World implements LightSourceView {
 
     @Override
     public void playSoundFromEntity(@Nullable PlayerEntity player, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+
+    }
+
+    @Override
+    public void createExplosion(@Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, ExplosionSourceType explosionSourceType, ParticleEffect smallParticle, ParticleEffect largeParticle, RegistryEntry<SoundEvent> soundEvent) {
 
     }
 
@@ -304,6 +312,11 @@ public class FakeWorld extends World implements LightSourceView {
     }
 
     @Override
+    public FuelRegistry getFuelRegistry() {
+        return null;
+    }
+
+    @Override
     public FeatureSet getEnabledFeatures() {
         return this.featureSet;
     }
@@ -320,7 +333,12 @@ public class FakeWorld extends World implements LightSourceView {
 
     @Override
     public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
-        return this.getRegistryManager().get(RegistryKeys.BIOME).getEntry(BiomeKeys.PLAINS).get();
+        return this.getRegistryManager().getOrThrow(RegistryKeys.BIOME).getOrThrow(BiomeKeys.PLAINS);
+    }
+
+    @Override
+    public int getSeaLevel() {
+        return 0;
     }
 
     @Override
@@ -373,11 +391,6 @@ public class FakeWorld extends World implements LightSourceView {
         @Override
         public boolean isHardcore() {
             return false;
-        }
-
-        @Override
-        public GameRules getGameRules() {
-            return new GameRules();
         }
 
         @Override

@@ -42,14 +42,23 @@ public interface PolydexIngredient<T> {
     Class<T> getBackingClass();
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient) {
+        if (ingredient == null) {
+            return PolydexStack.EMPTY_STACK;
+        }
         return of(ingredient, 1, 1);
     }
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count) {
+        if (ingredient == null) {
+            return PolydexStack.EMPTY_STACK;
+        }
         return of(ingredient, count, 1);
     }
 
     static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count, float chance) {
+        if (ingredient == null) {
+            return PolydexStack.EMPTY_STACK;
+        }
         return PolydexIngredientImpl.of(ingredient, count, chance);
     }
 }

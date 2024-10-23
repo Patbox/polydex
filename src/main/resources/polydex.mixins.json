@@ -11,10 +11,13 @@
     "ItemStackSetAccessor",
     "ServerPlayerInteractionManagerMixin",
     "ServerPlayNetworkHandlerMixin",
+    "ShapedRecipeAccessor",
+    "ShapelessRecipeAccessor",
     "ShovelItemAccessor",
+    "SingleStackRecipeAccessor",
     "SmithingTransformRecipeAccessor",
-    "SmithingTrimRecipeAccessor",
-    "SPIMAccessor"
+    "SPIMAccessor",
+    "TransmuteRecipeAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

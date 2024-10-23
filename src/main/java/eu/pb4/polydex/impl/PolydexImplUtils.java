@@ -54,12 +54,16 @@ public class PolydexImplUtils {
     }
 
     public static GuiElementInterface getIngredientDisplay(Ingredient ingredient) {
-        ItemStack[] stacks = PolydexImplUtils.readIngredient(ingredient);
+        var stacks = PolydexImplUtils.readIngredient(ingredient);
         return getIngredientDisplay(stacks);
     }
 
     public static GuiElementInterface getIngredientDisplay(ItemStack[] stacks) {
-        var list = new ArrayList<PolydexStack<?>>(stacks.length);
+        return getIngredientDisplay(List.of(stacks));
+    }
+
+    public static GuiElementInterface getIngredientDisplay(Collection<ItemStack> stacks) {
+        var list = new ArrayList<PolydexStack<?>>(stacks.size());
         for (var stack : stacks) {
             list.add(PolydexStack.of(stack));
         }
@@ -72,13 +76,11 @@ public class PolydexImplUtils {
         return getIngredientDisplay((List<PolydexStack<?>>) (Object) ingredient.asStacks(), consumer);
     }
 
-    public static ItemStack[] readIngredient(Ingredient ingredient) {
-        ItemStack[] stacks = ingredient.getMatchingStacks();
-        if (stacks.length > 0) {
-            return stacks;
-        } else {
-            return new ItemStack[]{};
+    public static List<ItemStack> readIngredient(@Nullable Ingredient ingredient) {
+        if (ingredient == null) {
+            return List.of();
         }
+        return ingredient.getMatchingItems().stream().map(ItemStack::new).toList();
     }
 
 

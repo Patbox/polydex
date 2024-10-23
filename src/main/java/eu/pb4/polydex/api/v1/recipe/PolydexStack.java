@@ -15,6 +15,7 @@ import java.util.Optional;
 
 public interface PolydexStack<T> extends PolydexIngredient<T> {
     PolydexStack<?> EMPTY = of(Items.AIR);
+    PolydexStack<ItemStack> EMPTY_STACK = of(Items.AIR);
 
     @Override
     default List<PolydexStack<T>> asStacks() {

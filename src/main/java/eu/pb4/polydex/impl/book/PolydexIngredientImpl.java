@@ -4,8 +4,10 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.List;
 
@@ -14,19 +16,17 @@ public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
     private final Ingredient ingredient;
     private final long count;
     private final float chance;
-    private final List<ItemStack> itemStacks;
+    private final List<RegistryEntry<Item>> itemStacks;
     private final List<PolydexStack<ItemStack>> polydexStacks;
 
     public PolydexIngredientImpl(Ingredient ingredient, long count, float chance) {
         this.ingredient = ingredient;
         this.count = count;
         this.chance = chance;
-        if (ingredient.getCustomIngredient() != null) {
-            this.itemStacks = ingredient.getCustomIngredient().getMatchingStacks();
-        } else {
-            this.itemStacks = List.of(ingredient.getMatchingStacks());
-        }
-        this.polydexStacks = this.itemStacks.stream().map((x) -> PolydexStack.of(x, count, chance)).toList();
+
+        this.itemStacks = ingredient.getMatchingItems();
+
+        this.polydexStacks = this.itemStacks.stream().map((x) -> PolydexStack.of(x.value().getDefaultStack(), count, chance)).toList();
     }
 
     public static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count, float chance) {
@@ -35,7 +35,7 @@ public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
 
     @Override
     public boolean isEmpty() {
-        return this.ingredient.isEmpty();
+        return false;
     }
 
     @Override

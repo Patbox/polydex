@@ -1,8 +1,6 @@
 package eu.pb4.polydex.impl.book.view.crafting;
 
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
-import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
-import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
@@ -12,19 +10,16 @@ import net.minecraft.potion.Potions;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.TippedArrowRecipe;
+import net.minecraft.recipe.display.SlotDisplay;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Optional;
 
 public class TippedArrowRecipePage extends AbstractCraftingRecipePage<TippedArrowRecipe> {
     private static final Ingredient ARROW = Ingredient.ofItems(Items.ARROW);
-    private static final List<PolydexIngredient<?>> INGREDIENTS = List.of(
-            PolydexIngredient.of(ARROW),
-            PolydexStack.of(Items.LINGERING_POTION)
-    );
 
     public TippedArrowRecipePage(RecipeEntry<TippedArrowRecipe> recipe) {
         super(recipe);
@@ -36,11 +31,6 @@ public class TippedArrowRecipePage extends AbstractCraftingRecipePage<TippedArro
     }
 
     @Override
-    public List<PolydexIngredient<?>> ingredients() {
-        return INGREDIENTS;
-    }
-
-    @Override
     public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
         var potion = getPotion(entry);
         var stack = new ItemStack(Items.TIPPED_ARROW);
@@ -49,14 +39,14 @@ public class TippedArrowRecipePage extends AbstractCraftingRecipePage<TippedArro
     }
 
     @Override
-    protected Ingredient getStacksAt(TippedArrowRecipe recipe, int x, int y, @Nullable PolydexEntry entry) {
+    protected SlotDisplay getStacksAt(TippedArrowRecipe recipe, int x, int y, @Nullable PolydexEntry entry) {
         if (x == 1 && y == 1) {
             var potion = getPotion(entry);
             var stack = new ItemStack(Items.LINGERING_POTION);
             stack.set(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT.with(potion));
-            return Ingredient.ofStacks(stack);
+            return new SlotDisplay.StackSlotDisplay(stack);
         }
-        return ARROW;
+        return new SlotDisplay.ItemSlotDisplay(Items.ARROW);
     }
 
     private RegistryEntry<Potion> getPotion(PolydexEntry entry) {
@@ -68,10 +58,11 @@ public class TippedArrowRecipePage extends AbstractCraftingRecipePage<TippedArro
     }
 
     @Override
-    protected ItemStack[] getOutput(TippedArrowRecipe recipe, ServerPlayerEntity player, @Nullable PolydexEntry entry) {
+    public ItemStack getOutput(PolydexEntry entry, MinecraftServer server) {
         var potion = getPotion(entry);
         var arrow = new ItemStack(Items.TIPPED_ARROW);
         arrow.set(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT.with(potion));
-        return new ItemStack[] { arrow };
+        arrow.setCount(8);
+        return arrow;
     }
 }

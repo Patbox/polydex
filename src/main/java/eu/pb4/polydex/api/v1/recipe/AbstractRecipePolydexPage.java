@@ -3,6 +3,8 @@ package eu.pb4.polydex.api.v1.recipe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -14,20 +16,22 @@ import java.util.List;
 public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements PolydexPage {
     protected final T recipe;
     private final Identifier identifier;
-    protected final Identifier recipeId;
+    protected final RegistryKey<Recipe<?>> recipeId;
     private final List<PolydexIngredient<?>> ingredients;
 
     public AbstractRecipePolydexPage(RecipeEntry<T> recipe) {
         this.recipe = recipe.value();
         this.recipeId = recipe.id();
-        this.identifier = PolydexPageUtils.identifierFromRecipe(recipe.id());
+        this.identifier = PolydexPageUtils.identifierFromRecipe(recipe.id().getValue());
         //noinspection unchecked
-        this.ingredients = (List<PolydexIngredient<?>>) (Object) recipe.value().getIngredients().stream().map(PolydexIngredient::of).toList();
+        this.ingredients = (List<PolydexIngredient<?>>) (Object) recipe.value().getIngredientPlacement().getIngredients().stream().map(PolydexIngredient::of).toList();
     }
+
+    public abstract ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server);
 
     @Override
     public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
-        return this.recipe.getResult(player.server.getRegistryManager());
+        return getOutput(entry, player.getServer());
     }
 
     @Override
@@ -52,7 +56,7 @@ public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements 
 
     @Override
     public boolean isOwner(MinecraftServer server, PolydexEntry entry) {
-        var out = this.recipe.getResult(server.getRegistryManager());
+        var out = getOutput(entry, server);
         return entry.isPartOf(PolydexStack.of(out));
     }
 }

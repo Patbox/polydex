@@ -1,17 +1,16 @@
 package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.polydex.impl.PolydexImpl;
-import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 
 public class GuiUtils {
@@ -21,15 +20,15 @@ public class GuiUtils {
     public static final GuiElement FILLER = Util.make(() -> new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
                 .setName(Text.empty())
                 .hideTooltip().build());
-    private static final PolymerModelData BACK_TEXTURE = requestModel(Items.STRUCTURE_VOID, "back");
-    private static final PolymerModelData NEXT_PAGE_TEXTURE = requestModel(Items.STRUCTURE_VOID, "next_page");
-    private static final PolymerModelData PREVIOUS_PAGE_TEXTURE = requestModel(Items.STRUCTURE_VOID, "previous_page");
-    private static final PolymerModelData FLAME_TEXTURE = requestModel(Items.STRUCTURE_VOID, "flame");
-    private static final PolymerModelData XP_TEXTURE = requestModel(Items.STRUCTURE_VOID, "xp");
-    private static final PolymerModelData PAGE_TEXTURE = requestModel(Items.STRUCTURE_VOID, "page");
+    private static final Identifier BACK_TEXTURE = requestModel("back");
+    private static final Identifier NEXT_PAGE_TEXTURE = requestModel("next_page");
+    private static final Identifier PREVIOUS_PAGE_TEXTURE = requestModel("previous_page");
+    private static final Identifier FLAME_TEXTURE = requestModel("flame");
+    private static final Identifier XP_TEXTURE = requestModel("xp");
+    private static final Identifier PAGE_TEXTURE = requestModel("page");
 
-    private static PolymerModelData requestModel(Item item, String back) {
-        return PolymerResourcePackUtils.requestModel(item, PolydexImpl.id("sgui/elements/" + back));
+    private static Identifier requestModel(String back) {
+        return PolymerResourcePackUtils.getBridgedModelId(PolydexImpl.id("sgui/elements/" + back));
     }
 
     public static void register() {
@@ -46,13 +45,13 @@ public class GuiUtils {
 
     public static GuiElementBuilder flame(ServerPlayerEntity player) {
         return hasTexture(player) ?
-                new GuiElementBuilder(FLAME_TEXTURE.item()).noDefaults().setCustomModelData(FLAME_TEXTURE.value())
+                new GuiElementBuilder(FLAME_TEXTURE).noDefaults()
                 : new GuiElementBuilder(Items.BLAZE_POWDER).noDefaults();
     }
 
     public static GuiElementBuilder xp(ServerPlayerEntity player) {
         return hasTexture(player) ?
-                new GuiElementBuilder(XP_TEXTURE.item()).noDefaults().setCustomModelData(XP_TEXTURE.value())
+                new GuiElementBuilder(XP_TEXTURE).noDefaults()
                 : new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).noDefaults();
     }
 
@@ -69,7 +68,7 @@ public class GuiUtils {
 
     private static GuiElementBuilder backBase(ServerPlayerEntity player) {
         return hasTexture(player) ?
-                new GuiElementBuilder(BACK_TEXTURE.item()).noDefaults().setCustomModelData(BACK_TEXTURE.value())
+                new GuiElementBuilder(BACK_TEXTURE).noDefaults()
                 : new GuiElementBuilder(Items.STRUCTURE_VOID).noDefaults();
     }
 
@@ -90,13 +89,13 @@ public class GuiUtils {
 
     private static GuiElementBuilder nextPageBase(ServerPlayerEntity player) {
         return hasTexture(player)
-                ? new GuiElementBuilder(NEXT_PAGE_TEXTURE.item()).noDefaults().setCustomModelData(NEXT_PAGE_TEXTURE.value())
+                ? new GuiElementBuilder(NEXT_PAGE_TEXTURE).noDefaults()
                 : new GuiElementBuilder(Items.PLAYER_HEAD).noDefaults().setSkullOwner(GuiHeadTextures.GUI_NEXT_PAGE);
     }
 
     private static GuiElementBuilder previousPageBase(ServerPlayerEntity player) {
         return hasTexture(player)
-                ? new GuiElementBuilder(PREVIOUS_PAGE_TEXTURE.item()).noDefaults().setCustomModelData(PREVIOUS_PAGE_TEXTURE.value())
+                ? new GuiElementBuilder(PREVIOUS_PAGE_TEXTURE).noDefaults()
                 : new GuiElementBuilder(Items.PLAYER_HEAD).noDefaults().setSkullOwner(GuiHeadTextures.GUI_PREVIOUS_PAGE);
     }
 
