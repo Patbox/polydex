@@ -28,6 +28,7 @@
   "text.polydex.sidebar.taken": "已取走：%s",
   "text.polydex.display_all_items": "所有內容",
   "text.polydex.category.inventory": "物品欄",
+  "text.polydex.category.last_view": "最近查看",
   "text.polydex.category.namespaces": "依來源",
   "text.polydex.category.item_group": "依群組",
   "text.polydex.empty": "空",
@@ -38,6 +39,10 @@
   "text.polydex.item_stack.count_chance": "數量：%s，機率：%s",
   "text.polydex.item_stack.count": "數量：%s",
   "text.polydex.item_stack.chance": "機率：%s",
+  "text.polydex.use_tool_on_block": "使用於方塊上！",
+  "text.polydex.tool.axe": "斧頭",
+  "text.polydex.tool.pickaxe": "鎬子",
+  "text.polydex.tool.hoe": "鋤頭",
   "recipe_type.minecraft.crafting": "合成",
   "recipe_type.minecraft.smelting": "熔煉",
   "recipe_type.minecraft.blasting": "高爐熔煉",
@@ -46,5 +51,6 @@
   "recipe_type.minecraft.stonecutting": "切石",
   "recipe_type.minecraft.smithing": "鍛造",
   "polydex_category.minecraft.brewing": "釀造",
+  "polydex_category.minecraft.tool_interaction": "工具互動",
   "polydex_category.polydex.custom": "自訂"
 }
