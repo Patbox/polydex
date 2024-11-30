@@ -61,12 +61,13 @@ dependencies {
 	// Server side stuff
 	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
 	modImplementation include("eu.pb4:polymer-resource-pack:${project.polymer_version}")
+	modImplementation include("eu.pb4:polymer-resource-pack-extras:${project.polymer_version}")
 	modImplementation include("eu.pb4:placeholder-api:${project.placeholder_version}")
 	modImplementation include("eu.pb4:predicate-api:${project.predicate_version}")
 	modImplementation include("eu.pb4:player-data-api:${project.player_data_version}")
 	modImplementation include("eu.pb4:sidebar-api:${project.sidebar_version}")
 	modImplementation include("xyz.nucleoid:server-translations-api:${project.stapi_version}")
-	modImplementation include("me.lucko:fabric-permissions-api:0.3.2")
+	modImplementation include("me.lucko:fabric-permissions-api:0.3.3")
 
 	modCompileOnly "alexiil.mc.lib:libmultipart-all:0.11.0"
 

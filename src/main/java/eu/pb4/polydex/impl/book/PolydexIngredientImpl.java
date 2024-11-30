@@ -24,7 +24,7 @@ public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
         this.count = count;
         this.chance = chance;
 
-        this.itemStacks = ingredient.getMatchingItems();
+        this.itemStacks = ingredient.getMatchingItems().toList();
 
         this.polydexStacks = this.itemStacks.stream().map((x) -> PolydexStack.of(x.value().getDefaultStack(), count, chance)).toList();
     }

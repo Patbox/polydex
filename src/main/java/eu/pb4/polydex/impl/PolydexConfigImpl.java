@@ -122,7 +122,7 @@ public class PolydexConfigImpl {
         File configFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "polydex.json");
         try {
             Gson GSON = new GsonBuilder()
-                    .disableHtmlEscaping().setLenient().setPrettyPrinting()
+                    .disableHtmlEscaping().setStrictness(Strictness.LENIENT).setPrettyPrinting()
                     .registerTypeAdapter(Identifier.class, new IdentifierSerializer())
                     .registerTypeHierarchyAdapter(MinecraftPredicate.class, GsonPredicateSerializer.create(lookup))
                     .create();

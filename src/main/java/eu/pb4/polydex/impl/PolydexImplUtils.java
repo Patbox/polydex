@@ -80,7 +80,7 @@ public class PolydexImplUtils {
         if (ingredient == null) {
             return List.of();
         }
-        return ingredient.getMatchingItems().stream().map(ItemStack::new).toList();
+        return ingredient.getMatchingItems().map(ItemStack::new).toList();
     }
 
 

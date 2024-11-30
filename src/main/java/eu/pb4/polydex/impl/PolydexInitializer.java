@@ -17,6 +17,7 @@ import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.SidebarTargetDisplay;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.resourcepack.extras.api.ResourcePackExtras;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.Event;
@@ -89,7 +90,7 @@ public class PolydexInitializer implements ModInitializer {
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(EVENT_ID, (server, manager, b) -> PolydexImpl.rebuild(server));
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
         PolymerResourcePackUtils.addModAssets("polydex");
-        PolymerResourcePackUtils.addBridgedModelsFolder(Identifier.of("polydex", "sgui"));
+        ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.of("polydex", "sgui"));
         GuiUtils.register();
 
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {

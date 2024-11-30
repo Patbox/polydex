@@ -65,7 +65,7 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
         var list = new ArrayList<ItemStack>();
-        var trim = getTemplate().getMatchingItems().getFirst();
+        var trim = getTemplate().getMatchingItems().findFirst().get();
         var optional2 = ArmorTrimPatterns.get(server.getRegistryManager(), trim.value().getDefaultStack());
 
         var baseStack = entry != null && getBase().test((ItemStack) entry.stack().getBacking()) ? (ItemStack) entry.stack().getBacking() : Items.IRON_CHESTPLATE.getDefaultStack();

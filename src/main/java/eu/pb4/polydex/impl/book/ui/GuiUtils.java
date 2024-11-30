@@ -2,6 +2,7 @@ package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.resourcepack.extras.api.ResourcePackExtras;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
@@ -28,7 +29,7 @@ public class GuiUtils {
     private static final Identifier PAGE_TEXTURE = requestModel("page");
 
     private static Identifier requestModel(String back) {
-        return PolymerResourcePackUtils.getBridgedModelId(PolydexImpl.id("sgui/elements/" + back));
+        return ResourcePackExtras.bridgeModel(PolydexImpl.id("sgui/elements/" + back));
     }
 
     public static void register() {
