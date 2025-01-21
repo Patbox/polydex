@@ -2,4 +2,5 @@
 - Entity hover info can now show Absorption amount.
 - Main index page state is now stored between /polydex command usages as long as player is connected.
 - You can now disable selected hover information globally.
+- Fixed banner name using non-existent translation.
 - Fixed smithing transform recipes not showing correctly.
