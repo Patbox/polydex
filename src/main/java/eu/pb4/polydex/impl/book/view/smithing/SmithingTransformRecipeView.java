@@ -27,12 +27,12 @@ public class SmithingTransformRecipeView extends AbstractSmithingRecipeView<Smit
 
     @Override
     protected Ingredient getAddition() {
-        return recipe.template().orElse(null);
+        return recipe.addition().orElse(null);
     }
 
     @Override
     protected Ingredient getBase() {
-        return recipe.template().orElse(null);
+        return recipe.base().orElse(null);
     }
 
     @Override

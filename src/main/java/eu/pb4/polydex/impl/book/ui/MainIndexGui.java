@@ -23,19 +23,20 @@ public class MainIndexGui extends ExtendedGui {
     private final ItemLayer mainLayer;
     private final NamespaceLayer indexLayer;
     private final LayerView indexLayerView;
-    private PolydexImpl.PackedEntries entries;
-    private boolean showAll;
+    private final MainIndexState state;
 
-    public MainIndexGui(ServerPlayerEntity player, boolean showAll, int pageItem, int pageSub) {
+    public MainIndexGui(ServerPlayerEntity player, int pageItem) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
-        this.showAll = showAll;
 
-        this.mainLayer = new ItemLayer(6);
-        this.indexLayer = new NamespaceLayer(4);
+        this.state = ((PlayerInterface) player.networkHandler).polydex_mainIndexState();
+        if (pageItem != -1) {
+            this.state.reset();
+            this.state.page = pageItem;
+        }
+        this.mainLayer = new ItemLayer(6, this.state);
+        this.indexLayer = new NamespaceLayer(4, this.state);
 
-        this.entries = PolydexImpl.ITEM_ENTRIES;
-        this.mainLayer.setPage(pageItem);
-        this.indexLayer.setPage(pageSub);
+
         this.addLayer(this.mainLayer, 0, 0).setZIndex(1);
         this.indexLayerView = this.addLayer(this.indexLayer, 0, 6);
         this.indexLayerView.setZIndex(0);
@@ -61,19 +62,29 @@ public class MainIndexGui extends ExtendedGui {
     }
 
     public class ItemLayer extends PagedLayer {
-        public ItemLayer(int height) {
+        private final MainIndexState state;
+
+        public ItemLayer(int height, MainIndexState state) {
             super(MainIndexGui.this.getPlayer(), height, 9, true);
+            this.state = state;
+            this.page = state.page;
+        }
+
+        @Override
+        public void setPage(int page) {
+            super.setPage(page);
+            this.state.page = this.page;
         }
 
         @Override
         protected int getEntryCount() {
-            return MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size();
+            return this.state.entries.get(this.state.showAll).size();
         }
 
         @Override
         protected GuiElement getElement(int id) {
-            if (id < MainIndexGui.this.entries.get(MainIndexGui.this.showAll).size()) {
-                var item = MainIndexGui.this.entries.get(MainIndexGui.this.showAll).get(id);
+            if (id < this.state.entries.get(this.state.showAll).size()) {
+                var item = this.state.entries.get(this.state.showAll).get(id);
 
                 return GuiElementBuilder.from(item.stack().toDisplayItemStack(player))
                         .setCallback((x, type, z) -> {
@@ -99,12 +110,12 @@ public class MainIndexGui extends ExtendedGui {
         @Override
         protected GuiElement getNavElement(int id) {
             return switch (id) {
-                case 0 -> new GuiElementBuilder(MainIndexGui.this.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
+                case 0 -> new GuiElementBuilder(this.state.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
                         .noDefaults()
                         .hideDefaultTooltip()
-                        .setName(Text.translatable("text.polydex.button.see_" + (MainIndexGui.this.showAll ? "limited" : "everything")))
+                        .setName(Text.translatable("text.polydex.button.see_" + (this.state.showAll ? "limited" : "everything")))
                         .setCallback((x, y, z) -> {
-                            MainIndexGui.this.showAll = !MainIndexGui.this.showAll;
+                            this.state.showAll = !this.state.showAll;
                             this.setPage(this.getPage());
                             GuiUtils.playClickSound(this.player);
                         }).build();
@@ -112,14 +123,14 @@ public class MainIndexGui extends ExtendedGui {
                 case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .noDefaults()
                         .hideDefaultTooltip()
-                        .setName(Text.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.type.name().toLowerCase(Locale.ROOT)))
+                        .setName(Text.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.state.type.name().toLowerCase(Locale.ROOT)))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
-                            MainIndexGui.this.indexLayer.type = MainIndexGui.this.indexLayer.type.getNext();
+                            MainIndexGui.this.indexLayer.state.type = MainIndexGui.this.indexLayer.state.type.getNext();
                             MainIndexGui.this.indexLayer.updateDisplay();
                             this.updateDisplay();
                             MainIndexGui.this.setOverlayTexture(
-                                    MainIndexGui.this.indexLayer.type == NamespaceLayer.Type.INVENTORY
+                                    MainIndexGui.this.indexLayer.state.type == NamespaceLayer.Type.INVENTORY
                                             ? InternalPageTextures.MAIN_INVENTORY
                                             : InternalPageTextures.MAIN
                                     );
@@ -141,28 +152,36 @@ public class MainIndexGui extends ExtendedGui {
     }
 
     public class NamespaceLayer extends PagedLayer {
-        private Type type = Type.INVENTORY;
-        public NamespaceLayer(int height) {
+        private final MainIndexState state;
+        public NamespaceLayer(int height, MainIndexState state) {
             super(MainIndexGui.this.getPlayer(), height, 9, true);
+            this.state = state;
+            this.page = this.state.subPage;
+        }
+
+        @Override
+        public void setPage(int page) {
+            super.setPage(page);
+            this.state.page = this.state.subPage;
         }
 
         @Override
         protected int getEntryCount() {
-            return switch (this.type) {
+            return switch (this.state.type) {
                 case INVENTORY -> 1;
                 case LAST_VIEW -> ((PlayerInterface) player.networkHandler).polydex_lastViewed().size();
-                default -> this.type.entries.size() + 1;
+                default -> this.state.type.entries.size() + 1;
             };
         }
 
         @Override
         public int getPageAmount() {
-            return this.type == Type.INVENTORY ? 1 : MathHelper.ceil(((double) getEntryCount()) / this.pageSize);
+            return this.state.type == Type.INVENTORY ? 1 : MathHelper.ceil(((double) getEntryCount()) / this.pageSize);
         }
 
         @Override
         protected void updateDisplay() {
-            if (type == Type.INVENTORY) {
+            if (this.state.type == Type.INVENTORY) {
                 var inventory = this.player.getInventory();
                 for (var i = 0; i < 3; ++i) {
                     for (var j = 0; j < 9; ++j) {
@@ -201,7 +220,7 @@ public class MainIndexGui extends ExtendedGui {
 
         @Override
         protected GuiElement getElement(int id) {
-            return switch (this.type) {
+            return switch (this.state.type) {
                 case LAST_VIEW -> {
                     var list = ((PlayerInterface) player.networkHandler).polydex_lastViewed();
                     if (id >= list.size()) {
@@ -225,36 +244,36 @@ public class MainIndexGui extends ExtendedGui {
                         .noDefaults()
                         .hideDefaultTooltip()
                         .setCallback((x, y, z) -> {
-                            MainIndexGui.this.entries = PolydexImpl.ITEM_ENTRIES;
+                            MainIndexGui.this.state.entries = PolydexImpl.ITEM_ENTRIES;
                             MainIndexGui.this.indexLayer.updateDisplay();
                             MainIndexGui.this.mainLayer.setPage(0);
                             GuiUtils.playClickSound(this.player);
                             MainIndexGui.this.indexLayerView.setZIndex(0);
                         });
 
-                if (MainIndexGui.this.entries == PolydexImpl.ITEM_ENTRIES) {
+                if (MainIndexGui.this.state.entries == PolydexImpl.ITEM_ENTRIES) {
                     builder.glow();
                 }
 
                 return builder.build();
             }
 
-            if (id < this.type.entries.size() + 1) {
-                var item = this.type.entries.get(id - 1);
+            if (id < this.state.type.entries.size() + 1) {
+                var item = this.state.type.entries.get(id - 1);
 
                 var builder = GuiElementBuilder.from(item.icon().apply(player))
                         .setName(item.display())
                         .noDefaults()
                         .hideDefaultTooltip()
                         .setCallback((x, y, z) -> {
-                            MainIndexGui.this.entries = item.entries();
+                            MainIndexGui.this.state.entries = item.entries();
                             MainIndexGui.this.indexLayer.updateDisplay();
                             MainIndexGui.this.mainLayer.setPage(0);
                             GuiUtils.playClickSound(this.player);
                             MainIndexGui.this.indexLayerView.setZIndex(0);
                         });
 
-                if (item.entries() == MainIndexGui.this.entries) {
+                if (item.entries() == MainIndexGui.this.state.entries) {
                     builder.glow();
                 }
 
@@ -275,7 +294,7 @@ public class MainIndexGui extends ExtendedGui {
         }
 
 
-        private enum Type {
+        public enum Type {
             INVENTORY(null),
             LAST_VIEW(null),
             ITEM_GROUP(PolydexImpl.ITEM_GROUP_ENTRIES),

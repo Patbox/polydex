@@ -3,6 +3,8 @@ package eu.pb4.polydex.impl.display;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
+import eu.pb4.polydex.impl.PolydexConfigImpl;
+import eu.pb4.polydex.impl.PolydexImpl;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +35,8 @@ public class DisplayImpl implements HoverDisplayBuilder {
 
     @Override
     public void setComponent(ComponentType type, Text text) {
-        if (this.target.settings().isComponentVisible(this.target.player(), type)) {
+        if (!PolydexImpl.config.disabledHoverInformation.contains(type.identifier())
+                && this.target.settings().isComponentVisible(this.target.player(), type)) {
             this.components.put(type, text);
         }
     }
