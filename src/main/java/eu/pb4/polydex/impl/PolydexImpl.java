@@ -30,6 +30,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.block.entity.BannerBlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
@@ -471,8 +472,10 @@ public class PolydexImpl {
             if (target.blockEntity() instanceof Nameable nameable) {
                 if (nameable.hasCustomName()) {
                     displayBuilder.setComponent(HoverDisplayBuilder.NAME, nameable.getCustomName());
-                } else {
+                } else if (!(nameable instanceof BannerBlockEntity)) {
                     displayBuilder.setComponent(HoverDisplayBuilder.NAME, nameable.getDisplayName());
+                } else {
+                    displayBuilder.setComponent(HoverDisplayBuilder.NAME, target.blockState().getBlock().getName());
                 }
             } else if (target.blockEntity() instanceof SkullBlockEntity skull) {
                 var owner = skull.getOwner();
