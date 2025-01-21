@@ -19,6 +19,7 @@ public interface HoverDisplayBuilder {
     ComponentType NAME = ComponentType.of(id("name"), true);
     ComponentType MOD_SOURCE = ComponentType.of(id("mod_source"), false);
     ComponentType HEALTH = ComponentType.of(id("health"), true);
+    ComponentType ARMOR = ComponentType.of(id("armor"), true);
     ComponentType EFFECTS = ComponentType.of(id("effects"), true);
     ComponentType INPUT = ComponentType.of(id("input"), false);
     ComponentType FUEL = ComponentType.of(id("fuel"), false);
@@ -110,6 +111,11 @@ public interface HoverDisplayBuilder {
             return ID.keySet();
         }
 
+        public static Collection<Identifier> getAllAllowedIds() {
+            var ids = new HashSet<>(ID.keySet());
+            ids.removeAll(PolydexImpl.config.disabledHoverInformation);
+            return ids;
+        }
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

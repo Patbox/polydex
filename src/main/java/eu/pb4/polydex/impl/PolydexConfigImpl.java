@@ -18,6 +18,8 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
@@ -40,8 +42,13 @@ public class PolydexConfigImpl {
     public boolean displayMiningProgress = true;
     public boolean displayEntity = true;
     public boolean displayEntityHealth = true;
+    @SerializedName("display_entity_absorption")
+    public boolean displayEntityAbsorption = true;
     @SerializedName("default_hover_settings")
     public GlobalSettings defaultHoverSettings = new GlobalSettings();
+
+    @SerializedName("disabled_hover_information")
+    public Set<Identifier> disabledHoverInformation = new HashSet<>();
 
     public MinecraftPredicate displayPredicate = BuiltinPredicates.hasPlayer();
 

@@ -34,7 +34,7 @@ public class Commands {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(literal("polydex")
-                .executes((ctx) -> Commands.openIndex(ctx, 0))
+                .executes((ctx) -> Commands.openIndex(ctx, -1))
                 .then(literal("hover")
                         .requires(Permissions.require("polydex.display", 0).and((ctx) -> PolydexImpl.config.displayEnabled))
                         .then(literal("style")
@@ -44,7 +44,7 @@ public class Commands {
                                 )
                         ).then(literal("information")
                                 .then(argument("component", IdentifierArgumentType.identifier())
-                                        .suggests((context, builder) -> CommandSource.suggestIdentifiers(HoverDisplayBuilder.ComponentType.getAllIds(), builder))
+                                        .suggests((context, builder) -> CommandSource.suggestIdentifiers(HoverDisplayBuilder.ComponentType.getAllAllowedIds(), builder))
                                         .then(enumArgument("show", HoverDisplayBuilder.ComponentType.Visibility.values())
                                                 .executes(Commands::setComponent)
                                         )
@@ -208,7 +208,7 @@ public class Commands {
 
     private static int openIndex(CommandContext<ServerCommandSource> context, int page) throws CommandSyntaxException {
         try {
-            new MainIndexGui(context.getSource().getPlayer(), true, page, 0).open();
+            new MainIndexGui(context.getSource().getPlayer(), page).open();
         } catch (Throwable e) {
             e.printStackTrace();
             throw e;
@@ -241,7 +241,7 @@ public class Commands {
         var id = IdentifierArgumentType.getIdentifier(context, "component");
         var value = getEnum(context, "show", HoverDisplayBuilder.ComponentType.Visibility.class);
 
-        if (HoverDisplayBuilder.ComponentType.getAllIds().contains(id)) {
+        if (HoverDisplayBuilder.ComponentType.getAllAllowedIds().contains(id)) {
             PolydexTargetImpl.get(context.getSource().getPlayerOrThrow()).settings().setComponentVisible(id, value);
             context.getSource().sendFeedback(() -> Text.translatable("text.polydex.changed_component_visibility", id.toString(), value.name().toLowerCase(Locale.ROOT)), false);
             return 1;

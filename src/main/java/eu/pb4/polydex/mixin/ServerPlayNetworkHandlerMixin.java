@@ -4,6 +4,7 @@ import eu.pb4.playerdata.api.PlayerDataApi;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.impl.*;
+import eu.pb4.polydex.impl.book.ui.MainIndexState;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
@@ -48,6 +49,8 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     private final List<Identifier> polydex$lastViewed = new ArrayList<>();
     @Unique
     private boolean polydex_globalEnabled = true;
+    @Unique
+    private final MainIndexState mainIndexState = new MainIndexState();
 
     public ServerPlayNetworkHandlerMixin(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
         super(server, connection, clientData);
@@ -163,6 +166,10 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         this.polydex_display.remove();
         this.polydex_display = displayCreator.apply(this.polydex_target);
         this.polydex_target.settings().setDisplay(identifier);
+    }
 
+    @Override
+    public MainIndexState polydex_mainIndexState() {
+        return this.mainIndexState;
     }
 }
