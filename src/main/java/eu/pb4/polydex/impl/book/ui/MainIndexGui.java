@@ -8,6 +8,8 @@ import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.LayerView;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -17,6 +19,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 
 public class MainIndexGui extends ExtendedGui {
@@ -119,7 +122,6 @@ public class MainIndexGui extends ExtendedGui {
                             this.setPage(this.getPage());
                             GuiUtils.playClickSound(this.player);
                         }).build();
-
                 case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .noDefaults()
                         .hideDefaultTooltip()
@@ -145,6 +147,17 @@ public class MainIndexGui extends ExtendedGui {
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
                 case 4 -> this.getPageAmount() > 1 ? GuiUtils.page(this.player,  this.page + 1, this.getPageAmount()).build() : filler();
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
+                case 7 -> new GuiElementBuilder(Items.COMPASS)
+                        .noDefaults()
+                        .setComponent(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.empty(), true))
+                        .glow(false)
+                        .hideDefaultTooltip()
+                        .setName(Text.translatable("text.polydex.button.search"))
+                        .setCallback((x, y, z) -> {
+                            GuiUtils.playClickSound(this.player);
+                            new SearchGui(this.player, MainIndexGui.this::open);
+                        })
+                        .build();
                 case 8 -> GuiUtils.backButton(this.player, MainIndexGui.this::close, false);
                 default -> filler();
             };

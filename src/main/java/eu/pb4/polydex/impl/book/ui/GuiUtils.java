@@ -6,6 +6,7 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Item;
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -18,6 +19,10 @@ public class GuiUtils {
 
 
     public static final GuiElement EMPTY = GuiElement.EMPTY;
+    public static final GuiElement EMPTY_STACK = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
+            .setName(Text.empty())
+            .model(requestModel("empty"))
+            .hideTooltip().build();
     public static final GuiElement FILLER = Util.make(() -> new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
                 .setName(Text.empty())
                 .hideTooltip().build());
@@ -111,7 +116,11 @@ public class GuiUtils {
                 }).build();
     }
 
-    private static boolean hasTexture(ServerPlayerEntity player) {
+    public static boolean hasTexture(ServerPlayerEntity player) {
         return PolymerResourcePackUtils.hasMainPack(player);
+    }
+
+    public static GuiElementInterface fillerStack(ServerPlayerEntity player) {
+        return hasTexture(player) ? EMPTY_STACK : FILLER;
     }
 }

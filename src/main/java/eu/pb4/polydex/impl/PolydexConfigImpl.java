@@ -34,23 +34,31 @@ public class PolydexConfigImpl {
         return "bossbar";
     }
 
+    @SerializedName("enable_search")
+    public boolean enableSearch = true;
+    @SerializedName("enable_language_support_in_search")
+    public boolean enableLanguageSearch = true;
+
+    @SerializedName(value = "enable_hover_display", alternate = "displayEnabled")
     public boolean displayEnabled = true;
+    @SerializedName(value = "hover_display_update_rate", alternate = "displayUpdateRate")
     public int displayUpdateRate = 4;
+    @SerializedName("display_entity_absorption")
+    public boolean displayEntityAbsorption = true;
+    @SerializedName("default_hover_settings")
+    public GlobalSettings defaultHoverSettings = new GlobalSettings();
+    @SerializedName("disabled_hover_information")
+    public Set<Identifier> disabledHoverInformation = new HashSet<>();
+
+    @SerializedName(value = "display_can_show_requirement", alternate = "displayPredicate")
+    public MinecraftPredicate displayPredicate = BuiltinPredicates.hasPlayer();
+
     public boolean displayCantMine = true;
     public boolean displayModSource = true;
     public boolean displayAdditional = true;
     public boolean displayMiningProgress = true;
     public boolean displayEntity = true;
     public boolean displayEntityHealth = true;
-    @SerializedName("display_entity_absorption")
-    public boolean displayEntityAbsorption = true;
-    @SerializedName("default_hover_settings")
-    public GlobalSettings defaultHoverSettings = new GlobalSettings();
-
-    @SerializedName("disabled_hover_information")
-    public Set<Identifier> disabledHoverInformation = new HashSet<>();
-
-    public MinecraftPredicate displayPredicate = BuiltinPredicates.hasPlayer();
 
     public static class GlobalSettings implements HoverSettings {
         @SerializedName("display_type")

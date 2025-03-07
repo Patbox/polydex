@@ -6,7 +6,9 @@
         "a": -8,
         "b": -168,
         "c": -1,
-        "d": -162
+        "d": -162,
+        "m": -60,
+        "n": -119
       }
     },
     {
@@ -55,6 +57,15 @@
       "chars": [
         "k",
         "l"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "polydex:sgui/search.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [
+        "o"
       ]
     }
   ]

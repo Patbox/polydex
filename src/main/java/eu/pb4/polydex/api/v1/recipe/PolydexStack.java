@@ -6,12 +6,15 @@ import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface PolydexStack<T> extends PolydexIngredient<T> {
     PolydexStack<?> EMPTY = of(Items.AIR);
@@ -89,4 +92,17 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
     default int getSourceHashCode() {
         return this.getBacking().hashCode();
     };
+
+    default List<Text> getTexts(ServerPlayerEntity player) {
+        return List.of(getName());
+    }
+
+    @Nullable
+    default Identifier getId() {
+        return null;
+    }
+
+    default Stream<TagKey<?>> streamTags() {
+        return Stream.empty();
+    }
 }
