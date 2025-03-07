@@ -1,6 +1,3 @@
-- Entity hover info can now show Armor value.
-- Entity hover info can now show Absorption amount.
-- Main index page state is now stored between /polydex command usages as long as player is connected.
-- You can now disable selected hover information globally.
-- Fixed banner name using non-existent translation.
-- Fixed smithing transform recipes not showing correctly.
+- Added Search, allowing you to search for items by their name, tooltip, tags and namespace/modid.
+- Fixed chance now showing up correctly.
+- Renamed some config options. They should be automatically migrated.

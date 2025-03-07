@@ -8,12 +8,18 @@ import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     private static final Interner<PolydexItemStackImpl> INTERNER = Interners.newWeakInterner();
@@ -106,7 +112,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
                 ).formatted(Formatting.YELLOW);
             } else if (chance != 1) {
                 extra = Text.translatable("text.polydex.item_stack.chance",
-                        Text.literal(String.format("%.2f%%", this.chance)).formatted(Formatting.WHITE)
+                        Text.literal(String.format("%.2f%%", this.chance * 100)).formatted(Formatting.WHITE)
                 ).formatted(Formatting.YELLOW);
             } else {
                 extra = null;
@@ -130,6 +136,16 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     }
 
     @Override
+    public @Nullable Identifier getId() {
+        return Registries.ITEM.getId(this.stack.getItem());
+    }
+
+    public Stream<TagKey<?>> streamTags() {
+        //noinspection unchecked
+        return (Stream<TagKey<?>>) (Object) this.stack.getRegistryEntry().streamTags();
+    }
+
+    @Override
     public ItemStack getBacking() {
         return this.stack;
     }
@@ -137,5 +153,10 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     @Override
     public int getSourceHashCode() {
         return System.identityHashCode(this.stack.getItem());
+    }
+
+    @Override
+    public List<Text> getTexts(ServerPlayerEntity player) {
+        return this.stack.getTooltip(Item.TooltipContext.create(player.getWorld()), player, TooltipType.BASIC);
     }
 }

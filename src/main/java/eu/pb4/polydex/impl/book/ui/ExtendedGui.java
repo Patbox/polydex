@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ExtendedGui extends LayeredGui {
     private static final Style INFO_STYLE = Style.EMPTY.withFont(Identifier.of("uniform"));
-    private static final Style TEXTURE_STYLE = Style.EMPTY.withFont(Identifier.of("polydex:gui")).withColor(Formatting.WHITE);
+    public static final Style TEXTURE_STYLE = Style.EMPTY.withFont(Identifier.of("polydex:gui")).withColor(Formatting.WHITE);
     private Text text = Text.empty();
     private Text texture;
     private Text overlayTexture;
@@ -57,28 +57,54 @@ public class ExtendedGui extends LayeredGui {
             return;
         }
         this.isDirty = false;
-        if (PolymerResourcePackUtils.hasMainPack(this.getPlayer())) {
+        super.setTitle(formatTexturedText(getPlayer(), this.texture, this.overlayTexture, this.text));
+    }
+
+    public static Text formatTexturedText(ServerPlayerEntity player, @Nullable Text texture, @Nullable Text overlayTexture, @Nullable Text input) {
+        if (PolymerResourcePackUtils.hasMainPack(player)) {
             var text = Text.empty();
             var textTexture = Text.empty().setStyle(TEXTURE_STYLE);
 
-            if (this.texture != null) {
-                textTexture.append("c").append(this.texture).append("d");
+            if (texture != null) {
+                textTexture.append("c").append(texture).append("d");
             }
 
-            if (this.overlayTexture != null) {
-                textTexture.append("a").append(this.overlayTexture).append("b");
+            if (overlayTexture != null) {
+                textTexture.append("a").append(overlayTexture).append("b");
             }
 
             if (!textTexture.getSiblings().isEmpty()) {
                 text.append(textTexture);
             }
 
-            if (this.text != null) {
-                text.append(this.text);
+            if (input != null) {
+                text.append(input);
             }
-            super.setTitle(text);
+            return text;
         } else {
-            super.setTitle(this.text != null ? this.text : Text.empty());
+            return input != null ? input : Text.empty();
+        }
+    }
+
+    public static Text formatTexturedTextAnvil(ServerPlayerEntity player, @Nullable Text texture, @Nullable Text input) {
+        if (PolymerResourcePackUtils.hasMainPack(player)) {
+            var text = Text.empty();
+            var textTexture = Text.empty().setStyle(TEXTURE_STYLE);
+
+            if (texture != null) {
+                textTexture.append("m").append(texture).append("n");
+            }
+
+            if (!textTexture.getSiblings().isEmpty()) {
+                text.append(textTexture);
+            }
+
+            if (input != null) {
+                text.append(input);
+            }
+            return text;
+        } else {
+            return input != null ? input : Text.empty();
         }
     }
 

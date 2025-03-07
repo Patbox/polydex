@@ -111,6 +111,10 @@ public interface PolydexEntry {
 
     boolean isPartOf(PolydexStack<?> stack);
 
+    default boolean hasPages() {
+        return !this.outputPages().isEmpty() || !this.ingredientPages().isEmpty();
+    }
+
 
     interface EntryConsumer extends Consumer<PolydexEntry> {
         void accept(PolydexEntry entry);

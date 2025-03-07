@@ -694,7 +694,7 @@ public class PolydexImpl {
         public void add(PolydexEntry entry) {
             this.all.add(entry);
             this.byId.put(entry.identifier(), entry);
-            if (!entry.outputPages().isEmpty() || !entry.ingredientPages().isEmpty()) {
+            if (entry.hasPages()) {
                 this.nonEmpty.add(entry);
                 this.nonEmptyById.put(entry.identifier(), entry);
             }
