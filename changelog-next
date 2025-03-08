@@ -1,4 +1,0 @@
-- Polydex now stores last 128 viewed entries/stacks. You can get them by clicking category/lower part selection (Green book) in main index ui.
-- Polydex now respects Fabric's `c:hidden_from_recipe_viewers` item tag.
-- Changed the heart emoji from `♥` to `❤`, as it matches better with Minecraft's heart texture.
-- Fixed issues where items added via fabric events weren't visible.

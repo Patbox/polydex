@@ -14,6 +14,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -126,6 +127,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
                                 .append(Text.literal("[").formatted(Formatting.DARK_GRAY))
                                 .append(extra)
                                 .append(Text.literal("]").formatted(Formatting.DARK_GRAY))
+                                .setStyle(Style.EMPTY.withItalic(false))
                 );
             }
 

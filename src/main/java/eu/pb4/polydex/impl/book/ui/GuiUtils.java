@@ -21,7 +21,7 @@ public class GuiUtils {
     public static final GuiElement EMPTY = GuiElement.EMPTY;
     public static final GuiElement EMPTY_STACK = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
             .setName(Text.empty())
-            .model(requestModel("empty"))
+            .setCustomModelData(requestModel(Items.WHITE_STAINED_GLASS_PANE, "empty").value())
             .hideTooltip().build();
     public static final GuiElement FILLER = Util.make(() -> new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
                 .setName(Text.empty())

@@ -39,7 +39,6 @@ import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.CreakingEntity;
 import net.minecraft.item.*;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
@@ -422,21 +421,23 @@ public class PolydexImpl {
             }
             if (entity instanceof LivingEntity livingEntity) {
                 if (PolydexImpl.config.displayEntityHealth) {
+                    /*
                     if (entity instanceof CreakingEntity creaking && creaking.getHomePos() != null) {
                         displayBuilder.setComponent(HoverDisplayBuilder.HEALTH, Text.literal("").append(Text.literal("❤ ").formatted(Formatting.RED))
                                 .append("??")
                                 .append(Text.literal("/").formatted(Formatting.GRAY))
                                 .append("??"));
                     } else {
+                    */
                         displayBuilder.setComponent(HoverDisplayBuilder.HEALTH, Text.literal("").append(Text.literal("❤ ").formatted(Formatting.RED))
                                 .append("" + Math.min(MathHelper.ceil(livingEntity.getHealth()), MathHelper.ceil(livingEntity.getMaxHealth())))
                                 .append(PolydexImpl.config.displayEntityAbsorption && livingEntity.getAbsorptionAmount() > 0
                                         ? Text.literal("+" + MathHelper.ceil(Math.min(livingEntity.getAbsorptionAmount(), livingEntity.getMaxAbsorption()))).formatted(Formatting.YELLOW) : Text.empty())
                                 .append(Text.literal("/").formatted(Formatting.GRAY))
                                 .append("" + MathHelper.ceil(livingEntity.getMaxHealth())));
-                    }
+                    //}
 
-                    var value = livingEntity.getAttributeValue(EntityAttributes.ARMOR);
+                    var value = livingEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR);
 
                     if (value > 0) {
                         displayBuilder.setComponent(HoverDisplayBuilder.ARMOR, Text.literal("").append(Text.literal("\uD83D\uDEE1 ").formatted(Formatting.GRAY))

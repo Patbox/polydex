@@ -15,8 +15,7 @@
     "SmithingTransformRecipeAccessor",
     "SmithingTrimRecipeAccessor",
     "SPIMAccessor",
-    "TranslatableTextContentAccessor",
-    "TransmuteRecipeAccessor"
+    "TranslatableTextContentAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

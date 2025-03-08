@@ -2,7 +2,6 @@ package eu.pb4.polydex.impl.search;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import eu.pb4.polymer.resourcepack.api.metadata.PackMcMeta;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 

@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.DeprecatedLanguageData;
 import net.minecraft.util.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +52,6 @@ public record LanguageHandler(Map<String, String> assetLanguage, ServerLanguage 
 
         var map = new HashMap<String, String>();
         Language.load(Files.newInputStream(VanillaLanguageDownloader.getPath(code)), map::put);
-        DeprecatedLanguageData.create().apply(map);
         for (var mod : FabricLoader.getInstance().getAllMods()) {
             var modId = mod.getMetadata().getId();
             if (modId.equals("minecraft") || modId.equals("java") || modId.equals("fabric-loader")) {
