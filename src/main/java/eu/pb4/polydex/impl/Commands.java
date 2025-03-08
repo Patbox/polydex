@@ -12,6 +12,7 @@ import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.HoverSettings;
 import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.impl.book.ui.MainIndexGui;
+import eu.pb4.polydex.impl.book.ui.SearchGui;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
@@ -61,6 +62,14 @@ public class Commands {
                         .then(argument("number", IntegerArgumentType.integer(1))
                                 .executes((ctx) -> Commands.openIndex(ctx, (IntegerArgumentType.getInteger(ctx, "number") - 1)))
                         )
+                )
+
+                .then(literal("search")
+                        .requires(Permissions.require("polydex.search", 0).and(x -> PolydexImpl.config.enableSearch))
+                        .executes(ctx -> Commands.openSearch(ctx, ""))
+                        .then(argument("query", StringArgumentType.greedyString())
+                                .executes(ctx -> Commands.openSearch(ctx, StringArgumentType.getString(ctx, "query"))))
+
                 )
 
                 .then(literal("open_page")
@@ -209,6 +218,16 @@ public class Commands {
     private static int openIndex(CommandContext<ServerCommandSource> context, int page) throws CommandSyntaxException {
         try {
             new MainIndexGui(context.getSource().getPlayer(), page).open();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
+        }
+        return 1;
+    }
+
+    private static int openSearch(CommandContext<ServerCommandSource> context, String query) throws CommandSyntaxException {
+        try {
+            new SearchGui(context.getSource().getPlayerOrThrow(), query, null);
         } catch (Throwable e) {
             e.printStackTrace();
             throw e;

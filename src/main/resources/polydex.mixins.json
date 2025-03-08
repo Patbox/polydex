@@ -14,7 +14,9 @@
     "ShovelItemAccessor",
     "SmithingTransformRecipeAccessor",
     "SmithingTrimRecipeAccessor",
-    "SPIMAccessor"
+    "SPIMAccessor",
+    "TranslatableTextContentAccessor",
+    "TransmuteRecipeAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

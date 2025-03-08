@@ -28,6 +28,7 @@
   "text.polydex.sidebar.taken": "Tiene dueño: %s",
   "text.polydex.display_all_items": "Todo",
   "text.polydex.category.inventory": "Inventario",
+  "text.polydex.category.last_view": "Último visto",
   "text.polydex.category.namespaces": "Por fuente",
   "text.polydex.category.item_group": "Por grupo",
   "text.polydex.empty": "Vacío",
@@ -38,6 +39,10 @@
   "text.polydex.item_stack.count_chance": "Cantidad: %s, Probabilidad: %s",
   "text.polydex.item_stack.count": "Cantidad: %s",
   "text.polydex.item_stack.chance": "Probabilidad: %s",
+  "text.polydex.use_tool_on_block": "Usar en el bloque",
+  "text.polydex.tool.axe": "Hacha",
+  "text.polydex.tool.pickaxe": "Picota",
+  "text.polydex.tool.hoe": "Azadón",
   "recipe_type.minecraft.crafting": "Fabricando",
   "recipe_type.minecraft.smelting": "Horneando",
   "recipe_type.minecraft.blasting": "Fundiendo",
@@ -46,5 +51,6 @@
   "recipe_type.minecraft.stonecutting": "Cortando piedras",
   "recipe_type.minecraft.smithing": "Forjando",
   "polydex_category.minecraft.brewing": "Alquimia",
+  "polydex_category.minecraft.tool_interaction": "Interacción de herramienta",
   "polydex_category.polydex.custom": "Custom"
 }

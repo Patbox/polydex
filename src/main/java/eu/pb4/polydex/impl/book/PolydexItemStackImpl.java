@@ -2,9 +2,11 @@ package eu.pb4.polydex.impl.book;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
@@ -101,18 +103,18 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
             Text extra;
 
-            if (this.count > this.stack.getMaxCount() && chance != 1) {
+            if (this.count > 99 && chance != 1) {
                extra = Text.translatable("text.polydex.item_stack.count_chance",
                        Text.literal("" + this.count).formatted(Formatting.WHITE),
-                       Text.literal(String.format("%.2f%%", this.chance * 100)).formatted(Formatting.WHITE)
+                       Text.literal(PolydexPageUtils.formatChanceAmount(this.chance)).formatted(Formatting.WHITE)
                ).formatted(Formatting.YELLOW);
-            } else if (this.count > this.stack.getMaxCount()) {
+            } else if (this.count > 99) {
                 extra = Text.translatable("text.polydex.item_stack.count",
                         Text.literal("" + this.count).formatted(Formatting.WHITE)
                 ).formatted(Formatting.YELLOW);
             } else if (chance != 1) {
                 extra = Text.translatable("text.polydex.item_stack.chance",
-                        Text.literal(String.format("%.2f%%", this.chance * 100)).formatted(Formatting.WHITE)
+                        Text.literal(PolydexPageUtils.formatChanceAmount(this.chance)).formatted(Formatting.WHITE)
                 ).formatted(Formatting.YELLOW);
             } else {
                 extra = null;
@@ -129,7 +131,8 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
             return GuiElementBuilder.from(this.stack)
                     .hideDefaultTooltip()
-                    .setCount(this.count > this.stack.getMaxCount() ? 1 : (int) this.count)
+                    .setCount(this.count > 99 ? 1 : (int) this.count)
+                    .setComponent(DataComponentTypes.MAX_STACK_SIZE, 99)
                     .setLore(lore)
                     .asStack();
         }

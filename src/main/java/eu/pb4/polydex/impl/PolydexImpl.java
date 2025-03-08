@@ -12,8 +12,10 @@ import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.impl.book.view.CustomPage;
+import eu.pb4.polydex.impl.book.view.DebugPage;
 import eu.pb4.polydex.impl.book.view.PotionRecipePage;
 import eu.pb4.polydex.impl.book.view.ToolUseOnBlockPage;
+import eu.pb4.polydex.impl.search.VanillaLanguageDownloader;
 import eu.pb4.polydex.mixin.*;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import it.unimi.dsi.fastutil.Hash;
@@ -104,7 +106,7 @@ public class PolydexImpl {
     public static final List<Consumer<HoverDisplayBuilder>> DISPLAY_BUILDER_CONSUMERS = new ArrayList<>();
     public static final Map<Block, List<Consumer<HoverDisplayBuilder>>> DISPLAY_BUILDER_CONSUMERS_BLOCK = new IdentityHashMap<>();
     public static final Map<EntityType<?>, List<Consumer<HoverDisplayBuilder>>> DISPLAY_BUILDER_CONSUMERS_ENTITY_TYPE = new IdentityHashMap<>();
-    public static final Map<Identifier, List<CustomPage.ViewData>> CUSTOM_PAGES = new HashMap<>();
+    public static final List<CustomPage> CUSTOM_PAGES = new ArrayList<>();
     public static final Map<Identifier, PolydexCategory> CATEGORY_BY_ID = new HashMap<>();
     public static final Map<Item, Function<ItemStack, @Nullable PolydexEntry>> ITEM_ENTRY_CREATOR = new HashMap<>();
     private static final Comparator<PolydexPage> PAGE_SORT = Comparator.<PolydexPage>comparingInt((x) -> -x.priority()).thenComparing(PolydexPage::sortingId).thenComparing(PolydexPage::identifier);
@@ -217,6 +219,11 @@ public class PolydexImpl {
 
 
     public static void updateCaches(MinecraftServer server, Collection<RecipeEntry<?>> recipes) {
+        config = PolydexConfigImpl.loadOrCreateConfig(server.getRegistryManager());
+        if (config.enableLanguageSearch) {
+            VanillaLanguageDownloader.setup();
+        }
+
         ITEM_ENTRIES.clear();
         BY_NAMESPACE.clear();
         BY_ITEMGROUP.clear();
@@ -341,8 +348,6 @@ public class PolydexImpl {
         NAMESPACED_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
         ITEM_GROUP_ENTRIES.addAll(BY_ITEMGROUP.values());
         ITEM_GROUP_ENTRIES.sort(Comparator.comparing((s) -> s.namespace));
-
-        config = PolydexConfigImpl.loadOrCreateConfig(server.getRegistryManager());
     }
 
     public static void defaultEntries(MinecraftServer server, PolydexEntry.EntryConsumer consumer) {
@@ -534,14 +539,8 @@ public class PolydexImpl {
         return Text.literal(s);
     }
 
-    public static Collection<PolydexPage> addCustomPages(MinecraftServer server, PolydexEntry entry) {
-        var list = new ArrayList<PolydexPage>();
-
-        for (var custom : CUSTOM_PAGES.getOrDefault(entry.identifier(), Collections.emptyList())) {
-            list.add(new CustomPage(custom.entryId(), custom));
-        }
-
-        return list;
+    public static void addCustomPages(MinecraftServer server, Consumer<PolydexPage> pageConsumer) {
+        CUSTOM_PAGES.forEach(pageConsumer);
     }
 
     public static void onReload(ResourceManager manager) {
@@ -552,10 +551,9 @@ public class PolydexImpl {
             try {
                 try (var reader = new BufferedReader(new InputStreamReader(resource.getValue().getInputStream()))) {
                     var json = JsonParser.parseReader(reader);
-
                     var result = CustomPage.ViewData.CODEC.parse(JsonOps.INSTANCE, json);
 
-                    result.result().ifPresent(viewData -> CUSTOM_PAGES.computeIfAbsent(viewData.entryId(), (e) -> new ArrayList<>()).add(viewData));
+                    result.result().ifPresent(x -> CUSTOM_PAGES.add(new CustomPage(resource.getKey(), x)));
 
                     result.error().ifPresent(error -> LOGGER.error("Failed to parse page at {}: {}", resource.getKey(), error.toString()));
                 }
@@ -668,6 +666,17 @@ public class PolydexImpl {
         }
 
 
+    }
+
+    public static List<PolydexPage> addDebugPage(MinecraftServer server, PolydexEntry entry) {
+        if (Objects.requireNonNull(entry.stack().getId()).equals(Identifier.ofVanilla("oak_planks"))) {
+
+        }
+        return List.of();
+    }
+
+    public static void addDebugPage(MinecraftServer server, Consumer<PolydexPage> polydexPageConsumer) {
+        polydexPageConsumer.accept(new DebugPage(Identifier.of("polydex:debug"), Identifier.ofVanilla("oak_planks")));
     }
 
     public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty, Map<Identifier, PolydexEntry> byId, Map<Identifier, PolydexEntry> nonEmptyById) {
