@@ -1,20 +1,74 @@
 package eu.pb4.polydex.impl.search;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
+import com.google.gson.JsonObject;
+import eu.pb4.polymer.resourcepack.api.metadata.PackMcMeta;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class VanillaLanguageDownloader {
-    public static void checkAndDownload() throws Throwable {
+    private static final Path BASE_PATH = FabricLoader.getInstance().getGameDir().resolve(".polydex/");
+    private static final Path LANG_STORAGE_PATH = BASE_PATH.resolve("vanilla_translations");
+    private static final Path LANG_INFO_PATH = BASE_PATH.resolve("language.json");
+
+    public static boolean isReady = false;
+    public static boolean downloading = false;
+
+    public static Path getPath(String code) {
+        if (code.equals("en_us")) {
+            return FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().findPath("assets/minecraft/en_us.json").orElseThrow();
+        }
+
+        return LANG_STORAGE_PATH.resolve(code + ".json");
+    }
+
+    public static void setup() {
+        isReady = false;
+        downloading = true;
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return checkAndDownload();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }).handle((val, thr) -> {
+            downloading = false;
+            if (thr != null) {
+                return false;
+            }
+            return isReady = val;
+        });
+    }
+
+    private static boolean checkAndDownload() throws Throwable {
+        var gson = new GsonBuilder().create();
+
+        var langInfo = new LangInfo();
+        if (Files.exists(LANG_STORAGE_PATH) && Files.exists(LANG_INFO_PATH)) {
+            try {
+                langInfo = gson.fromJson(Files.readString(LANG_INFO_PATH), LangInfo.class);
+
+                if (langInfo.version.equals(SharedConstants.getGameVersion().getId())) {
+                    return true;
+                }
+                langInfo.version = SharedConstants.getGameVersion().getId();
+            } catch (Throwable ignored) {}
+        }
+        Files.createDirectories(LANG_STORAGE_PATH);
+
+
         try (var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()) {
-            var gson = new GsonBuilder().create();
             var manifest = gson.fromJson(client.send(
                     HttpRequest.newBuilder().uri(
                             URI.create("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
@@ -24,32 +78,64 @@ public class VanillaLanguageDownloader {
 
             var version = manifest.versions.stream().filter(x -> x.id.equals(mcVer)).findFirst();
             if (version.isEmpty()) {
-                return;
+                return false;
             }
+
+            if (langInfo.versionHash.equals(version.get().sha1)) {
+                Files.writeString(LANG_INFO_PATH, gson.toJson(langInfo));
+                return true;
+            }
+
+            langInfo.versionHash = version.get().sha1;
 
             var versionData = gson.fromJson(client.send(
                     HttpRequest.newBuilder().uri(
                             URI.create(version.get().url)
                     ).build(), HttpResponse.BodyHandlers.ofString()).body(), VersionData.class);
 
-
+            if (langInfo.assetIndexHash.equals(versionData.assetIndex.sha1)) {
+                Files.writeString(LANG_INFO_PATH, gson.toJson(langInfo));
+                return true;
+            }
+            langInfo.assetIndexHash = versionData.assetIndex.sha1;
             var assetIndex = gson.fromJson(client.send(
                     HttpRequest.newBuilder().uri(
                             URI.create(versionData.assetIndex.url)
                     ).build(), HttpResponse.BodyHandlers.ofString()).body(), AssetIndex.class);
 
 
-            var packmcmeta = assetIndex.objects.get("pack.mcmeta");
+            var packMcMetaHash = assetIndex.objects.get("pack.mcmeta").hash;
+            var file = gson.fromJson(client.send(HttpRequest.newBuilder().uri(
+                    URI.create("https://resources.download.minecraft.net/" +  packMcMetaHash.substring(0, 2) + "/" + packMcMetaHash)
+            ).build(), HttpResponse.BodyHandlers.ofString()).body(), PackMcMeta.class);
 
-            for (var x : assetIndex.objects.entrySet()) {
-                if (x.getKey().startsWith("minecraft/lang/")) {
-                    var lang = x.getKey().substring("minecraft/lang/".length());
-                    var hash = x.getValue().hash;
-                    var url = "https://resources.download.minecraft.net/" + hash.substring(0, 2) + "/" + hash;
-                }
+            if (file.language.isEmpty()) {
+                return false;
             }
 
+            for (var x : file.language.keySet()) {
+                var val = assetIndex.objects.get("minecraft/lang/" + x + ".json");
+                if (val != null && !val.hash.equals(langInfo.langHash.get(x))) {
+                    var url = "https://resources.download.minecraft.net/" + val.hash.substring(0, 2) + "/" + val.hash;
+
+                    client.send(HttpRequest.newBuilder().uri(
+                            URI.create(url)
+                    ).build(), HttpResponse.BodyHandlers.ofFile(LANG_STORAGE_PATH.resolve(x + ".json")));
+                    langInfo.langHash.put(x, val.hash);
+                }
+            }
+            Files.writeString(LANG_INFO_PATH, gson.toJson(langInfo));
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
+        return true;
+    }
+
+    private static class LangInfo {
+        public String version = SharedConstants.getGameVersion().getId();
+        public String assetIndexHash = "";
+        public String versionHash = "";
+        public Map<String, String> langHash = new HashMap<>();
     }
 
     private static class Version {
@@ -77,5 +163,9 @@ public class VanillaLanguageDownloader {
 
     private static class AssetIndex {
         public Map<String, AssetIndexEntry> objects = Map.of();
+    }
+
+    private static class PackMcMeta {
+        public Map<String, JsonObject> language = Map.of();
     }
 }

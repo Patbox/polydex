@@ -1,3 +1,11 @@
-- Added Search, allowing you to search for items by their name, tooltip, tags and namespace/modid.
-- Fixed chance now showing up correctly.
+- Added Search.
+  - Allows you to search for items by using (tooltip) text, tags and namespaces.
+  - Accessed through main ui as "Search..." button (compass) or via `/polydex search [<query>]` command.
+  - Has full support for translations, making it search using player's client-selected language. This feature can be disabled in the config.
+  - Query order doesn't matter, as they all are checked on their own (so "block iron" and "iron block" are equal), you can wrap it with quotation marks for full match.
+  - You can search for tags, by using the `#` as a prefix (for example `#flowers` will search for items with tag containing `flowers`). Similar to Creative Mode search.
+  - You can search by namespace, by using the `@` as a prefix. It searches from start (`@poly` will match `polyfactory` and `polydecorations`, but not `monopoly`).
+  - You can use `!` to negate any search (for example `!@poly` will show all items that don't have namespace starting with `poly`).
+  - Search can be fully disabled in config.
+- Fixed chance not showing up correctly (showing as value between 0-1 instead of 0-100).
 - Renamed some config options. They should be automatically migrated.

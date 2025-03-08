@@ -17,6 +17,7 @@
     "SingleStackRecipeAccessor",
     "SmithingTransformRecipeAccessor",
     "SPIMAccessor",
+    "TranslatableTextContentAccessor",
     "TransmuteRecipeAccessor"
   ],
   "injectors": {

@@ -63,7 +63,10 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerRecipeViewer(SmithingTransformRecipe.class, SmithingTransformRecipeView::new);
         PolydexPage.registerRecipeViewer(StonecuttingRecipe.class, StonecuttingRecipePage::new);
 
-        PolydexPage.registerModifier(PolydexImpl::addCustomPages);
+        PolydexPage.register(PolydexImpl::addCustomPages);
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            PolydexPage.register(PolydexImpl::addDebugPage);
+        }
 
         PolydexEntry.registerProvider(PolydexImpl::defaultEntries);
         PolydexEntry.registerEntryCreator(Items.ENCHANTED_BOOK, PolydexImpl::seperateCustomEnchantments);
@@ -104,7 +107,6 @@ public class PolydexInitializer implements ModInitializer {
                 PolydexImpl.onReload(manager);
             }
         });
-
 
         init();
     }

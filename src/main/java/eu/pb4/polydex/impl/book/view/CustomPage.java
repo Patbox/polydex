@@ -83,7 +83,7 @@ public record CustomPage(Identifier identifier, CustomPage.ViewData object) impl
 
     @Override
     public boolean isOwner(MinecraftServer server, PolydexEntry entry) {
-        return true;
+        return entry.identifier().equals(this.object.entryId);
     }
 
     public record ViewData(Identifier entryId, ItemStack icon, Optional<Text> name, List<Text> lore, List<ItemData> elements) {

@@ -1,5 +1,6 @@
 package eu.pb4.polydex.api.v1.recipe;
 
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.ui.PageViewerGui;
@@ -10,14 +11,18 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class PolydexPageUtils {
+    private static final DecimalFormat CHANCE_FORMAT = Util.make(new DecimalFormat("#.###"), df -> df.setRoundingMode(RoundingMode.HALF_UP));
     public static Event<Consumer<MinecraftServer>> BEFORE_PAGE_LOADING = EventFactory.createArrayBacked(Consumer.class, x -> (server) -> {
         for (var r : x) {
             r.accept(server);
@@ -40,7 +45,7 @@ public class PolydexPageUtils {
         } else if (stack.getCount() == 1) {
             return stack.getName();
         } else {
-            return Text.literal("" + stack.getCount() + " × ").append(stack.getName());
+            return Text.literal(stack.getCount() + " × ").append(stack.getName());
         }
     }
 
@@ -237,5 +242,9 @@ public class PolydexPageUtils {
     static {
         BEFORE_PAGE_LOADING.register((s) -> BEFORE_LOADING.invoker().run());
         AFTER_PAGE_LOADING.register((s) -> AFTER_LOADING.invoker().run());
+    }
+
+    public static String formatChanceAmount(float chance) {
+        return CHANCE_FORMAT.format(chance * 100) + "%";
     }
 }

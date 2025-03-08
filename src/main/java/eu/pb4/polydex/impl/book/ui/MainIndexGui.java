@@ -91,14 +91,7 @@ public class MainIndexGui extends ExtendedGui {
 
                 return GuiElementBuilder.from(item.stack().toDisplayItemStack(player))
                         .setCallback((x, type, z) -> {
-                            /*if (player.isCreative() && type.isMiddle) {
-                                var cursor = this.player.currentScreenHandler.getCursorStack();
-                                if (ItemStack.areItemsEqual(cursor, item.stack()) && cursor.getCount() < cursor.getMaxCount()) {
-                                    cursor.increment(1);
-                                } else {
-                                    this.player.currentScreenHandler.setCursorStack(item.stack().copy());
-                                }
-                            } else */if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
+                            if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
                                 MainIndexGui.this.close(true);
                                 PageViewerGui.openEntry (player, item, type.isRight, MainIndexGui.this::open);
                                 GuiUtils.playClickSound(this.player);
@@ -138,16 +131,10 @@ public class MainIndexGui extends ExtendedGui {
                                     );
                         })
                         .build();
-                /*case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
-                        .setName(Text.translatable("text.polydex.button.select_displayed").formatted(Formatting.WHITE))
-                        .setCallback((x, y, z) -> {
-                            GuiUtils.playClickSound(this.player);
-                            MainIndexGui.this.indexLayerView.setZIndex(2);
-                        }).build();*/
                 case 3 -> this.getPageAmount() > 1 ? GuiUtils.previousPage(this.player, this) : filler();
                 case 4 -> this.getPageAmount() > 1 ? GuiUtils.page(this.player,  this.page + 1, this.getPageAmount()).build() : filler();
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
-                case 7 -> new GuiElementBuilder(Items.COMPASS)
+                case 7 -> PolydexImpl.config.enableSearch ? new GuiElementBuilder(Items.COMPASS)
                         .noDefaults()
                         .setComponent(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.empty(), true))
                         .glow(false)
@@ -155,9 +142,9 @@ public class MainIndexGui extends ExtendedGui {
                         .setName(Text.translatable("text.polydex.button.search"))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
-                            new SearchGui(this.player, MainIndexGui.this::open);
+                            new SearchGui(this.player, "", MainIndexGui.this::open);
                         })
-                        .build();
+                        .build() : filler();
                 case 8 -> GuiUtils.backButton(this.player, MainIndexGui.this::close, false);
                 default -> filler();
             };

@@ -62,11 +62,22 @@ public record SearchQuery(String input, Set<QueryValue<String>> namespaces,
                 } catch (Throwable e) {
                 }
             } else {
-                var token = parser.readString();
-                if (token.isEmpty()) {
-                    break;
+                curr = parser.peek();
+                String token;
+                if (curr == '"') {
+                    token = parser.readQuotedString();
+                } else {
+                    int i = 0;
+                    for (; i < parser.getRemainingLength(); i++) {
+                        if (parser.peek(i) == ' ') {
+                            break;
+                        }
+                    }
+                    token =  input.substring(parser.getCursor(), parser.getCursor() + i);
+                    parser.setCursor(parser.getCursor() + i);
                 }
-                query.words.add(new QueryValue<>(token, value));
+
+                query.words.add(new QueryValue<>(token.toLowerCase(Locale.ROOT), value));
             }
         }
 
@@ -79,12 +90,17 @@ public record SearchQuery(String input, Set<QueryValue<String>> namespaces,
             if (id == null) {
                 return false;
             }
+            boolean match = false;
+
             for (var x : this.namespaces) {
                 if (id.getNamespace().startsWith(x.searched) == x.value) {
-                    return true;
+                    match = true;
+                    break;
                 }
             }
-            return false;
+            if (!match) {
+                return false;
+            }
         }
 
         if (!this.tags.isEmpty()) {
@@ -108,13 +124,19 @@ public record SearchQuery(String input, Set<QueryValue<String>> namespaces,
         }
 
         if (!this.words.isEmpty()) {
-            var texts = LanguageHandler.toTranslatedString(stack.getTexts(player), player);
+            var texts = TextTranslationUtils.toTranslatedString(stack.getTexts(player), player);
+
 
             for (var x : this.words) {
+                boolean match = false;
                 for (var text : texts) {
-                    if (text.contains(x.searched) != x.value) {
-                        return false;
+                    if (text.contains(x.searched) == x.value) {
+                        match = true;
+                        break;
                     }
+                }
+                if (!match) {
+                    return false;
                 }
             }
         }
