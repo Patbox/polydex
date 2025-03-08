@@ -8,4 +8,5 @@
   - You can use `!` to negate any search (for example `!@poly` will show all items that don't have namespace starting with `poly`).
   - Search can be fully disabled in config.
 - Fixed chance not showing up correctly (showing as value between 0-1 instead of 0-100).
+- Fixed not being able to disable the info hover globally in config.
 - Renamed some config options. They should be automatically migrated.

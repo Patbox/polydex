@@ -62,11 +62,15 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         if (((Object) this).getClass() == ServerPlayNetworkHandler.class) {
             this.polydex_target = new PolydexTargetImpl((ServerPlayNetworkHandler) (Object) this);
 
-            var creator = PolydexImpl.DISPLAYS.get(this.polydex_target.settings().currentType());
-            if (creator != null) {
-                this.polydex_display = creator.apply(this.polydex_target);
+            if (PolydexImpl.config.displayEnabled) {
+                var creator = PolydexImpl.DISPLAYS.get(this.polydex_target.settings().currentType());
+                if (creator != null) {
+                    this.polydex_display = creator.apply(this.polydex_target);
+                } else {
+                    this.polydex_display = new BossbarTargetDisplay(this.polydex_target);
+                }
             } else {
-                this.polydex_display = new BossbarTargetDisplay(this.polydex_target);
+                this.polydex_display = NoopTargetDisplay.INSTANCE;
             }
         } else {
             this.polydex_display = NoopTargetDisplay.INSTANCE;
@@ -99,7 +103,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void polydex_tick(CallbackInfo ci) {
-        if (this.polydex_display == NoopTargetDisplay.INSTANCE) {
+        if (this.polydex_display == NoopTargetDisplay.INSTANCE || !PolydexImpl.config.displayEnabled) {
             return;
         }
 

@@ -43,7 +43,7 @@ public class PolydexConfigImpl {
     public boolean displayEnabled = true;
     @SerializedName(value = "hover_display_update_rate", alternate = "displayUpdateRate")
     public int displayUpdateRate = 4;
-    @SerializedName("display_entity_absorption")
+    @SerializedName("hover_display_entity_absorption")
     public boolean displayEntityAbsorption = true;
     @SerializedName("default_hover_settings")
     public GlobalSettings defaultHoverSettings = new GlobalSettings();
