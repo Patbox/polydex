@@ -16,6 +16,7 @@ public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements 
     private final Identifier identifier;
     protected final Identifier recipeId;
     private final List<PolydexIngredient<?>> ingredients;
+    private @Nullable PolydexStack<?> resultStackCache = null;
 
     public AbstractRecipePolydexPage(RecipeEntry<T> recipe) {
         this.recipe = recipe.value();
@@ -52,7 +53,10 @@ public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements 
 
     @Override
     public boolean isOwner(MinecraftServer server, PolydexEntry entry) {
-        var out = this.recipe.getResult(server.getRegistryManager());
-        return entry.isPartOf(PolydexStack.of(out));
+        if (resultStackCache == null) {
+            var out = this.recipe.getResult(server.getRegistryManager());
+            resultStackCache = PolydexStack.of(out);
+        }
+        return entry.isPartOf(resultStackCache);
     }
 }
