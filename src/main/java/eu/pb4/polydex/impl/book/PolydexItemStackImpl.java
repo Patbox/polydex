@@ -11,7 +11,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -20,23 +19,41 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     private static final Interner<PolydexItemStackImpl> INTERNER = Interners.newWeakInterner();
+    private static final IdentityHashMap<Item, PolydexItemStackImpl> PLAIN_ITEMS = new IdentityHashMap<>();
 
     private final ItemStack stack;
     private final float chance;
     private final long count;
+    private final int stackHash;
 
     public PolydexItemStackImpl(ItemStack stack, long count, float chance) {
         this.stack = stack.copyWithCount((int) Math.min(count, 64));
         this.chance = chance;
         this.count = count;
+        this.stackHash = ItemStack.hashCode(stack);
+    }
+
+    public PolydexItemStackImpl(Item item) {
+        this.stack = new ItemStack(item);
+        this.chance = 1;
+        this.count = 1;
+        this.stackHash = ItemStack.hashCode(stack);
     }
 
     public static PolydexStack<ItemStack> of(ItemStack stack, long count, float chance) {
+        if (count == 1 && chance == 1f && stack.getComponentChanges().isEmpty()) {
+            synchronized (PLAIN_ITEMS) {
+                return PLAIN_ITEMS.computeIfAbsent(stack.getItem(), PolydexItemStackImpl::new);
+            }
+        }
+
         return INTERNER.intern(new PolydexItemStackImpl(stack, count, chance));
     }
 
@@ -160,6 +177,24 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
     @Override
     public List<Text> getTexts(ServerPlayerEntity player) {
-        return this.stack.getTooltip(Item.TooltipContext.create(player.getWorld()), player, TooltipType.BASIC);
+        try {
+            return this.stack.getTooltip(Item.TooltipContext.create(player.getWorld()), player, TooltipType.BASIC);
+        } catch (Throwable e) {
+            return List.of(this.getName());
+        }
+    }
+
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        PolydexItemStackImpl that = (PolydexItemStackImpl) object;
+        return this.chance == that.chance && count == that.count && ItemStack.areItemsAndComponentsEqual(stack, that.stack);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.stackHash, chance, count);
     }
 }
