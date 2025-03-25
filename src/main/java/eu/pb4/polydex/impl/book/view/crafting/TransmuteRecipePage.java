@@ -4,10 +4,7 @@ import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
 import eu.pb4.polydex.mixin.TransmuteRecipeAccessor;
 import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.TransmuteRecipe;
@@ -37,6 +34,6 @@ public class TransmuteRecipePage extends AbstractCraftingRecipePage<TransmuteRec
 
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
-        return ((TransmuteRecipeAccessor) this.recipe).getResult().value().getDefaultStack();
+        return ((TransmuteRecipeAccessor) this.recipe).getResult().apply(entry != null && entry.stack().getBacking() instanceof ItemStack stack ? stack : Items.STONE.getDefaultStack());
     }
 }

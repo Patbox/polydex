@@ -207,24 +207,15 @@ public class FakeWorld extends World implements LightSourceView {
     }
 
     @Override
-    public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> registryEntry, SoundCategory category, float volume, float pitch, long seed) {
+    public void playSound(@Nullable Entity source, double x, double y, double z, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) {
 
     }
 
     @Override
-    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> registryEntry, SoundCategory category, float volume, float pitch, long seed) {
+    public void playSoundFromEntity(@Nullable Entity source, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) {
 
     }
 
-    @Override
-    public void playSound(@Nullable PlayerEntity player, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-
-    }
-
-    @Override
-    public void playSoundFromEntity(@Nullable PlayerEntity player, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-
-    }
 
     @Override
     public void createExplosion(@Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, ExplosionSourceType explosionSourceType, ParticleEffect smallParticle, ParticleEffect largeParticle, RegistryEntry<SoundEvent> soundEvent) {
@@ -255,16 +246,6 @@ public class FakeWorld extends World implements LightSourceView {
     @Nullable
     @Override
     public MapState getMapState(MapIdComponent id) {
-        return null;
-    }
-
-    @Override
-    public void putMapState(MapIdComponent id, MapState state) {
-
-    }
-
-    @Override
-    public MapIdComponent increaseAndGetMapId() {
         return null;
     }
 
@@ -304,7 +285,7 @@ public class FakeWorld extends World implements LightSourceView {
     }
 
     @Override
-    public void syncWorldEvent(@Nullable PlayerEntity player, int eventId, BlockPos pos, int data) {
+    public void syncWorldEvent(@Nullable Entity source, int eventId, BlockPos pos, int data) {
 
     }
 

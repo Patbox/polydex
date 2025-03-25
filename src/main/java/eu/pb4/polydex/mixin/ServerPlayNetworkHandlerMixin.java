@@ -80,7 +80,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
 
         if (list != null) {
             for (var x : list) {
-                var y = Identifier.tryParse(x.asString());
+                var y = Identifier.tryParse(x.asString().get());
                 this.polydex$lastViewed.add(y);
             }
         }

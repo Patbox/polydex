@@ -6,8 +6,10 @@ import eu.pb4.polydex.impl.search.SearchQuery;
 import eu.pb4.polydex.impl.search.SearchResult;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
+import it.unimi.dsi.fastutil.objects.ReferenceSortedSets;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -56,7 +58,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
             if (hasSearchIcon) {
                 this.setSlot(1, GuiUtils.fillerStack(player));
                 if (this.screenHandler != null) {
-                    this.screenHandler.setPreviousTrackedSlot(2, ItemStack.EMPTY);
+                    this.screenHandler.setReceivedStack(2, ItemStack.EMPTY);
                 }
             }
             hasSearchIcon = false;
@@ -71,7 +73,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
                 .setName(Text.translatable("text.polydex.searching").append(".".repeat(this.searchTime / 5))));
 
         if (!hasSearchIcon && this.screenHandler != null) {
-            this.screenHandler.setPreviousTrackedSlot(2, ItemStack.EMPTY);
+            this.screenHandler.setReceivedStack(2, ItemStack.EMPTY);
         }
         hasSearchIcon = true;
     }
@@ -80,16 +82,16 @@ public class SearchGui extends AnvilInputGui implements PageAware {
     public void onInput(String input) {
         super.onInput(input);
         if (this.screenHandler != null) {
-            this.screenHandler.setPreviousTrackedSlot(2, ItemStack.EMPTY);
+            this.screenHandler.setReceivedStack(2, ItemStack.EMPTY);
         }
 
 
         var itemStack = GuiUtils.fillerStack(player).getItemStack().copy();
         itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(input));
-        itemStack.set(DataComponentTypes.HIDE_TOOLTIP, Unit.INSTANCE);
+        itemStack.set(DataComponentTypes.TOOLTIP_DISPLAY, new TooltipDisplayComponent(true, ReferenceSortedSets.emptySet()));
         this.setSlot(0, itemStack, Objects.requireNonNull(this.getSlot(0)).getGuiCallback());
         if (this.screenHandler != null) {
-            this.screenHandler.setPreviousTrackedSlot(0, itemStack.copy());
+            this.screenHandler.setReceivedStack(0, itemStack.copy());
         }
         if (!input.isEmpty() && input.equals(this.currentInput)) {
             return;
@@ -157,7 +159,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
         super.setDefaultInputValue(input);
         var itemStack = GuiUtils.fillerStack(player).getItemStack().copy();
         itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(input));
-        itemStack.set(DataComponentTypes.HIDE_TOOLTIP, Unit.INSTANCE);
+        itemStack.set(DataComponentTypes.TOOLTIP_DISPLAY, new TooltipDisplayComponent(true, ReferenceSortedSets.emptySet()));
         this.setSlot(0, itemStack, Objects.requireNonNull(this.getSlot(0)).getGuiCallback());
     }
 

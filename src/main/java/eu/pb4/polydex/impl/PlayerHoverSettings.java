@@ -28,7 +28,7 @@ public class PlayerHoverSettings implements HoverSettings {
         var player = handler.player;
 
         if (PlayerDataApi.getGlobalDataFor(player, id("display_type")) instanceof NbtString nbtString) {
-            this.currentDisplay = Identifier.tryParse(nbtString.asString());
+            this.currentDisplay = Identifier.tryParse(nbtString.value());
         }
 
         if (PlayerDataApi.getGlobalDataFor(player, id("components")) instanceof NbtCompound compound) {
@@ -37,7 +37,7 @@ public class PlayerHoverSettings implements HoverSettings {
 
                 try {
                     if (id != null) {
-                        this.componentMap.put(id, HoverDisplayBuilder.ComponentType.Visibility.valueOf(compound.getString(key)));
+                        this.componentMap.put(id, HoverDisplayBuilder.ComponentType.Visibility.valueOf(compound.getString(key, "")));
                     }
                 } catch (Throwable e) {
 
@@ -47,7 +47,7 @@ public class PlayerHoverSettings implements HoverSettings {
 
         if (PlayerDataApi.getGlobalDataFor(player, id("display_mode")) instanceof NbtString string) {
             try {
-                displayMode = DisplayMode.valueOf(string.asString());
+                displayMode = DisplayMode.valueOf(string.value());
             } catch (Throwable e) {}
         }
     }

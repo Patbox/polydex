@@ -3,6 +3,7 @@ package eu.pb4.polydex.impl.book.view.smithing;
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.mixin.SmithingTransformRecipeAccessor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.SmithingTransformRecipe;
@@ -17,7 +18,7 @@ public class SmithingTransformRecipeView extends AbstractSmithingRecipeView<Smit
 
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
-        return ((SmithingTransformRecipeAccessor) this.recipe).getResult().copy();
+        return ((SmithingTransformRecipeAccessor) this.recipe).getResult().apply(entry != null && entry.stack().getBacking() instanceof ItemStack stack ? stack : Items.STONE.getDefaultStack());
     }
 
     @Override
@@ -32,7 +33,7 @@ public class SmithingTransformRecipeView extends AbstractSmithingRecipeView<Smit
 
     @Override
     protected Ingredient getBase() {
-        return recipe.base().orElse(null);
+        return recipe.base();
     }
 
     @Override

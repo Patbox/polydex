@@ -16,7 +16,6 @@ public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
     private final Ingredient ingredient;
     private final long count;
     private final float chance;
-    private final List<RegistryEntry<Item>> itemStacks;
     private final List<PolydexStack<ItemStack>> polydexStacks;
 
     public PolydexIngredientImpl(Ingredient ingredient, long count, float chance) {
@@ -24,9 +23,7 @@ public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
         this.count = count;
         this.chance = chance;
 
-        this.itemStacks = ingredient.getMatchingItems().toList();
-
-        this.polydexStacks = this.itemStacks.stream().map((x) -> PolydexStack.of(x.value().getDefaultStack(), count, chance)).toList();
+        this.polydexStacks = ingredient.getMatchingItems().map((x) -> PolydexStack.of(x.value().getDefaultStack(), count, chance)).toList();
     }
 
     public static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count, float chance) {

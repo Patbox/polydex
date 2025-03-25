@@ -16,6 +16,7 @@
     "ShovelItemAccessor",
     "SingleStackRecipeAccessor",
     "SmithingTransformRecipeAccessor",
+    "SmithingTrimRecipeAccessor",
     "SPIMAccessor",
     "TranslatableTextContentAccessor",
     "TransmuteRecipeAccessor"
