@@ -7,10 +7,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.parsers.NodeParser;
-import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
+import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polydex.impl.book.view.CustomPage;
 import eu.pb4.polydex.impl.book.view.DebugPage;
 import eu.pb4.polydex.impl.book.view.PotionRecipePage;
@@ -19,10 +19,7 @@ import eu.pb4.polydex.impl.search.VanillaLanguageDownloader;
 import eu.pb4.polydex.mixin.*;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
@@ -34,17 +31,17 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BannerBlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
+import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.*;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
-import net.minecraft.command.argument.ItemStringReader;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.ItemTags;
@@ -207,7 +204,8 @@ public class PolydexImpl {
         FabricItemGroupEntries fabricCollector = new FabricItemGroupEntries(context, parentTabStacks, searchTabStacks);
         try {
             ItemGroupEvents.modifyEntriesEvent(RegistryKey.of(RegistryKeys.ITEM_GROUP, id)).invoker().modifyEntries(fabricCollector);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
 
         try {
             ItemGroupEvents.MODIFY_ENTRIES_ALL.invoker().modifyEntries(itemGroup, fabricCollector);
@@ -235,28 +233,40 @@ public class PolydexImpl {
         NAMESPACED_ENTRIES.clear();
         ITEM_GROUP_ENTRIES.clear();
 
-        var polydexEntries = new ObjectLinkedOpenHashSet<PolydexEntry>();
+        var polydexEntries = new ArrayList<PolydexEntry>();
         var consumer = new PolydexEntry.EntryConsumer() {
+            private final Set<PolydexEntry> containsCheck = new HashSet<>();
             @Override
             public void accept(PolydexEntry entry) {
+                if (containsCheck.contains(entry)) {
+                    return;
+                }
+
                 polydexEntries.add(entry);
+                containsCheck.add(entry);
             }
 
             @Override
             public void accept(PolydexEntry entry, ItemGroup group) {
+                if (containsCheck.contains(entry)) {
+                    return;
+                }
                 BY_ITEMGROUP.computeIfAbsent(group, NamespacedEntry::ofItemGroup).entries.add(entry);
                 polydexEntries.add(entry);
             }
 
             @Override
             public void acceptAll(Collection<PolydexEntry> entries) {
-                polydexEntries.addAll(entries);
+                for (var entry : entries) {
+                    this.accept(entry);
+                }
             }
 
             @Override
             public void acceptAll(Collection<PolydexEntry> entries, ItemGroup group) {
-                BY_ITEMGROUP.computeIfAbsent(group, NamespacedEntry::ofItemGroup).entries.addAll(entries);
-                polydexEntries.addAll(entries);
+                for (var entry : entries) {
+                    this.accept(entry, group);
+                }
             }
         };
 
@@ -316,9 +326,7 @@ public class PolydexImpl {
             for (var viewBuilder : ENTRY_MODIFIERS) {
                 viewBuilder.entryModifier(server, entry);
             }
-        }
 
-        for (var entry : polydexEntries) {
             entry.outputPages().sort(PAGE_SORT);
             entry.ingredientPages().sort(PAGE_SORT);
 
@@ -429,12 +437,12 @@ public class PolydexImpl {
                                 .append("??"));
                     } else {
                     */
-                        displayBuilder.setComponent(HoverDisplayBuilder.HEALTH, Text.literal("").append(Text.literal("❤ ").formatted(Formatting.RED))
-                                .append("" + Math.min(MathHelper.ceil(livingEntity.getHealth()), MathHelper.ceil(livingEntity.getMaxHealth())))
-                                .append(PolydexImpl.config.displayEntityAbsorption && livingEntity.getAbsorptionAmount() > 0
-                                        ? Text.literal("+" + MathHelper.ceil(Math.min(livingEntity.getAbsorptionAmount(), livingEntity.getMaxAbsorption()))).formatted(Formatting.YELLOW) : Text.empty())
-                                .append(Text.literal("/").formatted(Formatting.GRAY))
-                                .append("" + MathHelper.ceil(livingEntity.getMaxHealth())));
+                    displayBuilder.setComponent(HoverDisplayBuilder.HEALTH, Text.literal("").append(Text.literal("❤ ").formatted(Formatting.RED))
+                            .append("" + Math.min(MathHelper.ceil(livingEntity.getHealth()), MathHelper.ceil(livingEntity.getMaxHealth())))
+                            .append(PolydexImpl.config.displayEntityAbsorption && livingEntity.getAbsorptionAmount() > 0
+                                    ? Text.literal("+" + MathHelper.ceil(Math.min(livingEntity.getAbsorptionAmount(), livingEntity.getMaxAbsorption()))).formatted(Formatting.YELLOW) : Text.empty())
+                            .append(Text.literal("/").formatted(Formatting.GRAY))
+                            .append("" + MathHelper.ceil(livingEntity.getMaxHealth())));
                     //}
 
                     var value = livingEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR);
@@ -625,6 +633,7 @@ public class PolydexImpl {
         try {
             var world = new FakeWorld(server) {
                 BlockState state = Blocks.AIR.getDefaultState();
+
                 @Override
                 public boolean setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
                     if (state != this.state) {
@@ -680,7 +689,8 @@ public class PolydexImpl {
         polydexPageConsumer.accept(new DebugPage(Identifier.of("polydex:debug"), Identifier.ofVanilla("oak_planks")));
     }
 
-    public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty, Map<Identifier, PolydexEntry> byId, Map<Identifier, PolydexEntry> nonEmptyById) {
+    public record PackedEntries(List<PolydexEntry> all, List<PolydexEntry> nonEmpty, Map<Identifier, PolydexEntry> byId,
+                                Map<Identifier, PolydexEntry> nonEmptyById) {
         public static PackedEntries create() {
             return new PackedEntries(new ArrayList<>(), new ArrayList<>(), new HashMap<>(), new HashMap<>());
         }
@@ -688,6 +698,7 @@ public class PolydexImpl {
         public List<PolydexEntry> get(boolean all) {
             return all ? this.all : this.nonEmpty;
         }
+
         @Nullable
         public PolydexEntry get(Identifier identifier, boolean all) {
             return all ? this.byId.get(identifier) : this.nonEmptyById.get(identifier);
@@ -815,8 +826,8 @@ public class PolydexImpl {
     public static class ItemGroupData implements ItemGroup.Entries {
         public final Set<ItemStack> stacks = ItemStackSet.create();
         public final ItemGroup group;
-        private final FeatureSet enabledFeatures;
         public final Identifier id;
+        private final FeatureSet enabledFeatures;
 
         public ItemGroupData(Identifier id, ItemGroup group, FeatureSet enabledFeatures) {
             this.group = group;

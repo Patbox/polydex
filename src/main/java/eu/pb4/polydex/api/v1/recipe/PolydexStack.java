@@ -58,7 +58,7 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
     }
 
     static PolydexStack<ItemStack> of(Item item) {
-        return of(item.getDefaultStack(), 1 ,1);
+        return PolydexItemStackImpl.of(item);
     }
 
     static PolydexStack<ItemStack> of(ItemStack stack) {

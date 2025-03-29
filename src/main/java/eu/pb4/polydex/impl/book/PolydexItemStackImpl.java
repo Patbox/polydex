@@ -17,6 +17,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,9 +26,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
+public final class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     private static final Interner<PolydexItemStackImpl> INTERNER = Interners.newWeakInterner();
     private static final IdentityHashMap<Item, PolydexItemStackImpl> PLAIN_ITEMS = new IdentityHashMap<>();
+    public static final Class<ItemStack> ITEM_STACK_CLASS = ItemStack.class;
 
     private final ItemStack stack;
     private final float chance;
@@ -49,13 +51,17 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     }
 
     public static PolydexStack<ItemStack> of(ItemStack stack, long count, float chance) {
-        if (count == 1 && chance == 1f && stack.getComponentChanges().isEmpty()) {
-            synchronized (PLAIN_ITEMS) {
-                return PLAIN_ITEMS.computeIfAbsent(stack.getItem(), PolydexItemStackImpl::new);
-            }
+        if (count == 1 && MathHelper.approximatelyEquals(chance, 1) && stack.getComponentChanges().isEmpty()) {
+            return of(stack.getItem());
         }
 
         return INTERNER.intern(new PolydexItemStackImpl(stack, count, chance));
+    }
+
+    public static PolydexStack<ItemStack> of(Item item) {
+        synchronized (PLAIN_ITEMS) {
+            return PLAIN_ITEMS.computeIfAbsent(item, PolydexItemStackImpl::new);
+        }
     }
 
     @Override
@@ -69,8 +75,49 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     }
 
     @Override
-    public boolean matchesDirect(PolydexStack<ItemStack> stack, boolean strict) {
-        return (this.isEmpty() && stack.isEmpty()) || (strict ? ItemStack.areItemsAndComponentsEqual(this.stack, stack.getBacking()) : this.stack.isOf(stack.getBacking().getItem()));
+    public boolean matches(PolydexStack<?> stack, boolean strict) {
+        if (stack instanceof PolydexItemStackImpl polydexStack) {
+            if (!strict) {
+                return this.stack.isOf(polydexStack.stack.getItem());
+            }
+
+            return this.matchesDirect(polydexStack, true);
+        }
+
+        return PolydexStack.super.matches(stack, strict);
+    }
+
+    @Override
+    public boolean matchesInternal(PolydexStack<?> stack, boolean strict) {
+        if (stack.getBackingClass() == ITEM_STACK_CLASS) {
+            //noinspection unchecked
+            return matchesDirect((PolydexStack<ItemStack>) stack, strict);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean matchesDirect(PolydexStack<ItemStack> polydexStack, boolean strict) {
+        var stack = polydexStack.getBacking();
+        if (!this.stack.isOf(stack.getItem())) {
+            return false;
+        }
+
+        if (!strict) {
+            return true;
+        }
+        var changesLeft = stack.getComponentChanges();
+        var changesRight = this.stack.getComponentChanges();
+
+        if (changesLeft.isEmpty() && changesRight.isEmpty()) {
+            return true;
+        }
+
+        if (changesLeft.isEmpty() != changesRight.isEmpty()) {
+            return false;
+        }
+
+        return changesLeft.equals(changesRight);
     }
 
     @Override
@@ -85,7 +132,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
     @Override
     public Class<ItemStack> getBackingClass() {
-        return ItemStack.class;
+        return ITEM_STACK_CLASS;
     }
 
     @Override

@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-@SuppressWarnings("ClassCanBeRecord")
 public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements PolydexPage {
     protected final T recipe;
     private final Identifier identifier;
@@ -23,7 +22,8 @@ public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements 
         this.recipeId = recipe.id();
         this.identifier = PolydexPageUtils.identifierFromRecipe(recipe.id());
         //noinspection unchecked
-        this.ingredients = (List<PolydexIngredient<?>>) (Object) recipe.value().getIngredients().stream().map(PolydexIngredient::of).toList();
+
+        this.ingredients = (List<PolydexIngredient<?>>) (Object) recipe.value().getIngredients().stream().map(PolydexIngredient::of).distinct().toList();
     }
 
     @Override
