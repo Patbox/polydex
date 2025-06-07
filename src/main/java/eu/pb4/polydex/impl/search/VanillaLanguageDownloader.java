@@ -59,10 +59,10 @@ public class VanillaLanguageDownloader {
             try {
                 langInfo = gson.fromJson(Files.readString(LANG_INFO_PATH), LangInfo.class);
 
-                if (langInfo.version.equals(SharedConstants.getGameVersion().getId())) {
+                if (langInfo.version.equals(SharedConstants.getGameVersion().id())) {
                     return true;
                 }
-                langInfo.version = SharedConstants.getGameVersion().getId();
+                langInfo.version = SharedConstants.getGameVersion().id();
             } catch (Throwable ignored) {}
         }
         Files.createDirectories(LANG_STORAGE_PATH);
@@ -74,7 +74,7 @@ public class VanillaLanguageDownloader {
                             URI.create("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
                     ).build(), HttpResponse.BodyHandlers.ofString()).body(), VersionManifest.class);
 
-            var mcVer = SharedConstants.getGameVersion().getId();
+            var mcVer = SharedConstants.getGameVersion().id();
 
             var version = manifest.versions.stream().filter(x -> x.id.equals(mcVer)).findFirst();
             if (version.isEmpty()) {
@@ -132,7 +132,7 @@ public class VanillaLanguageDownloader {
     }
 
     private static class LangInfo {
-        public String version = SharedConstants.getGameVersion().getId();
+        public String version = SharedConstants.getGameVersion().id();
         public String assetIndexHash = "";
         public String versionHash = "";
         public Map<String, String> langHash = new HashMap<>();

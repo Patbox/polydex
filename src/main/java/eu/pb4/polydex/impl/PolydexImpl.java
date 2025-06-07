@@ -585,9 +585,9 @@ public class PolydexImpl {
 
     public static void blockInteractions(MinecraftServer server, Consumer<PolydexPage> polydexPageConsumer) {
         var items = server.getRegistryManager().getOrThrow(RegistryKeys.ITEM);
-        var axes = PolydexIngredient.of(Ingredient.fromTag(items.getOrThrow(ItemTags.AXES)));
-        var shovels = PolydexIngredient.of(Ingredient.fromTag(items.getOrThrow(ItemTags.SHOVELS)));
-        var hoes = PolydexIngredient.of(Ingredient.fromTag(items.getOrThrow(ItemTags.HOES)));
+        var axes = PolydexIngredient.of(Ingredient.ofTag(items.getOrThrow(ItemTags.AXES)));
+        var shovels = PolydexIngredient.of(Ingredient.ofTag(items.getOrThrow(ItemTags.SHOVELS)));
+        var hoes = PolydexIngredient.of(Ingredient.ofTag(items.getOrThrow(ItemTags.HOES)));
         {
             var map = new Reference2ObjectOpenHashMap<Item, LinkedHashSet<Item>>();
             for (var entry : AxeItemAccessor.getSTRIPPED_BLOCKS().entrySet()) {

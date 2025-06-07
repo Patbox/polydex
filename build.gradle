@@ -49,6 +49,8 @@ repositories {
 	}
 
 	maven { url = 'https://api.modrinth.com/maven' }
+
+	mavenLocal()
 }
 
 dependencies {
@@ -67,7 +69,7 @@ dependencies {
 	modImplementation include("eu.pb4:player-data-api:${project.player_data_version}")
 	modImplementation include("eu.pb4:sidebar-api:${project.sidebar_version}")
 	modImplementation include("xyz.nucleoid:server-translations-api:${project.stapi_version}")
-	modImplementation include("me.lucko:fabric-permissions-api:0.3.3")
+	modImplementation include("me.lucko:fabric-permissions-api:0.3.4-SNAPSHOT-2")
 
 	modCompileOnly "alexiil.mc.lib:libmultipart-all:0.11.0"
 
