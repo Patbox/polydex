@@ -35,8 +35,8 @@ public class LayerBuilder extends Layer implements PageBuilder {
         super(5, 9);
         this.player = player;
         this.context = new ContextParameterMap.Builder()
-                .add(SlotDisplayContexts.FUEL_REGISTRY, player.getWorld().getFuelRegistry())
-                .add(SlotDisplayContexts.REGISTRIES, player.getWorld().getRegistryManager())
+                .add(SlotDisplayContexts.FUEL_REGISTRY, player.getEntityWorld().getFuelRegistry())
+                .add(SlotDisplayContexts.REGISTRIES, player.getEntityWorld().getRegistryManager())
                 .build(SlotDisplayContexts.CONTEXT_TYPE);
     }
 

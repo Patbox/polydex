@@ -31,7 +31,7 @@ public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements 
 
     @Override
     public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
-        return getOutput(entry, player.getServer());
+        return getOutput(entry, player.getEntityWorld().getServer());
     }
 
     @Override

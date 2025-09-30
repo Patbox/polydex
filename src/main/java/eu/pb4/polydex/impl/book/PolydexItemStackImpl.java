@@ -114,8 +114,8 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
         } else {
             var lore = new ArrayList<Text>();
             try {
-                lore.addAll(this.stack.getTooltip(Item.TooltipContext.create(player.getWorld()), player, TooltipType.BASIC));
-                lore.remove(0);
+                lore.addAll(this.stack.getTooltip(Item.TooltipContext.create(player.getEntityWorld()), player, TooltipType.BASIC));
+                lore.removeFirst();
             } catch (Throwable e) {}
 
             Text extra;
@@ -178,7 +178,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     @Override
     public List<Text> getTexts(ServerPlayerEntity player) {
         try {
-            return this.stack.getTooltip(Item.TooltipContext.create(player.getWorld()), player, TooltipType.BASIC);
+            return this.stack.getTooltip(Item.TooltipContext.create(player.getEntityWorld()), player, TooltipType.BASIC);
         } catch (Throwable e) {
             return List.of(this.getName());
         }

@@ -35,7 +35,7 @@ public final class StonecuttingRecipePage extends AbstractRecipePolydexPage<Ston
         if (!builder.hasTextures()) {
             builder.set(4, 2, new GuiElementBuilder(Items.ARROW).hideTooltip());
         }
-        builder.setOutput(6, 2, getOutput(entry, player.getServer()));
+        builder.setOutput(6, 2, getOutput(entry, player.getEntityWorld().getServer()));
     }
 
     @Override

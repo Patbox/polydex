@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.10.+'
+	id 'fabric-loom' version '1.11.+'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 	id 'com.matthewprenger.cursegradle' version '1.4.0'
@@ -69,7 +69,7 @@ dependencies {
 	modImplementation include("eu.pb4:player-data-api:${project.player_data_version}")
 	modImplementation include("eu.pb4:sidebar-api:${project.sidebar_version}")
 	modImplementation include("xyz.nucleoid:server-translations-api:${project.stapi_version}")
-	modImplementation include("me.lucko:fabric-permissions-api:0.4.0")
+	modImplementation include("me.lucko:fabric-permissions-api:0.4.2-patbox.1")
 
 	modCompileOnly "alexiil.mc.lib:libmultipart-all:0.11.0"
 
@@ -148,7 +148,7 @@ curseforge {
 			releaseType = "release"
 			changelog = System.getenv("CHANGELOG")
 			changelogType = "markdown"
-			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-Snapshot") : project.minecraft_version))
+			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
 			addGameVersion "Fabric"
 			mainArtifact(remapJar)
 

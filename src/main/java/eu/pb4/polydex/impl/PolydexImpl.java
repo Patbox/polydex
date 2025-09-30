@@ -484,8 +484,8 @@ public class PolydexImpl {
                 }
             } else if (target.blockEntity() instanceof SkullBlockEntity skull) {
                 var owner = skull.getOwner();
-                if (owner != null && owner.name().isPresent()) {
-                    displayBuilder.setComponent(HoverDisplayBuilder.NAME, Text.translatable("block.minecraft.player_head.named", owner.name().get()));
+                if (owner != null && owner.getName().isPresent()) {
+                    displayBuilder.setComponent(HoverDisplayBuilder.NAME, Text.translatable("block.minecraft.player_head.named", owner.getName().get()));
                 } else {
                     displayBuilder.setComponent(HoverDisplayBuilder.NAME, target.blockState().getBlock().getName());
                 }
@@ -496,7 +496,7 @@ public class PolydexImpl {
                 displayBuilder.setComponent(HoverDisplayBuilder.MOD_SOURCE, getMod(Registries.BLOCK.getId(target.blockState().getBlock())));
             }
 
-            if (PolydexImpl.config.displayCantMine && (!target.player().canHarvest(target.blockState()) || target.blockState().calcBlockBreakingDelta(target.player(), target.player().getWorld(), target.pos()) <= 0)) {
+            if (PolydexImpl.config.displayCantMine && (!target.player().canHarvest(target.blockState()) || target.blockState().calcBlockBreakingDelta(target.player(), target.player().getEntityWorld(), target.pos()) <= 0)) {
                 var text = Text.literal("⛏").formatted(Formatting.DARK_RED);
                 if (!displayBuilder.isSmall()) {
                     text.append(" ").append(Text.translatable("text.polydex.cant_mine").formatted(Formatting.RED));

@@ -23,7 +23,7 @@ public class LibMultiPartCompatibility {
         try {
             var target = hoverDisplayBuilder.getTarget();
 
-            var container = MultipartUtil.get(target.player().getWorld(), target.pos());
+            var container = MultipartUtil.get(target.player().getEntityWorld(), target.pos());
 
             if (container == null) {
                 return;

@@ -61,7 +61,7 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
                     .setName(Text.translatable("text.polydex.view.experience", Text.literal("" + recipe.getExperience())
                             .append(Text.translatable("text.polydex.view.experience.points")).formatted(Formatting.WHITE)).formatted(Formatting.GREEN)));
         }
-        builder.setOutput(5, 2, getOutput(entry, player.getServer()));
+        builder.setOutput(5, 2, getOutput(entry, player.getEntityWorld().getServer()));
     }
 
     @Override

@@ -41,7 +41,7 @@ public abstract class AbstractCraftingRecipePage<T extends CraftingRecipe> exten
             builder.setIngredient(x + 2,  y + 1, getStacksAt(recipe, x, y, entry));
         }
 
-        builder.setOutput(6, 2, getOutput(entry, player.getServer()));
+        builder.setOutput(6, 2, getOutput(entry, player.getEntityWorld().getServer()));
     }
 
     @Override

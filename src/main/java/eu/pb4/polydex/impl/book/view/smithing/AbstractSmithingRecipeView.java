@@ -41,7 +41,7 @@ public abstract class AbstractSmithingRecipeView<T extends SmithingRecipe> exten
         builder.setIngredient(2, 2, this.getTemplate());
         builder.setIngredient(3, 2, this.getBaseItem(entry));
         builder.setIngredient(4, 2, this.getAddition());
-        builder.setOutput(6, 2, this.getOutput(entry, Objects.requireNonNull(player.getServer())));
+        builder.setOutput(6, 2, this.getOutput(entry, Objects.requireNonNull(player.getEntityWorld().getServer())));
     }
 
     @Override

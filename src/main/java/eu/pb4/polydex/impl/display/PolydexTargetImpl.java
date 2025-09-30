@@ -50,7 +50,7 @@ public final class PolydexTargetImpl implements PolydexTarget {
 
     public void updateRaycast() {
         var player = this.player();
-        double maxDistance = 8.02;
+        double maxDistance = this.player().getBlockInteractionRange();
 
         this.hitResult = this.handler.player.raycast(maxDistance, 0, false);
 
@@ -76,9 +76,9 @@ public final class PolydexTargetImpl implements PolydexTarget {
 
         if (this.hitResult.getType() == HitResult.Type.BLOCK) {
             var result = (BlockHitResult) this.hitResult;
-            this.cachedBlockState = this.handler.player.getWorld().getBlockState(result.getBlockPos());
+            this.cachedBlockState = this.handler.player.getEntityWorld().getBlockState(result.getBlockPos());
             if (this.cachedBlockState.hasBlockEntity()) {
-                this.cachedBlockEntity = this.handler.player.getWorld().getBlockEntity(result.getBlockPos());
+                this.cachedBlockEntity = this.handler.player.getEntityWorld().getBlockEntity(result.getBlockPos());
             } else {
                 this.cachedBlockEntity = null;
             }
@@ -99,33 +99,33 @@ public final class PolydexTargetImpl implements PolydexTarget {
     public void onBreakingChange() {
         var inter = (SPIMAccessor) this.player().interactionManager;
         if (inter.getFailedToMine()) {
-            var state = this.player().getWorld().getBlockState(inter.getFailedMiningPos());
+            var state = this.player().getEntityWorld().getBlockState(inter.getFailedMiningPos());
 
             if (!inter.getMiningPos().equals(this.miningPos) || this.startingTime != inter.getFailedStartMiningTime()) {
                 this.currentBreakingProgress = 0f;
                 this.startingTime = inter.getFailedStartMiningTime();
                 this.miningPos = inter.getFailedMiningPos();
-                this.cachedMiningBlockEntity = this.player().getWorld().getBlockEntity(this.miningPos);
+                this.cachedMiningBlockEntity = this.player().getEntityWorld().getBlockEntity(this.miningPos);
                 this.cachedMiningBlockState = state;
             }
 
             this.currentBreakingProgress = Math.min(
-                    this.currentBreakingProgress + state.calcBlockBreakingDelta(this.player(), this.player().getWorld(), inter.getFailedMiningPos()),
+                    this.currentBreakingProgress + state.calcBlockBreakingDelta(this.player(), this.player().getEntityWorld(), inter.getFailedMiningPos()),
                     1
             );
         } else {
-            var state = this.player().getWorld().getBlockState(inter.getMiningPos());
+            var state = this.player().getEntityWorld().getBlockState(inter.getMiningPos());
             if (!inter.getMiningPos().equals(this.miningPos) || this.startingTime != inter.getStartMiningTime()) {
                 this.currentBreakingProgress = 0f;
                 this.startingTime = inter.getStartMiningTime();
                 this.miningPos = inter.getMiningPos();
-                this.cachedMiningBlockEntity = this.player().getWorld().getBlockEntity(this.miningPos);
+                this.cachedMiningBlockEntity = this.player().getEntityWorld().getBlockEntity(this.miningPos);
                 this.cachedMiningBlockState = state;
             }
 
             if (inter.isMining()) {
                 this.currentBreakingProgress = Math.min(
-                        this.currentBreakingProgress + state.calcBlockBreakingDelta(this.player(), this.player().getWorld(), inter.getMiningPos()),
+                        this.currentBreakingProgress + state.calcBlockBreakingDelta(this.player(), this.player().getEntityWorld(), inter.getMiningPos()),
                         1
                 );
             }

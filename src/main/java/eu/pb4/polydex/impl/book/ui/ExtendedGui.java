@@ -6,14 +6,15 @@ import eu.pb4.sgui.api.gui.layered.LayeredGui;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public class ExtendedGui extends LayeredGui {
-    private static final Style INFO_STYLE = Style.EMPTY.withFont(Identifier.of("uniform"));
-    public static final Style TEXTURE_STYLE = Style.EMPTY.withFont(Identifier.of("polydex:gui")).withColor(Formatting.WHITE);
+    private static final Style INFO_STYLE = Style.EMPTY.withFont(new StyleSpriteSource.Font(Identifier.of("uniform")));
+    public static final Style TEXTURE_STYLE = Style.EMPTY.withFont(new StyleSpriteSource.Font(Identifier.of("polydex:gui"))).withColor(Formatting.WHITE);
     private Text text = Text.empty();
     private Text texture;
     private Text overlayTexture;

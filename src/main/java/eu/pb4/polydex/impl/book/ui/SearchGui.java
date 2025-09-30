@@ -137,7 +137,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
                     this.searching = null;
                     this.searchTime = 0;
                     this.setPage(0);
-                }), this.getPlayer().getServer());
+                }), this.getPlayer().getEntityWorld().getServer());
             } catch (CommandSyntaxException e) {
                 return;
             }
