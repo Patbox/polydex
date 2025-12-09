@@ -4,12 +4,9 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import eu.pb4.polydex.api.v1.recipe.PolydexIngredient;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.entry.RegistryEntry;
-
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
     private static final Interner<PolydexIngredientImpl> INTERNER = Interners.newWeakInterner();
@@ -23,7 +20,7 @@ public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
         this.count = count;
         this.chance = chance;
 
-        this.polydexStacks = ingredient.getMatchingItems().map((x) -> PolydexStack.of(x.value().getDefaultStack(), count, chance)).toList();
+        this.polydexStacks = ingredient.items().map((x) -> PolydexStack.of(x.value().getDefaultInstance(), count, chance)).toList();
     }
 
     public static PolydexIngredient<ItemStack> of(Ingredient ingredient, long count, float chance) {

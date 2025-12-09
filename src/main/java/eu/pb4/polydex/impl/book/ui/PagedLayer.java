@@ -4,15 +4,15 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.layered.Layer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public abstract class PagedLayer extends Layer implements PageAware {
     public final int pageSize;
-    public final ServerPlayerEntity player;
+    public final ServerPlayer player;
     private final boolean withNavigation;
     protected int page = 0;
 
-    public PagedLayer(ServerPlayerEntity player, int height, int width, boolean withNavigation) {
+    public PagedLayer(ServerPlayer player, int height, int width, boolean withNavigation) {
         super(height, width);
         this.withNavigation = withNavigation;
         this.player = player;

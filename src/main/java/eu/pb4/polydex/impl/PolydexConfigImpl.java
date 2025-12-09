@@ -9,9 +9,9 @@ import eu.pb4.predicate.api.BuiltinPredicates;
 import eu.pb4.predicate.api.GsonPredicateSerializer;
 import eu.pb4.predicate.api.MinecraftPredicate;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -80,7 +80,7 @@ public class PolydexConfigImpl {
         }
 
         @Override
-        public boolean isComponentVisible(ServerPlayerEntity player, HoverDisplayBuilder.ComponentType type) {
+        public boolean isComponentVisible(ServerPlayer player, HoverDisplayBuilder.ComponentType type) {
             var value =  visibilityMap.getOrDefault(type.identifier(), HoverDisplayBuilder.ComponentType.Visibility.DEFAULT);
             if (value == HoverDisplayBuilder.ComponentType.Visibility.DEFAULT) {
                 value = type.defaultVisibility();
@@ -89,7 +89,7 @@ public class PolydexConfigImpl {
             return switch (value) {
                 case ALWAYS -> true;
                 case NEVER, DEFAULT -> false;
-                case SNEAKING -> player.isSneaking();
+                case SNEAKING -> player.isShiftKeyDown();
             };
         }
     }
@@ -103,7 +103,7 @@ public class PolydexConfigImpl {
     }
 
 
-    public static PolydexConfigImpl loadOrCreateConfig(RegistryWrapper.WrapperLookup lookup) {
+    public static PolydexConfigImpl loadOrCreateConfig(HolderLookup.Provider lookup) {
         try {
             Gson GSON = new GsonBuilder()
                     .disableHtmlEscaping().setLenient().setPrettyPrinting()
@@ -133,7 +133,7 @@ public class PolydexConfigImpl {
         }
     }
 
-    public static void saveConfig(PolydexConfigImpl config, RegistryWrapper.WrapperLookup lookup) {
+    public static void saveConfig(PolydexConfigImpl config, HolderLookup.Provider lookup) {
         File configFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "polydex.json");
         try {
             Gson GSON = new GsonBuilder()

@@ -2,15 +2,15 @@ package eu.pb4.polydex.api.v1.hover;
 
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.Block;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
@@ -50,7 +50,7 @@ public interface HoverDisplayBuilder {
         return builder;
     }
 
-    static List<Text> buildText(PolydexTarget target) {
+    static List<Component> buildText(PolydexTarget target) {
         return build(target).getOutput();
     }
 
@@ -60,19 +60,19 @@ public interface HoverDisplayBuilder {
 
     PolydexTarget getTarget();
 
-    void setComponent(ComponentType type, Text text);
+    void setComponent(ComponentType type, Component text);
 
     @Nullable
-    Text getComponent(ComponentType type);
+    Component getComponent(ComponentType type);
 
     boolean removeComponent(ComponentType type);
 
     @Nullable
-    Text removeAndGetComponent(ComponentType type);
+    Component removeAndGetComponent(ComponentType type);
 
     Collection<ComponentType> getComponentTypes();
 
-    List<Text> getOutput();
+    List<Component> getOutput();
 
     record ComponentType(Identifier identifier, Visibility defaultVisibility, @Deprecated boolean alwaysDisplay,
                          int index) {

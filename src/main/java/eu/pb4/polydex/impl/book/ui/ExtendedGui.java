@@ -3,40 +3,40 @@ package eu.pb4.polydex.impl.book.ui;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.layered.LayeredGui;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
-import net.minecraft.text.StyleSpriteSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
 import org.jetbrains.annotations.Nullable;
 
 public class ExtendedGui extends LayeredGui {
-    private static final Style INFO_STYLE = Style.EMPTY.withFont(new StyleSpriteSource.Font(Identifier.of("uniform")));
-    public static final Style TEXTURE_STYLE = Style.EMPTY.withFont(new StyleSpriteSource.Font(Identifier.of("polydex:gui"))).withColor(Formatting.WHITE);
-    private Text text = Text.empty();
-    private Text texture;
-    private Text overlayTexture;
+    private static final Style INFO_STYLE = Style.EMPTY.withFont(new FontDescription.Resource(Identifier.parse("uniform")));
+    public static final Style TEXTURE_STYLE = Style.EMPTY.withFont(new FontDescription.Resource(Identifier.parse("polydex:gui"))).withColor(ChatFormatting.WHITE);
+    private Component text = Component.empty();
+    private Component texture;
+    private Component overlayTexture;
     private boolean lock = false;
     private boolean isDirty = false;
 
-    public ExtendedGui(ScreenHandlerType<?> type, ServerPlayerEntity player, boolean manipulatePlayerSlots) {
+    public ExtendedGui(MenuType<?> type, ServerPlayer player, boolean manipulatePlayerSlots) {
         super(type, player, manipulatePlayerSlots);
     }
     
-    public void setText(@Nullable Text text) {
+    public void setText(@Nullable Component text) {
         this.text = text;
         this.updateText();
     }
     
     
-    public void setTexture(@Nullable Text text) {
+    public void setTexture(@Nullable Component text) {
         this.texture = text;
         this.updateText();
     }
 
-    public void setOverlayTexture(@Nullable Text text) {
+    public void setOverlayTexture(@Nullable Component text) {
         this.overlayTexture = text;
         this.updateText();
     }
@@ -61,10 +61,10 @@ public class ExtendedGui extends LayeredGui {
         super.setTitle(formatTexturedText(getPlayer(), this.texture, this.overlayTexture, this.text));
     }
 
-    public static Text formatTexturedText(ServerPlayerEntity player, @Nullable Text texture, @Nullable Text overlayTexture, @Nullable Text input) {
+    public static Component formatTexturedText(ServerPlayer player, @Nullable Component texture, @Nullable Component overlayTexture, @Nullable Component input) {
         if (PolymerResourcePackUtils.hasMainPack(player)) {
-            var text = Text.empty();
-            var textTexture = Text.empty().setStyle(TEXTURE_STYLE);
+            var text = Component.empty();
+            var textTexture = Component.empty().setStyle(TEXTURE_STYLE);
 
             if (texture != null) {
                 textTexture.append("c").append(texture).append("d");
@@ -83,14 +83,14 @@ public class ExtendedGui extends LayeredGui {
             }
             return text;
         } else {
-            return input != null ? input : Text.empty();
+            return input != null ? input : Component.empty();
         }
     }
 
-    public static Text formatTexturedTextAnvil(ServerPlayerEntity player, @Nullable Text texture, @Nullable Text input) {
+    public static Component formatTexturedTextAnvil(ServerPlayer player, @Nullable Component texture, @Nullable Component input) {
         if (PolymerResourcePackUtils.hasMainPack(player)) {
-            var text = Text.empty();
-            var textTexture = Text.empty().setStyle(TEXTURE_STYLE);
+            var text = Component.empty();
+            var textTexture = Component.empty().setStyle(TEXTURE_STYLE);
 
             if (texture != null) {
                 textTexture.append("m").append(texture).append("n");
@@ -105,14 +105,14 @@ public class ExtendedGui extends LayeredGui {
             }
             return text;
         } else {
-            return input != null ? input : Text.empty();
+            return input != null ? input : Component.empty();
         }
     }
 
 
     @Deprecated
     @Override
-    public void setTitle(Text title) {
+    public void setTitle(Component title) {
         super.setTitle(title);
     }
 

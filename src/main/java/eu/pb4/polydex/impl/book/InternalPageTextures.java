@@ -1,14 +1,14 @@
 package eu.pb4.polydex.impl.book;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class InternalPageTextures {
-    public static final Text MAIN = Text.literal("e");
-    public static final Text MAIN_INVENTORY = Text.literal("f");
-    public static final Text CRAFTING = Text.literal("g");
-    public static final Text SMELTING = Text.literal("h");
-    public static final Text SMITHING = Text.literal("i");
-    public static final Text STONECUTTING = Text.literal("j");
-    public static final Text SIMPLE_TRANSFORM = Text.literal("j");
-    public static final Text POTION = Text.literal("k");
+    public static final Component MAIN = Component.literal("e");
+    public static final Component MAIN_INVENTORY = Component.literal("f");
+    public static final Component CRAFTING = Component.literal("g");
+    public static final Component SMELTING = Component.literal("h");
+    public static final Component SMITHING = Component.literal("i");
+    public static final Component STONECUTTING = Component.literal("j");
+    public static final Component SIMPLE_TRANSFORM = Component.literal("j");
+    public static final Component POTION = Component.literal("k");
 }

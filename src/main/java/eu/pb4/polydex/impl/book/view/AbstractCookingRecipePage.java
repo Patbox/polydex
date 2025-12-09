@@ -6,16 +6,15 @@ import eu.pb4.polydex.api.v1.recipe.PolydexPage;
 import eu.pb4.polydex.api.v1.recipe.AbstractRecipePolydexPage;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.polydex.impl.book.ui.GuiUtils;
-import eu.pb4.polydex.mixin.SingleStackRecipeAccessor;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.*;
+import eu.pb4.polydex.mixin.SingleItemRecipeAccessor;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
@@ -25,47 +24,47 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
     private final ItemStack icon;
     private final boolean sync;
 
-    public AbstractCookingRecipePage(RecipeEntry<T> recipe, Item icon, boolean sync) {
+    public AbstractCookingRecipePage(RecipeHolder<T> recipe, Item icon, boolean sync) {
         super(recipe);
-        this.icon = icon.getDefaultStack();
+        this.icon = icon.getDefaultInstance();
         this.sync = sync;
     }
 
     @Override
-    public @Nullable Text texture(ServerPlayerEntity player) {
+    public @Nullable Component texture(ServerPlayer player) {
         return InternalPageTextures.SMELTING;
     }
 
-    public static <T extends AbstractCookingRecipe> Function<RecipeEntry<T>, PolydexPage> of(Item icon) {
+    public static <T extends AbstractCookingRecipe> Function<RecipeHolder<T>, PolydexPage> of(Item icon) {
         return (r) -> new AbstractCookingRecipePage<T>(r, icon, false);
     }
 
     @Override
-    public ItemStack typeIcon(ServerPlayerEntity player) {
+    public ItemStack typeIcon(ServerPlayer player) {
         return this.icon;
     }
 
     @Override
-    public boolean syncWithClient(ServerPlayerEntity player) {
+    public boolean syncWithClient(ServerPlayer player) {
         return this.sync;
     }
 
     @Override
-    public void createPage(PolydexEntry entry, ServerPlayerEntity player, PageBuilder builder) {
-        builder.setIngredient(3, 2, recipe.ingredient().toDisplay());
+    public void createPage(PolydexEntry entry, ServerPlayer player, PageBuilder builder) {
+        builder.setIngredient(3, 2, recipe.input().display());
         builder.set(3, 3, GuiUtils.flame(player)
-                .setName(Text.translatable("text.polydex.view.cooking_time", Text.literal("" + (recipe.getCookingTime() / 20d) + "s")
-                        .formatted(Formatting.WHITE)).formatted(Formatting.GOLD)));
-        if (recipe.getExperience() != 0) {
+                .setName(Component.translatable("text.polydex.view.cooking_time", Component.literal("" + (recipe.cookingTime() / 20d) + "s")
+                        .withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GOLD)));
+        if (recipe.experience() != 0) {
             builder.set(5, 3, GuiUtils.xp(player)
-                    .setName(Text.translatable("text.polydex.view.experience", Text.literal("" + recipe.getExperience())
-                            .append(Text.translatable("text.polydex.view.experience.points")).formatted(Formatting.WHITE)).formatted(Formatting.GREEN)));
+                    .setName(Component.translatable("text.polydex.view.experience", Component.literal("" + recipe.experience())
+                            .append(Component.translatable("text.polydex.view.experience.points")).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GREEN)));
         }
-        builder.setOutput(5, 2, getOutput(entry, player.getEntityWorld().getServer()));
+        builder.setOutput(5, 2, getOutput(entry, player.level().getServer()));
     }
 
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
-        return ((SingleStackRecipeAccessor) this.recipe).getResult().copy();
+        return ((SingleItemRecipeAccessor) this.recipe).getResult().copy();
     }
 }

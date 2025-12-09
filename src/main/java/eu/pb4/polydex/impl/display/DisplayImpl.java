@@ -5,14 +5,14 @@ import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.impl.PolydexConfigImpl;
 import eu.pb4.polydex.impl.PolydexImpl;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import net.minecraft.network.chat.Component;
 
 public class DisplayImpl implements HoverDisplayBuilder {
     private final PolydexTargetImpl target;
-    private final Map<ComponentType, Text> components = new HashMap<>();
+    private final Map<ComponentType, Component> components = new HashMap<>();
 
     public DisplayImpl(PolydexTargetImpl target) {
         this.target = target;
@@ -34,7 +34,7 @@ public class DisplayImpl implements HoverDisplayBuilder {
     }
 
     @Override
-    public void setComponent(ComponentType type, Text text) {
+    public void setComponent(ComponentType type, Component text) {
         if (!PolydexImpl.config.disabledHoverInformation.contains(type.identifier())
                 && this.target.settings().isComponentVisible(this.target.player(), type)) {
             this.components.put(type, text);
@@ -42,7 +42,7 @@ public class DisplayImpl implements HoverDisplayBuilder {
     }
 
     @Override
-    public Text getComponent(ComponentType type) {
+    public Component getComponent(ComponentType type) {
         return this.components.get(type);
     }
 
@@ -52,7 +52,7 @@ public class DisplayImpl implements HoverDisplayBuilder {
     }
 
     @Override
-    public @Nullable Text removeAndGetComponent(ComponentType type) {
+    public @Nullable Component removeAndGetComponent(ComponentType type) {
         return this.components.remove(type);
     }
 
@@ -62,10 +62,10 @@ public class DisplayImpl implements HoverDisplayBuilder {
     }
 
     @Override
-    public List<Text> getOutput() {
+    public List<Component> getOutput() {
         var list = new ArrayList<>(this.components.entrySet());
         list.sort(Comparator.comparing((t) -> t.getKey().index()));
-        var out = new ArrayList<Text>();
+        var out = new ArrayList<Component>();
 
         for (var entry : list) {
             out.add(entry.getValue());

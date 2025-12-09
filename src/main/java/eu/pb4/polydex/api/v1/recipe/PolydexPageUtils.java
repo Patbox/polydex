@@ -1,17 +1,15 @@
 package eu.pb4.polydex.api.v1.recipe;
 
-import com.fasterxml.jackson.databind.util.StdDateFormat;
-import eu.pb4.polydex.impl.PlayerInterface;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.ui.PageViewerGui;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.RoundingMode;
@@ -36,16 +34,16 @@ public class PolydexPageUtils {
     });
 
     public static Identifier identifierFromRecipe(Identifier identifier) {
-        return identifier.withPrefixedPath("recipe/");
+        return identifier.withPrefix("recipe/");
     }
 
-    public static Text createText(ItemStack stack) {
+    public static Component createText(ItemStack stack) {
         if (stack.isEmpty()) {
-            return Text.translatable("text.polydex.empty");
+            return Component.translatable("text.polydex.empty");
         } else if (stack.getCount() == 1) {
-            return stack.getName();
+            return stack.getHoverName();
         } else {
-            return Text.literal(stack.getCount() + " × ").append(stack.getName());
+            return Component.literal(stack.getCount() + " × ").append(stack.getHoverName());
         }
     }
 
@@ -78,7 +76,7 @@ public class PolydexPageUtils {
         return PolydexImpl.CATEGORY_TO_PAGES.getOrDefault(category, List.of());
     }
 
-    public static boolean openCategoryUi(ServerPlayerEntity player, PolydexCategory category, @Nullable Runnable closeCallback) {
+    public static boolean openCategoryUi(ServerPlayer player, PolydexCategory category, @Nullable Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -112,7 +110,7 @@ public class PolydexPageUtils {
         return PolydexImpl.ID_TO_PAGE.get(identifier);
     }
 
-    public static boolean openRecipeListUi(ServerPlayerEntity player, ItemStack stack, @Nullable Runnable closeCallback) {
+    public static boolean openRecipeListUi(ServerPlayer player, ItemStack stack, @Nullable Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -130,7 +128,7 @@ public class PolydexPageUtils {
         return false;
     }
 
-    public static boolean openRecipeListUi(ServerPlayerEntity player, PolydexStack<?> stack, @Nullable Runnable closeCallback) {
+    public static boolean openRecipeListUi(ServerPlayer player, PolydexStack<?> stack, @Nullable Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -148,7 +146,7 @@ public class PolydexPageUtils {
         return false;
     }
 
-    public static boolean openRecipeListUi(ServerPlayerEntity player, PolydexEntry entry, @Nullable Runnable closeCallback) {
+    public static boolean openRecipeListUi(ServerPlayer player, PolydexEntry entry, @Nullable Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -161,7 +159,7 @@ public class PolydexPageUtils {
         return false;
     }
 
-    public static boolean openUsagesListUi(ServerPlayerEntity player, ItemStack stack, @Nullable  Runnable closeCallback) {
+    public static boolean openUsagesListUi(ServerPlayer player, ItemStack stack, @Nullable  Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -179,7 +177,7 @@ public class PolydexPageUtils {
         return false;
     }
 
-    public static boolean openUsagesListUi(ServerPlayerEntity player, PolydexStack<?> stack, @Nullable  Runnable closeCallback) {
+    public static boolean openUsagesListUi(ServerPlayer player, PolydexStack<?> stack, @Nullable  Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -197,7 +195,7 @@ public class PolydexPageUtils {
         return false;
     }
 
-    public static boolean openUsagesListUi(ServerPlayerEntity player, PolydexEntry entry, @Nullable  Runnable closeCallback) {
+    public static boolean openUsagesListUi(ServerPlayer player, PolydexEntry entry, @Nullable  Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }
@@ -210,7 +208,7 @@ public class PolydexPageUtils {
         return false;
     }
 
-    public static boolean openCustomPageUi(ServerPlayerEntity player, Text text, List<PolydexPage> pages, boolean useTypeIcon, @Nullable Runnable closeCallback) {
+    public static boolean openCustomPageUi(ServerPlayer player, Component text, List<PolydexPage> pages, boolean useTypeIcon, @Nullable Runnable closeCallback) {
         if (!isReady()) {
             return false;
         }

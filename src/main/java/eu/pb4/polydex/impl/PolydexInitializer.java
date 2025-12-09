@@ -25,11 +25,22 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.*;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.util.Identifier;
+
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.BlastingRecipe;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.SmithingTrimRecipe;
+import net.minecraft.world.item.crafting.SmokingRecipe;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.item.crafting.TippedArrowRecipe;
+import net.minecraft.world.item.crafting.TransmuteRecipe;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
@@ -61,7 +72,7 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerRecipeViewer(SmokingRecipe.class, AbstractCookingRecipePage.of(Items.SMOKER));
         PolydexPage.registerRecipeViewer(SmithingTrimRecipe.class, SmithingTrimRecipePage::new);
         PolydexPage.registerRecipeViewer(SmithingTransformRecipe.class, SmithingTransformRecipeView::new);
-        PolydexPage.registerRecipeViewer(StonecuttingRecipe.class, StonecuttingRecipePage::new);
+        PolydexPage.registerRecipeViewer(StonecutterRecipe.class, StonecuttingRecipePage::new);
 
         PolydexPage.register(PolydexImpl::addCustomPages);
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
@@ -91,19 +102,19 @@ public class PolydexInitializer implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(EVENT_ID, PolydexImpl::rebuild);
         ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(EVENT_ID, (server, manager, b) -> PolydexImpl.rebuild(server));
-        ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
+        ResourceManagerHelper serverData = ResourceManagerHelper.get(PackType.SERVER_DATA);
         PolymerResourcePackUtils.addModAssets("polydex");
-        ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.of("polydex", "sgui"));
+        ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.fromNamespaceAndPath("polydex", "sgui"));
         GuiUtils.register();
 
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public Identifier getFabricId() {
-                return Identifier.of(PolydexImpl.ID, "polydex_page");
+                return Identifier.fromNamespaceAndPath(PolydexImpl.ID, "polydex_page");
             }
 
             @Override
-            public void reload(ResourceManager manager) {
+            public void onResourceManagerReload(ResourceManager manager) {
                 PolydexImpl.onReload(manager);
             }
         });

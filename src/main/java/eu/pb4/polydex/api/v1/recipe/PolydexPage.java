@@ -1,12 +1,13 @@
 package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.PolydexImpl;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,18 +17,18 @@ import java.util.function.Function;
 
 public interface PolydexPage {
     Identifier identifier();
-    ItemStack typeIcon(ServerPlayerEntity player);
-    default ItemStack typeIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
+    ItemStack typeIcon(ServerPlayer player);
+    default ItemStack typeIcon(@Nullable PolydexEntry entry, ServerPlayer player) {
         return typeIcon(player);
     }
-    ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player);
+    ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayer player);
     @Nullable
-    default Text texture(ServerPlayerEntity player) {
+    default Component texture(ServerPlayer player) {
         return null;
     }
-    void createPage(@Nullable PolydexEntry entry, ServerPlayerEntity player, PageBuilder layer);
+    void createPage(@Nullable PolydexEntry entry, ServerPlayer player, PageBuilder layer);
 
-    default boolean canDisplay(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
+    default boolean canDisplay(@Nullable PolydexEntry entry, ServerPlayer player) {
         return true;
     }
 
@@ -55,8 +56,8 @@ public interface PolydexPage {
     @ApiStatus.OverrideOnly
     boolean isOwner(MinecraftServer server, PolydexEntry entry);
 
-    static <T extends Recipe<?>> void registerRecipeViewer(Class<T> recipeClass, Function<RecipeEntry<T>, PolydexPage> viewCreator) {
-        PolydexImpl.RECIPE_VIEWS.put(recipeClass, (Function<RecipeEntry<?>, PolydexPage>) (Object) viewCreator);
+    static <T extends Recipe<?>> void registerRecipeViewer(Class<T> recipeClass, Function<RecipeHolder<T>, PolydexPage> viewCreator) {
+        PolydexImpl.RECIPE_VIEWS.put(recipeClass, (Function<RecipeHolder<?>, PolydexPage>) (Object) viewCreator);
     }
 
     static void registerModifier(EntryModifier viewBuilder) {
@@ -77,7 +78,7 @@ public interface PolydexPage {
         void createPages(MinecraftServer server, Consumer<PolydexPage> pageConsumer);
     }
 
-    default boolean syncWithClient(ServerPlayerEntity player) {
+    default boolean syncWithClient(ServerPlayer player) {
         return true;
     }
 }

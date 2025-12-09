@@ -5,17 +5,6 @@ import com.google.common.collect.Interners;
 import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -23,6 +12,17 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
 public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     private static final Interner<PolydexItemStackImpl> INTERNER = Interners.newWeakInterner();
@@ -37,18 +37,18 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
         this.stack = stack.copyWithCount((int) Math.min(count, 64));
         this.chance = chance;
         this.count = count;
-        this.stackHash = ItemStack.hashCode(stack);
+        this.stackHash = ItemStack.hashItemAndComponents(stack);
     }
 
     public PolydexItemStackImpl(Item item) {
         this.stack = new ItemStack(item);
         this.chance = 1;
         this.count = 1;
-        this.stackHash = ItemStack.hashCode(stack);
+        this.stackHash = ItemStack.hashItemAndComponents(stack);
     }
 
     public static PolydexStack<ItemStack> of(ItemStack stack, long count, float chance) {
-        if (count == 1 && chance == 1f && stack.getComponentChanges().isEmpty()) {
+        if (count == 1 && chance == 1f && stack.getComponentsPatch().isEmpty()) {
             synchronized (PLAIN_ITEMS) {
                 return PLAIN_ITEMS.computeIfAbsent(stack.getItem(), PolydexItemStackImpl::new);
             }
@@ -69,7 +69,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
     @Override
     public boolean matchesDirect(PolydexStack<ItemStack> stack, boolean strict) {
-        return (this.isEmpty() && stack.isEmpty()) || (strict ? ItemStack.areItemsAndComponentsEqual(this.stack, stack.getBacking()) : this.stack.isOf(stack.getBacking().getItem()));
+        return (this.isEmpty() && stack.isEmpty()) || (strict ? ItemStack.isSameItemSameComponents(this.stack, stack.getBacking()) : this.stack.is(stack.getBacking().getItem()));
     }
 
     @Override
@@ -78,8 +78,8 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     }
 
     @Override
-    public Text getName() {
-        return this.stack.getName();
+    public Component getName() {
+        return this.stack.getHoverName();
     }
 
     @Override
@@ -88,68 +88,68 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     }
 
     @Override
-    public ItemStack toItemStack(ServerPlayerEntity player) {
+    public ItemStack toItemStack(ServerPlayer player) {
         return this.stack.copy();
     }
 
     @Override
-    public <E> @Nullable E get(ComponentType<E> type) {
+    public <E> @Nullable E get(DataComponentType<E> type) {
         return this.stack.get(type);
     }
 
     @Override
-    public <E> E getOrDefault(ComponentType<E> type, E fallback) {
+    public <E> E getOrDefault(DataComponentType<E> type, E fallback) {
         return this.stack.getOrDefault(type, fallback);
     }
 
     @Override
-    public boolean contains(ComponentType<?> type) {
-        return this.stack.contains(type);
+    public boolean contains(DataComponentType<?> type) {
+        return this.stack.has(type);
     }
 
     @Override
-    public ItemStack toDisplayItemStack(ServerPlayerEntity player) {
+    public ItemStack toDisplayItemStack(ServerPlayer player) {
         if (this.count == this.stack.getCount() && this.chance >= 1) {
             return this.stack.copy();
         } else {
-            var lore = new ArrayList<Text>();
+            var lore = new ArrayList<Component>();
             try {
-                lore.addAll(this.stack.getTooltip(Item.TooltipContext.create(player.getEntityWorld()), player, TooltipType.BASIC));
+                lore.addAll(this.stack.getTooltipLines(Item.TooltipContext.of(player.level()), player, TooltipFlag.NORMAL));
                 lore.removeFirst();
             } catch (Throwable e) {}
 
-            Text extra;
+            Component extra;
 
             if (this.count > 99 && chance != 1) {
-               extra = Text.translatable("text.polydex.item_stack.count_chance",
-                       Text.literal("" + this.count).formatted(Formatting.WHITE),
-                       Text.literal(PolydexPageUtils.formatChanceAmount(this.chance)).formatted(Formatting.WHITE)
-               ).formatted(Formatting.YELLOW);
+               extra = Component.translatable("text.polydex.item_stack.count_chance",
+                       Component.literal("" + this.count).withStyle(ChatFormatting.WHITE),
+                       Component.literal(PolydexPageUtils.formatChanceAmount(this.chance)).withStyle(ChatFormatting.WHITE)
+               ).withStyle(ChatFormatting.YELLOW);
             } else if (this.count > 99) {
-                extra = Text.translatable("text.polydex.item_stack.count",
-                        Text.literal("" + this.count).formatted(Formatting.WHITE)
-                ).formatted(Formatting.YELLOW);
+                extra = Component.translatable("text.polydex.item_stack.count",
+                        Component.literal("" + this.count).withStyle(ChatFormatting.WHITE)
+                ).withStyle(ChatFormatting.YELLOW);
             } else if (chance != 1) {
-                extra = Text.translatable("text.polydex.item_stack.chance",
-                        Text.literal(PolydexPageUtils.formatChanceAmount(this.chance)).formatted(Formatting.WHITE)
-                ).formatted(Formatting.YELLOW);
+                extra = Component.translatable("text.polydex.item_stack.chance",
+                        Component.literal(PolydexPageUtils.formatChanceAmount(this.chance)).withStyle(ChatFormatting.WHITE)
+                ).withStyle(ChatFormatting.YELLOW);
             } else {
                 extra = null;
             }
 
             if (extra != null) {
                 lore.add(
-                        Text.empty()
-                                .append(Text.literal("[").formatted(Formatting.DARK_GRAY))
+                        Component.empty()
+                                .append(Component.literal("[").withStyle(ChatFormatting.DARK_GRAY))
                                 .append(extra)
-                                .append(Text.literal("]").formatted(Formatting.DARK_GRAY))
+                                .append(Component.literal("]").withStyle(ChatFormatting.DARK_GRAY))
                 );
             }
 
             return GuiElementBuilder.from(this.stack)
                     .hideDefaultTooltip()
                     .setCount(this.count > 99 ? 1 : (int) this.count)
-                    .setComponent(DataComponentTypes.MAX_STACK_SIZE, 99)
+                    .setComponent(DataComponents.MAX_STACK_SIZE, 99)
                     .setLore(lore)
                     .asStack();
         }
@@ -157,12 +157,12 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
     @Override
     public @Nullable Identifier getId() {
-        return Registries.ITEM.getId(this.stack.getItem());
+        return BuiltInRegistries.ITEM.getKey(this.stack.getItem());
     }
 
     public Stream<TagKey<?>> streamTags() {
         //noinspection unchecked
-        return (Stream<TagKey<?>>) (Object) this.stack.getRegistryEntry().streamTags();
+        return (Stream<TagKey<?>>) (Object) this.stack.getItemHolder().tags();
     }
 
     @Override
@@ -176,9 +176,9 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
     }
 
     @Override
-    public List<Text> getTexts(ServerPlayerEntity player) {
+    public List<Component> getTexts(ServerPlayer player) {
         try {
-            return this.stack.getTooltip(Item.TooltipContext.create(player.getEntityWorld()), player, TooltipType.BASIC);
+            return this.stack.getTooltipLines(Item.TooltipContext.of(player.level()), player, TooltipFlag.NORMAL);
         } catch (Throwable e) {
             return List.of(this.getName());
         }
@@ -190,7 +190,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         PolydexItemStackImpl that = (PolydexItemStackImpl) object;
-        return this.chance == that.chance && count == that.count && ItemStack.areItemsAndComponentsEqual(stack, that.stack);
+        return this.chance == that.chance && count == that.count && ItemStack.isSameItemSameComponents(stack, that.stack);
     }
 
     @Override

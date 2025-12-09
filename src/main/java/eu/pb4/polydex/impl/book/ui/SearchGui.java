@@ -7,14 +7,14 @@ import eu.pb4.polydex.impl.search.SearchResult;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import it.unimi.dsi.fastutil.objects.ReferenceSortedSets;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.component.type.TooltipDisplayComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.LodestoneTracker;
+import net.minecraft.world.item.component.TooltipDisplay;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -35,13 +35,13 @@ public class SearchGui extends AnvilInputGui implements PageAware {
     private int searchTime = -1;
     private boolean hasSearchIcon = false;
 
-    public SearchGui(ServerPlayerEntity player, String search, @Nullable Runnable openPrevious) {
+    public SearchGui(ServerPlayer player, String search, @Nullable Runnable openPrevious) {
         super(player, true);
-        this.setTitle(ExtendedGui.formatTexturedTextAnvil(player, Text.literal("o"), Text.translatable("text.polydex.recipes_title_search")));
+        this.setTitle(ExtendedGui.formatTexturedTextAnvil(player, Component.literal("o"), Component.translatable("text.polydex.recipes_title_search")));
         this.setSlot(0, GuiUtils.fillerStack(player));
         this.setSlot(1, GuiUtils.fillerStack(player));
         this.setSlot(2, GuiUtils.fillerStack(player));
-        this.state = ((PlayerInterface) player.networkHandler).polydex_mainIndexState();
+        this.state = ((PlayerInterface) player.connection).polydex_mainIndexState();
         this.openPrevious = openPrevious;
         if (search.isEmpty()) {
             this.entries = SearchResult.global();
@@ -58,7 +58,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
             if (hasSearchIcon) {
                 this.setSlot(1, GuiUtils.fillerStack(player));
                 if (this.screenHandler != null) {
-                    this.screenHandler.setReceivedStack(2, ItemStack.EMPTY);
+                    this.screenHandler.setRemoteSlot(2, ItemStack.EMPTY);
                 }
             }
             hasSearchIcon = false;
@@ -67,13 +67,13 @@ public class SearchGui extends AnvilInputGui implements PageAware {
 
         this.setSlot(1, new GuiElementBuilder(Items.COMPASS)
                 .noDefaults()
-                .setComponent(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.empty(), true))
+                .setComponent(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.empty(), true))
                 .glow(false)
                 .hideDefaultTooltip()
-                .setName(Text.translatable("text.polydex.searching").append(".".repeat(this.searchTime / 5))));
+                .setName(Component.translatable("text.polydex.searching").append(".".repeat(this.searchTime / 5))));
 
         if (!hasSearchIcon && this.screenHandler != null) {
-            this.screenHandler.setReceivedStack(2, ItemStack.EMPTY);
+            this.screenHandler.setRemoteSlot(2, ItemStack.EMPTY);
         }
         hasSearchIcon = true;
     }
@@ -82,16 +82,16 @@ public class SearchGui extends AnvilInputGui implements PageAware {
     public void onInput(String input) {
         super.onInput(input);
         if (this.screenHandler != null) {
-            this.screenHandler.setReceivedStack(2, ItemStack.EMPTY);
+            this.screenHandler.setRemoteSlot(2, ItemStack.EMPTY);
         }
 
 
         var itemStack = GuiUtils.fillerStack(player).getItemStack().copy();
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(input));
-        itemStack.set(DataComponentTypes.TOOLTIP_DISPLAY, new TooltipDisplayComponent(true, ReferenceSortedSets.emptySet()));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.literal(input));
+        itemStack.set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, ReferenceSortedSets.emptySet()));
         this.setSlot(0, itemStack, Objects.requireNonNull(this.getSlot(0)).getGuiCallback());
         if (this.screenHandler != null) {
-            this.screenHandler.setReceivedStack(0, itemStack.copy());
+            this.screenHandler.setRemoteSlot(0, itemStack.copy());
         }
         if (!input.isEmpty() && input.equals(this.currentInput)) {
             return;
@@ -137,7 +137,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
                     this.searching = null;
                     this.searchTime = 0;
                     this.setPage(0);
-                }), this.getPlayer().getEntityWorld().getServer());
+                }), this.getPlayer().level().getServer());
             } catch (CommandSyntaxException e) {
                 return;
             }
@@ -158,8 +158,8 @@ public class SearchGui extends AnvilInputGui implements PageAware {
     public void setDefaultInputValue(String input) {
         super.setDefaultInputValue(input);
         var itemStack = GuiUtils.fillerStack(player).getItemStack().copy();
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(input));
-        itemStack.set(DataComponentTypes.TOOLTIP_DISPLAY, new TooltipDisplayComponent(true, ReferenceSortedSets.emptySet()));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.literal(input));
+        itemStack.set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, ReferenceSortedSets.emptySet()));
         this.setSlot(0, itemStack, Objects.requireNonNull(this.getSlot(0)).getGuiCallback());
     }
 
@@ -197,7 +197,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
         this.setSlot(PAGE_SIZE + 3, new GuiElementBuilder(this.state.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
                 .noDefaults()
                 .hideDefaultTooltip()
-                .setName(Text.translatable("text.polydex.button.see_" + (this.state.showAll ? "limited" : "everything")))
+                .setName(Component.translatable("text.polydex.button.see_" + (this.state.showAll ? "limited" : "everything")))
                 .setCallback((x, y, z) -> {
                     this.state.showAll = !this.state.showAll;
                     this.setPage(this.getPage());

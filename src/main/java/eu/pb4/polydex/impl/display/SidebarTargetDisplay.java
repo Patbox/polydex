@@ -5,11 +5,10 @@ import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.api.v1.hover.HoverDisplay;
 import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.sidebars.api.Sidebar;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
 import java.util.ArrayList;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 
 public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
     private final PolydexTarget target;
@@ -41,15 +40,15 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
         this.clearLines();
 
         var build = HoverDisplayBuilder.build(this.target);
-        this.setTitle(Text.literal(this.target.pos().toShortString()).formatted(Formatting.GRAY));
+        this.setTitle(Component.literal(this.target.pos().toShortString()).withStyle(ChatFormatting.GRAY));
 
-        var lines = new ArrayList<Text>();
+        var lines = new ArrayList<Component>();
 
         {
             var component = build.removeAndGetComponent(HoverDisplayBuilder.NAME);
             if (component != null) {
                 lines.add(
-                        Text.translatable("text.polydex.sidebar.target", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.GRAY, Formatting.BOLD)
+                        Component.translatable("text.polydex.sidebar.target", component.copy().setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))).withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD)
                 );
             }
         }
@@ -58,7 +57,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
             var component = build.removeAndGetComponent(HoverDisplayBuilder.MOD_SOURCE);
             if (component != null) {
                 lines.add(
-                        Text.translatable("text.polydex.sidebar.mod", component.copy().setStyle(Style.EMPTY.withColor(Formatting.YELLOW).withBold(false))).formatted(Formatting.DARK_GRAY)
+                        Component.translatable("text.polydex.sidebar.mod", component.copy().setStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW).withBold(false))).withStyle(ChatFormatting.DARK_GRAY)
                 );
             }
         }
@@ -68,10 +67,10 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
                 var component = build.removeAndGetComponent(HoverDisplayBuilder.INPUT);
                 if (component != null) {
                     shouldAdd = false;
-                    lines.add(Text.empty());
+                    lines.add(Component.empty());
 
                     lines.add(
-                            Text.translatable("text.polydex.sidebar.input", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.GREEN, Formatting.BOLD)
+                            Component.translatable("text.polydex.sidebar.input", component.copy().setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD)
                     );
                 }
             }
@@ -80,11 +79,11 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
                 if (component != null) {
                     if (shouldAdd) {
                         shouldAdd = false;
-                        lines.add(Text.empty());
+                        lines.add(Component.empty());
                     }
 
                     lines.add(
-                            Text.translatable("text.polydex.sidebar.fuel", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.RED, Formatting.BOLD)
+                            Component.translatable("text.polydex.sidebar.fuel", component.copy().setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))).withStyle(ChatFormatting.RED, ChatFormatting.BOLD)
                     );
                 }
             }
@@ -92,11 +91,11 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
                 var component = build.removeAndGetComponent(HoverDisplayBuilder.OUTPUT);
                 if (component != null) {
                     if (shouldAdd) {
-                        lines.add(Text.empty());
+                        lines.add(Component.empty());
                     }
 
                     lines.add(
-                            Text.translatable("text.polydex.sidebar.output", component.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.BOLD, Formatting.DARK_GREEN)
+                            Component.translatable("text.polydex.sidebar.output", component.copy().setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN)
                     );
                 }
             }
@@ -107,15 +106,15 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
         {
             var out = build.getOutput();
             if (!out.isEmpty()) {
-                lines.add(Text.empty());
+                lines.add(Component.empty());
                 lines.addAll(out);
             }
         }
 
         if (progress != null) {
-            lines.add(Text.empty());
+            lines.add(Component.empty());
             lines.add(
-                    Text.translatable("text.polydex.sidebar.progress", progress.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE).withBold(false))).formatted(Formatting.GOLD, Formatting.BOLD)
+                    Component.translatable("text.polydex.sidebar.progress", progress.copy().setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
             );
         }
 

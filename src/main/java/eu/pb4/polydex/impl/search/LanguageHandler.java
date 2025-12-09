@@ -5,8 +5,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.DeprecatedLanguageData;
-import net.minecraft.util.Language;
+import net.minecraft.locale.DeprecatedTranslationsInfo;
+import net.minecraft.locale.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.server.translations.api.LocalizationTarget;
@@ -42,7 +42,7 @@ public record LanguageHandler(Map<String, String> assetLanguage, ServerLanguage 
         var cached = FabricLoader.getInstance().getGameDir().resolve(".polydex/runtime_cache/" + code +".json");
         if (Files.exists(cached)) {
             var map = new HashMap<String, String>();
-            Language.load(Files.newInputStream(cached), map::put);
+            Language.loadFromJson(Files.newInputStream(cached), map::put);
             return new LanguageHandler(map, ServerLanguage.getLanguage(code));
         }
 
@@ -52,8 +52,8 @@ public record LanguageHandler(Map<String, String> assetLanguage, ServerLanguage 
         }
 
         var map = new HashMap<String, String>();
-        Language.load(Files.newInputStream(VanillaLanguageDownloader.getPath(code)), map::put);
-        DeprecatedLanguageData.create().apply(map);
+        Language.loadFromJson(Files.newInputStream(VanillaLanguageDownloader.getPath(code)), map::put);
+        DeprecatedTranslationsInfo.loadFromDefaultResource().applyToMap(map);
         for (var mod : FabricLoader.getInstance().getAllMods()) {
             var modId = mod.getMetadata().getId();
             if (modId.equals("minecraft") || modId.equals("java") || modId.equals("fabric-loader")) {
@@ -67,7 +67,7 @@ public record LanguageHandler(Map<String, String> assetLanguage, ServerLanguage 
                         for (var x : namespaced.toList()) {
                             var langPath = x.resolve("lang/" + code + ".json");
                             if (Files.exists(langPath)) {
-                                Language.load(Files.newInputStream(langPath), map::put);
+                                Language.loadFromJson(Files.newInputStream(langPath), map::put);
                             }
                         }
                     }
@@ -93,7 +93,7 @@ public record LanguageHandler(Map<String, String> assetLanguage, ServerLanguage 
             return x;
         }
 
-        return Language.getInstance().get(key, fallback != null ? fallback : key);
+        return Language.getInstance().getOrDefault(key, fallback != null ? fallback : key);
     }
 
     static {

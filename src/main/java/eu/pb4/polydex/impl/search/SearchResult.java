@@ -2,11 +2,10 @@ package eu.pb4.polydex.impl.search;
 
 import eu.pb4.polydex.api.v1.recipe.PolydexEntry;
 import eu.pb4.polydex.impl.PolydexImpl;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.server.level.ServerPlayer;
 
 public record SearchResult(SearchQuery query, List<PolydexEntry> all, List<PolydexEntry> nonEmpty) {
     public static final SearchResult EMPTY = new SearchResult(SearchQuery.EMPTY, List.of(), List.of());
@@ -15,7 +14,7 @@ public record SearchResult(SearchQuery query, List<PolydexEntry> all, List<Polyd
         return new SearchResult(SearchQuery.EMPTY, PolydexImpl.ITEM_ENTRIES.all(), PolydexImpl.ITEM_ENTRIES.nonEmpty());
     }
 
-    public static CompletableFuture<SearchResult> getAsync(SearchQuery query, ServerPlayerEntity player) {
+    public static CompletableFuture<SearchResult> getAsync(SearchQuery query, ServerPlayer player) {
         if (query.isEmpty()) {
             return CompletableFuture.completedFuture(global());
         }
@@ -23,7 +22,7 @@ public record SearchResult(SearchQuery query, List<PolydexEntry> all, List<Polyd
         return CompletableFuture.supplyAsync(() -> get(query, player));
     }
 
-    public static SearchResult get(SearchQuery query, ServerPlayerEntity player) {
+    public static SearchResult get(SearchQuery query, ServerPlayer player) {
         if (!query.isEmpty()) {
             var all = new ArrayList<PolydexEntry>();
             var nonEmpty = new ArrayList<PolydexEntry>();

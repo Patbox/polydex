@@ -15,37 +15,35 @@ import eu.pb4.polydex.impl.book.ui.MainIndexGui;
 import eu.pb4.polydex.impl.book.ui.SearchGui;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import java.util.List;
 import java.util.Locale;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public class Commands {
-    public static final DynamicCommandExceptionType INVALID_ARGUMENT = new DynamicCommandExceptionType((x) -> Text.translatable("argument.enum.invalid", x));
+    public static final DynamicCommandExceptionType INVALID_ARGUMENT = new DynamicCommandExceptionType((x) -> Component.translatable("argument.enum.invalid", x));
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, net.minecraft.commands.Commands.CommandSelection environment) {
         dispatcher.register(literal("polydex")
                 .executes((ctx) -> Commands.openIndex(ctx, -1))
                 .then(literal("hover")
                         .requires(Permissions.require("polydex.display", 0).and((ctx) -> PolydexImpl.config.displayEnabled))
                         .then(literal("style")
-                                .then(argument("style", IdentifierArgumentType.identifier())
-                                        .suggests((context, builder) -> CommandSource.suggestIdentifiers(PolydexImpl.DISPLAYS.keySet(), builder))
+                                .then(argument("style", IdentifierArgument.id())
+                                        .suggests((context, builder) -> SharedSuggestionProvider.suggestResource(PolydexImpl.DISPLAYS.keySet(), builder))
                                         .executes(Commands::changeStyle)
                                 )
                         ).then(literal("information")
-                                .then(argument("component", IdentifierArgumentType.identifier())
-                                        .suggests((context, builder) -> CommandSource.suggestIdentifiers(HoverDisplayBuilder.ComponentType.getAllAllowedIds(), builder))
+                                .then(argument("component", IdentifierArgument.id())
+                                        .suggests((context, builder) -> SharedSuggestionProvider.suggestResource(HoverDisplayBuilder.ComponentType.getAllAllowedIds(), builder))
                                         .then(enumArgument("show", HoverDisplayBuilder.ComponentType.Visibility.values())
                                                 .executes(Commands::setComponent)
                                         )
@@ -74,7 +72,7 @@ public class Commands {
 
                 .then(literal("open_page")
                         .requires(Permissions.require("polydex.open_page", 0))
-                        .then(argument("page", IdentifierArgumentType.identifier())
+                        .then(argument("page", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.ID_TO_PAGE.keySet()) {
                                         if (id.toString().startsWith(builder.getRemaining()) || id.getPath().startsWith(builder.getRemaining())) {
@@ -89,7 +87,7 @@ public class Commands {
                 )
                 .then(literal("entry_usage")
                         .requires(Permissions.require("polydex.open_entry", 0))
-                        .then(argument("entry", IdentifierArgumentType.identifier())
+                        .then(argument("entry", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.ITEM_ENTRIES.nonEmptyById().keySet()) {
                                         if (id.toString().startsWith(builder.getRemaining()) || id.getPath().startsWith(builder.getRemaining())) {
@@ -104,7 +102,7 @@ public class Commands {
                 )
                 .then(literal("entry_result")
                         .requires(Permissions.require("polydex.open_entry", 0))
-                        .then(argument("entry", IdentifierArgumentType.identifier())
+                        .then(argument("entry", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.ITEM_ENTRIES.nonEmptyById().keySet()) {
                                         if (id.toString().startsWith(builder.getRemaining()) || id.getPath().startsWith(builder.getRemaining())) {
@@ -120,7 +118,7 @@ public class Commands {
 
                 .then(literal("category")
                         .requires(Permissions.require("polydex.category", 0))
-                        .then(argument("category", IdentifierArgumentType.identifier())
+                        .then(argument("category", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.CATEGORY_BY_ID.keySet()) {
                                         if (id.toString().startsWith(builder.getRemaining()) || id.getPath().startsWith(builder.getRemaining())) {
@@ -142,7 +140,7 @@ public class Commands {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends ArgumentBuilder<ServerCommandSource, T>, G extends Enum<G>> T enumArgument(String name, G[] values) {
+    private static <T extends ArgumentBuilder<CommandSourceStack, T>, G extends Enum<G>> T enumArgument(String name, G[] values) {
         return (T) argument(name, StringArgumentType.word())
                 .suggests((context, builder) -> {
                     String string = builder.getRemaining().toLowerCase(Locale.ROOT);
@@ -165,57 +163,57 @@ public class Commands {
         }
     }
 
-    private static int openCategory(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var id = IdentifierArgumentType.getIdentifier(context, "category");
+    private static int openCategory(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var id = IdentifierArgument.getId(context, "category");
 
         var category = PolydexImpl.CATEGORY_BY_ID.get(id);
 
         if (category != null) {
-            PolydexPageUtils.openCategoryUi(context.getSource().getPlayerOrThrow(), category, null);
+            PolydexPageUtils.openCategoryUi(context.getSource().getPlayerOrException(), category, null);
         }
         return 0;
     }
 
-    private static int openPage(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var id = IdentifierArgumentType.getIdentifier(context, "page");
+    private static int openPage(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var id = IdentifierArgument.getId(context, "page");
 
         var page = PolydexImpl.ID_TO_PAGE.get(id);
 
         if (page != null) {
-            PolydexPageUtils.openCustomPageUi(context.getSource().getPlayerOrThrow(), Text.translatable("text.polydex.recipes_title_custom"), List.of(page), true, null);
+            PolydexPageUtils.openCustomPageUi(context.getSource().getPlayerOrException(), Component.translatable("text.polydex.recipes_title_custom"), List.of(page), true, null);
         }
         return 1;
     }
 
-    private static int openEntryResult(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var id = IdentifierArgumentType.getIdentifier(context, "entry");
+    private static int openEntryResult(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var id = IdentifierArgument.getId(context, "entry");
 
         var entry = PolydexImpl.ITEM_ENTRIES.nonEmptyById().get(id);
 
         if (entry != null) {
-            PolydexPageUtils.openRecipeListUi(context.getSource().getPlayerOrThrow(), entry, null);
+            PolydexPageUtils.openRecipeListUi(context.getSource().getPlayerOrException(), entry, null);
         }
         return 1;
     }
 
-    private static int openEntryUsages(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var id = IdentifierArgumentType.getIdentifier(context, "entry");
+    private static int openEntryUsages(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var id = IdentifierArgument.getId(context, "entry");
 
         var entry = PolydexImpl.ITEM_ENTRIES.nonEmptyById().get(id);
 
         if (entry != null) {
-            PolydexPageUtils.openUsagesListUi(context.getSource().getPlayerOrThrow(), entry, null);
+            PolydexPageUtils.openUsagesListUi(context.getSource().getPlayerOrException(), entry, null);
         }
         return 1;
     }
 
-    private static int reload(CommandContext<ServerCommandSource> context) {
-        PolydexImpl.config = PolydexConfigImpl.loadOrCreateConfig(context.getSource().getRegistryManager());
-        context.getSource().sendFeedback(() -> Text.translatable("text.polydex.config_reloaded"), false);
+    private static int reload(CommandContext<CommandSourceStack> context) {
+        PolydexImpl.config = PolydexConfigImpl.loadOrCreateConfig(context.getSource().registryAccess());
+        context.getSource().sendSuccess(() -> Component.translatable("text.polydex.config_reloaded"), false);
         return 1;
     }
 
-    private static int openIndex(CommandContext<ServerCommandSource> context, int page) throws CommandSyntaxException {
+    private static int openIndex(CommandContext<CommandSourceStack> context, int page) throws CommandSyntaxException {
         try {
             new MainIndexGui(context.getSource().getPlayer(), page).open();
         } catch (Throwable e) {
@@ -225,9 +223,9 @@ public class Commands {
         return 1;
     }
 
-    private static int openSearch(CommandContext<ServerCommandSource> context, String query) throws CommandSyntaxException {
+    private static int openSearch(CommandContext<CommandSourceStack> context, String query) throws CommandSyntaxException {
         try {
-            new SearchGui(context.getSource().getPlayerOrThrow(), query, null);
+            new SearchGui(context.getSource().getPlayerOrException(), query, null);
         } catch (Throwable e) {
             e.printStackTrace();
             throw e;
@@ -235,46 +233,46 @@ public class Commands {
         return 1;
     }
 
-    private static int about(CommandContext<ServerCommandSource> context) {
-        for (var text : context.getSource().getEntity() instanceof ServerPlayerEntity ? GenericModInfo.getAboutFull() : GenericModInfo.getAboutConsole()) {
-            context.getSource().sendFeedback(() -> text, false);
+    private static int about(CommandContext<CommandSourceStack> context) {
+        for (var text : context.getSource().getEntity() instanceof ServerPlayer ? GenericModInfo.getAboutFull() : GenericModInfo.getAboutConsole()) {
+            context.getSource().sendSuccess(() -> text, false);
         }
 
         return 1;
     }
 
-    private static int changeStyle(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var id = IdentifierArgumentType.getIdentifier(context, "style");
+    private static int changeStyle(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var id = IdentifierArgument.getId(context, "style");
 
         if (PolydexImpl.DISPLAYS.containsKey(id)) {
             HoverDisplay.set(context.getSource().getPlayer(), id);
-            context.getSource().sendFeedback(() -> Text.translatable("text.polydex.changed_style", id.toString()), false);
+            context.getSource().sendSuccess(() -> Component.translatable("text.polydex.changed_style", id.toString()), false);
             return 1;
         } else {
-            context.getSource().sendFeedback(() -> Text.translatable("text.polydex.invalid_style", id.toString()).formatted(Formatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.translatable("text.polydex.invalid_style", id.toString()).withStyle(ChatFormatting.RED), false);
             return 0;
         }
     }
 
-    private static int setComponent(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var id = IdentifierArgumentType.getIdentifier(context, "component");
+    private static int setComponent(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var id = IdentifierArgument.getId(context, "component");
         var value = getEnum(context, "show", HoverDisplayBuilder.ComponentType.Visibility.class);
 
         if (HoverDisplayBuilder.ComponentType.getAllAllowedIds().contains(id)) {
-            PolydexTargetImpl.get(context.getSource().getPlayerOrThrow()).settings().setComponentVisible(id, value);
-            context.getSource().sendFeedback(() -> Text.translatable("text.polydex.changed_component_visibility", id.toString(), value.name().toLowerCase(Locale.ROOT)), false);
+            PolydexTargetImpl.get(context.getSource().getPlayerOrException()).settings().setComponentVisible(id, value);
+            context.getSource().sendSuccess(() -> Component.translatable("text.polydex.changed_component_visibility", id.toString(), value.name().toLowerCase(Locale.ROOT)), false);
             return 1;
         } else {
-            context.getSource().sendFeedback(() -> Text.translatable("text.polydex.invalid_component_type", id.toString()).formatted(Formatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.translatable("text.polydex.invalid_component_type", id.toString()).withStyle(ChatFormatting.RED), false);
             return 0;
         }
     }
 
-    private static int setDisplayMode(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int setDisplayMode(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var value = getEnum(context, "type", HoverSettings.DisplayMode.class);
 
-        PolydexTargetImpl.get(context.getSource().getPlayerOrThrow()).settings().setDisplayMode(value);
-        context.getSource().sendFeedback(() -> Text.translatable("text.polydex.changed_display_mode", value.name().toLowerCase(Locale.ROOT)), false);
+        PolydexTargetImpl.get(context.getSource().getPlayerOrException()).settings().setDisplayMode(value);
+        context.getSource().sendSuccess(() -> Component.translatable("text.polydex.changed_display_mode", value.name().toLowerCase(Locale.ROOT)), false);
         return 1;
 
     }

@@ -1,13 +1,13 @@
 package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.book.PolydexIngredientImpl;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public interface PolydexIngredient<T> {
     List<PolydexStack<T>> asStacks();

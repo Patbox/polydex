@@ -59,10 +59,10 @@ public class VanillaLanguageDownloader {
             try {
                 langInfo = gson.fromJson(Files.readString(LANG_INFO_PATH), LangInfo.class);
 
-                if (langInfo.version.equals(SharedConstants.getGameVersion().id())) {
+                if (langInfo.version.equals(SharedConstants.getCurrentVersion().id())) {
                     return true;
                 }
-                langInfo.version = SharedConstants.getGameVersion().id();
+                langInfo.version = SharedConstants.getCurrentVersion().id();
             } catch (Throwable ignored) {}
         }
         Files.createDirectories(LANG_STORAGE_PATH);
@@ -74,7 +74,7 @@ public class VanillaLanguageDownloader {
                             URI.create("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
                     ).build(), HttpResponse.BodyHandlers.ofString()).body(), VersionManifest.class);
 
-            var mcVer = SharedConstants.getGameVersion().id();
+            var mcVer = SharedConstants.getCurrentVersion().id();
 
             var version = manifest.versions.stream().filter(x -> x.id.equals(mcVer)).findFirst();
             if (version.isEmpty()) {
@@ -107,7 +107,7 @@ public class VanillaLanguageDownloader {
             var packMcMetaHash = assetIndex.objects.get("pack.mcmeta").hash;
             var file = gson.fromJson(client.send(HttpRequest.newBuilder().uri(
                     URI.create("https://resources.download.minecraft.net/" +  packMcMetaHash.substring(0, 2) + "/" + packMcMetaHash)
-            ).build(), HttpResponse.BodyHandlers.ofString()).body(), PackMcMeta.class);
+            ).build(), HttpResponse.BodyHandlers.ofString()).body(), eu.pb4.polydex.impl.search.VanillaLanguageDownloader.PackMcMeta.class);
 
             if (file.language.isEmpty()) {
                 return false;
@@ -132,7 +132,7 @@ public class VanillaLanguageDownloader {
     }
 
     private static class LangInfo {
-        public String version = SharedConstants.getGameVersion().id();
+        public String version = SharedConstants.getCurrentVersion().id();
         public String assetIndexHash = "";
         public String versionHash = "";
         public Map<String, String> langHash = new HashMap<>();

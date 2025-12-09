@@ -1,13 +1,12 @@
 package eu.pb4.polydex.api.v1.recipe;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -16,27 +15,27 @@ import java.util.List;
 public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements PolydexPage {
     protected final T recipe;
     private final Identifier identifier;
-    protected final RegistryKey<Recipe<?>> recipeId;
+    protected final ResourceKey<Recipe<?>> recipeId;
     private final List<PolydexIngredient<?>> ingredients;
 
-    public AbstractRecipePolydexPage(RecipeEntry<T> recipe) {
+    public AbstractRecipePolydexPage(RecipeHolder<T> recipe) {
         this.recipe = recipe.value();
         this.recipeId = recipe.id();
-        this.identifier = PolydexPageUtils.identifierFromRecipe(recipe.id().getValue());
+        this.identifier = PolydexPageUtils.identifierFromRecipe(recipe.id().identifier());
         //noinspection unchecked
-        this.ingredients = (List<PolydexIngredient<?>>) (Object) recipe.value().getIngredientPlacement().getIngredients().stream().map(PolydexIngredient::of).toList();
+        this.ingredients = (List<PolydexIngredient<?>>) (Object) recipe.value().placementInfo().ingredients().stream().map(PolydexIngredient::of).toList();
     }
 
     public abstract ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server);
 
     @Override
-    public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayerEntity player) {
-        return getOutput(entry, player.getEntityWorld().getServer());
+    public ItemStack entryIcon(@Nullable PolydexEntry entry, ServerPlayer player) {
+        return getOutput(entry, player.level().getServer());
     }
 
     @Override
     public String getGroup() {
-        return this.recipe.getGroup();
+        return this.recipe.group();
     }
 
     @Override

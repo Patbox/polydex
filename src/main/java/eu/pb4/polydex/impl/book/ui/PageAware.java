@@ -1,9 +1,6 @@
 package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 
 public interface PageAware {
     default void nextPage() {

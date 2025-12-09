@@ -1,12 +1,11 @@
 package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.display.SlotDisplay;
-
 import java.util.Optional;
 import java.util.function.Consumer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public interface PageBuilder {
     void set(int x, int y, ItemStack stack);

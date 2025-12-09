@@ -9,14 +9,14 @@ import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 
 public class PageViewerGui extends ExtendedGui implements PageAware {
     public static final int PAGE_SIZE = 9 * 5;
@@ -31,8 +31,8 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
     private final IconGetter iconGetter;
     protected int page = 0;
 
-    public PageViewerGui(ServerPlayerEntity player, Text title, @Nullable PolydexEntry entry, List<PolydexPage> pages, IconGetter iconGetter, @Nullable Runnable closeCallback) {
-        super(ScreenHandlerType.GENERIC_9X6, player, true);
+    public PageViewerGui(ServerPlayer player, Component title, @Nullable PolydexEntry entry, List<PolydexPage> pages, IconGetter iconGetter, @Nullable Runnable closeCallback) {
+        super(MenuType.GENERIC_9x6, player, true);
         this.closeCallback = closeCallback;
         this.iconGetter = iconGetter;
         this.displayLayer = new LayerBuilder(player);
@@ -50,19 +50,19 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
         this.open();
     }
 
-    public static void openCustom(ServerPlayerEntity player, Text title, List<PolydexPage> pages, boolean useTypeIcon, @Nullable Runnable closeCallback) {
+    public static void openCustom(ServerPlayer player, Component title, List<PolydexPage> pages, boolean useTypeIcon, @Nullable Runnable closeCallback) {
         new PageViewerGui(player, title, null, pages, useTypeIcon ? PolydexPage::typeIcon : PolydexPage::entryIcon, closeCallback);
     }
 
-    public static void openCategory(ServerPlayerEntity player, PolydexCategory category, List<PolydexPage> pages, @Nullable Runnable closeCallback) {
-        var title = Text.translatable("text.polydex.recipes_title_category", category.name());
+    public static void openCategory(ServerPlayer player, PolydexCategory category, List<PolydexPage> pages, @Nullable Runnable closeCallback) {
+        var title = Component.translatable("text.polydex.recipes_title_category", category.name());
         new PageViewerGui(player, title, null, pages, PolydexPage::entryIcon, closeCallback);
     }
 
-    public static void openEntry(ServerPlayerEntity player, PolydexEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
+    public static void openEntry(ServerPlayer player, PolydexEntry entry, boolean ingredients, @Nullable Runnable closeCallback) {
         PlayerInterface.addViewed(player, entry.identifier());
         var pages = ingredients ? entry.getVisibleIngredientPages(player) : entry.getVisiblePages(player);
-        var title = Text.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", entry.stack().getName());
+        var title = Component.translatable(ingredients ? "text.polydex.recipes_title_input" : "text.polydex.recipes_title_output", entry.stack().getName());
         new PageViewerGui(player, title, entry, pages, ingredients ? PolydexPage::entryIcon : PolydexPage::typeIcon, closeCallback);
     }
 
@@ -129,7 +129,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
 
     @FunctionalInterface
     public interface IconGetter {
-        ItemStack getIcon(PolydexPage polydexPage, @Nullable PolydexEntry entry, ServerPlayerEntity player);
+        ItemStack getIcon(PolydexPage polydexPage, @Nullable PolydexEntry entry, ServerPlayer player);
     }
 
     public record GroupedPages(String group, List<PolydexPage> pages, int index) {

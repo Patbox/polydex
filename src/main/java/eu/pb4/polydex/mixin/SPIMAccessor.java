@@ -1,33 +1,33 @@
 package eu.pb4.polydex.mixin;
 
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayerGameMode;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ServerPlayerInteractionManager.class)
+@Mixin(ServerPlayerGameMode.class)
 public interface SPIMAccessor {
     @Accessor
-    boolean isMining();
+    boolean isIsDestroyingBlock();
 
     @Accessor
-    boolean getFailedToMine();
+    boolean getHasDelayedDestroy();
 
     @Accessor
-    int getStartMiningTime();
+    int getDestroyProgressStart();
 
     @Accessor
-    int getFailedStartMiningTime();
+    int getDelayedTickStart();
 
     @Accessor
-    BlockPos getMiningPos();
+    BlockPos getDestroyPos();
 
     @Accessor
-    BlockPos getFailedMiningPos();
+    BlockPos getDelayedDestroyPos();
 
     @Accessor
-    int getTickCounter();
+    int getGameTicks();
 
     @Accessor
-    int getBlockBreakingProgress();
+    int getLastSentState();
 }

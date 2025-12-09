@@ -3,16 +3,15 @@ package eu.pb4.polydex.impl.search;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-
 import java.util.*;
 import java.util.stream.Collectors;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.Tuple;
 
 public record SearchQuery(String input, Set<QueryValue<String>> namespaces,
-                          Set<QueryValue<Pair<String, String>>> tags, Set<QueryValue<String>> words) {
+                          Set<QueryValue<Tuple<String, String>>> tags, Set<QueryValue<String>> words) {
 
 
     public static final SearchQuery EMPTY = new SearchQuery("", Set.of(), Set.of(), Set.of());
@@ -56,9 +55,9 @@ public record SearchQuery(String input, Set<QueryValue<String>> namespaces,
             } else if (curr == '#') {
                 try {
                     var x = parser.getCursor();
-                    var id = Identifier.fromCommandInput(parser);
+                    var id = Identifier.read(parser);
                     var namespace = input.substring(x, parser.getCursor()).contains(":") ? id.getNamespace() : "";
-                    query.tags.add(new QueryValue<>(new Pair<>(namespace, id.getPath()), value));
+                    query.tags.add(new QueryValue<>(new Tuple<>(namespace, id.getPath()), value));
                 } catch (Throwable e) {
                 }
             } else {
@@ -84,7 +83,7 @@ public record SearchQuery(String input, Set<QueryValue<String>> namespaces,
         return query;
     }
 
-    public boolean test(PolydexStack<?> stack, ServerPlayerEntity player) {
+    public boolean test(PolydexStack<?> stack, ServerPlayer player) {
         if (!this.namespaces.isEmpty()) {
             var id = stack.getId();
             if (id == null) {
@@ -104,14 +103,14 @@ public record SearchQuery(String input, Set<QueryValue<String>> namespaces,
         }
 
         if (!this.tags.isEmpty()) {
-            var tags = stack.streamTags().map(TagKey::id).collect(Collectors.toSet());
+            var tags = stack.streamTags().map(TagKey::location).collect(Collectors.toSet());
             if (tags.isEmpty()) {
                 return false;
             }
             for (var x : this.tags) {
                 var match = false;
                 for (var y : tags) {
-                    if ((y.getNamespace().contains(x.searched.getLeft()) && y.getPath().contains(x.searched.getRight())) == x.value) {
+                    if ((y.getNamespace().contains(x.searched.getA()) && y.getPath().contains(x.searched.getB())) == x.value) {
                         match = true;
                         break;
                     }

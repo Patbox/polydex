@@ -11,33 +11,28 @@ import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.layered.Layer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootContextTypes;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.display.SlotDisplay;
-import net.minecraft.recipe.display.SlotDisplayContexts;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.context.ContextParameterMap;
-import net.minecraft.util.context.ContextType;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public class LayerBuilder extends Layer implements PageBuilder {
-    private final ServerPlayerEntity player;
-    private final ContextParameterMap context;
+    private final ServerPlayer player;
+    private final ContextMap context;
 
-    public LayerBuilder(ServerPlayerEntity player) {
+    public LayerBuilder(ServerPlayer player) {
         super(5, 9);
         this.player = player;
-        this.context = new ContextParameterMap.Builder()
-                .add(SlotDisplayContexts.FUEL_REGISTRY, player.getEntityWorld().getFuelRegistry())
-                .add(SlotDisplayContexts.REGISTRIES, player.getEntityWorld().getRegistryManager())
-                .build(SlotDisplayContexts.CONTEXT_TYPE);
+        this.context = new ContextMap.Builder()
+                .withParameter(SlotDisplayContext.FUEL_VALUES, player.level().fuelValues())
+                .withParameter(SlotDisplayContext.REGISTRIES, player.level().registryAccess())
+                .create(SlotDisplayContext.CONTEXT);
     }
 
     @Override
@@ -52,7 +47,7 @@ public class LayerBuilder extends Layer implements PageBuilder {
 
     @Override
     public void set(int x, int y, SlotDisplay display) {
-        this.set(x, y, display.getStacks(context).toArray(ItemStack[]::new));
+        this.set(x, y, display.resolveForStacks(context).toArray(ItemStack[]::new));
     }
 
     private int index(int x, int y) {
@@ -71,7 +66,7 @@ public class LayerBuilder extends Layer implements PageBuilder {
 
     @Override
     public void setOutput(int x, int y, SlotDisplay display) {
-        this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(display.getStacks(context)));
+        this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(display.resolveForStacks(context)));
     }
 
     @Override
@@ -91,7 +86,7 @@ public class LayerBuilder extends Layer implements PageBuilder {
 
     @Override
     public void setIngredient(int x, int y, SlotDisplay display) {
-        this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(display.getStacks(context)));
+        this.setSlot(index(x, y), PolydexImplUtils.getIngredientDisplay(display.resolveForStacks(context)));
     }
 
     @Override

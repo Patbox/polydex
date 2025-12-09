@@ -8,18 +8,17 @@ import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.layered.LayerView;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.LodestoneTracker;
 
 
 public class MainIndexGui extends ExtendedGui {
@@ -28,10 +27,10 @@ public class MainIndexGui extends ExtendedGui {
     private final LayerView indexLayerView;
     private final MainIndexState state;
 
-    public MainIndexGui(ServerPlayerEntity player, int pageItem) {
-        super(ScreenHandlerType.GENERIC_9X6, player, true);
+    public MainIndexGui(ServerPlayer player, int pageItem) {
+        super(MenuType.GENERIC_9x6, player, true);
 
-        this.state = ((PlayerInterface) player.networkHandler).polydex_mainIndexState();
+        this.state = ((PlayerInterface) player.connection).polydex_mainIndexState();
         if (pageItem != -1) {
             this.state.reset();
             this.state.page = pageItem;
@@ -45,7 +44,7 @@ public class MainIndexGui extends ExtendedGui {
         this.indexLayerView.setZIndex(0);
 
         this.setOverlayTexture(InternalPageTextures.MAIN_INVENTORY);
-        this.setText(Text.translatable("text.polydex.index_title"));
+        this.setText(Component.translatable("text.polydex.index_title"));
     }
 
     @Override
@@ -109,7 +108,7 @@ public class MainIndexGui extends ExtendedGui {
                 case 0 -> new GuiElementBuilder(this.state.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
                         .noDefaults()
                         .hideDefaultTooltip()
-                        .setName(Text.translatable("text.polydex.button.see_" + (this.state.showAll ? "limited" : "everything")))
+                        .setName(Component.translatable("text.polydex.button.see_" + (this.state.showAll ? "limited" : "everything")))
                         .setCallback((x, y, z) -> {
                             this.state.showAll = !this.state.showAll;
                             this.setPage(this.getPage());
@@ -118,7 +117,7 @@ public class MainIndexGui extends ExtendedGui {
                 case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .noDefaults()
                         .hideDefaultTooltip()
-                        .setName(Text.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.state.type.name().toLowerCase(Locale.ROOT)))
+                        .setName(Component.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.state.type.name().toLowerCase(Locale.ROOT)))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
                             MainIndexGui.this.indexLayer.state.type = MainIndexGui.this.indexLayer.state.type.getNext();
@@ -136,10 +135,10 @@ public class MainIndexGui extends ExtendedGui {
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
                 case 7 -> PolydexImpl.config.enableSearch ? new GuiElementBuilder(Items.COMPASS)
                         .noDefaults()
-                        .setComponent(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.empty(), true))
+                        .setComponent(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.empty(), true))
                         .glow(false)
                         .hideDefaultTooltip()
-                        .setName(Text.translatable("text.polydex.button.search"))
+                        .setName(Component.translatable("text.polydex.button.search"))
                         .setCallback((x, y, z) -> {
                             GuiUtils.playClickSound(this.player);
                             new SearchGui(this.player, "", MainIndexGui.this::open);
@@ -169,14 +168,14 @@ public class MainIndexGui extends ExtendedGui {
         protected int getEntryCount() {
             return switch (this.state.type) {
                 case INVENTORY -> 1;
-                case LAST_VIEW -> ((PlayerInterface) player.networkHandler).polydex_lastViewed().size();
+                case LAST_VIEW -> ((PlayerInterface) player.connection).polydex_lastViewed().size();
                 default -> this.state.type.entries.size() + 1;
             };
         }
 
         @Override
         public int getPageAmount() {
-            return this.state.type == Type.INVENTORY ? 1 : MathHelper.ceil(((double) getEntryCount()) / this.pageSize);
+            return this.state.type == Type.INVENTORY ? 1 : Mth.ceil(((double) getEntryCount()) / this.pageSize);
         }
 
         @Override
@@ -185,12 +184,12 @@ public class MainIndexGui extends ExtendedGui {
                 var inventory = this.player.getInventory();
                 for (var i = 0; i < 3; ++i) {
                     for (var j = 0; j < 9; ++j) {
-                        this.setSlot(i * 9 + j, createDirect(inventory.getStack(j + (i + 1) * 9)));
+                        this.setSlot(i * 9 + j, createDirect(inventory.getItem(j + (i + 1) * 9)));
                     }
                 }
 
                 for (var i = 0; i < 9; ++i) {
-                    this.setSlot(i + 3 * 9, createDirect(inventory.getStack(i)));
+                    this.setSlot(i + 3 * 9, createDirect(inventory.getItem(i)));
                 }
             } else {
                 super.updateDisplay();
@@ -222,7 +221,7 @@ public class MainIndexGui extends ExtendedGui {
         protected GuiElement getElement(int id) {
             return switch (this.state.type) {
                 case LAST_VIEW -> {
-                    var list = ((PlayerInterface) player.networkHandler).polydex_lastViewed();
+                    var list = ((PlayerInterface) player.connection).polydex_lastViewed();
                     if (id >= list.size()) {
                         yield GuiElement.EMPTY;
                     }
@@ -240,7 +239,7 @@ public class MainIndexGui extends ExtendedGui {
         private GuiElement getElementTypeSelector(int id) {
             if (id == 0) {
                 var builder = new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
-                        .setName(Text.translatable("text.polydex.display_all_items"))
+                        .setName(Component.translatable("text.polydex.display_all_items"))
                         .noDefaults()
                         .hideDefaultTooltip()
                         .setCallback((x, y, z) -> {

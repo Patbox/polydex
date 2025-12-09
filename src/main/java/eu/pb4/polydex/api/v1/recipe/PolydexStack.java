@@ -2,14 +2,14 @@ package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.book.PolydexItemStackImpl;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.minecraft.component.ComponentType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -30,26 +30,26 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
         return Optional.of(this);
     }
 
-    ItemStack toItemStack(ServerPlayerEntity player);
-    default ItemStack toDisplayItemStack(ServerPlayerEntity player) {
+    ItemStack toItemStack(ServerPlayer player);
+    default ItemStack toDisplayItemStack(ServerPlayer player) {
         return toItemStack(player);
     }
-    default ItemStack toTypeDisplayItemStack(ServerPlayerEntity player) {
+    default ItemStack toTypeDisplayItemStack(ServerPlayer player) {
         return toItemStack(player);
     }
 
     T getBacking();
 
     @Nullable
-    default <E> E get(ComponentType<E> type) {
+    default <E> E get(DataComponentType<E> type) {
         return null;
     }
 
-    default <E> E getOrDefault(ComponentType<E> type, E fallback) {
+    default <E> E getOrDefault(DataComponentType<E> type, E fallback) {
         return fallback;
     }
 
-    default boolean contains(ComponentType<?> type) {
+    default boolean contains(DataComponentType<?> type) {
         return false;
     }
 
@@ -59,7 +59,7 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
     }
 
     static PolydexStack<ItemStack> of(Item item) {
-        return of(item.getDefaultStack(), 1 ,1);
+        return of(item.getDefaultInstance(), 1 ,1);
     }
 
     static PolydexStack<ItemStack> of(ItemStack stack) {
@@ -88,13 +88,13 @@ public interface PolydexStack<T> extends PolydexIngredient<T> {
 
     boolean isEmpty();
 
-    Text getName();
+    Component getName();
 
     default int getSourceHashCode() {
         return this.getBacking().hashCode();
     };
 
-    default List<Text> getTexts(ServerPlayerEntity player) {
+    default List<Component> getTexts(ServerPlayer player) {
         return List.of(getName());
     }
 

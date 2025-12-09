@@ -1,18 +1,18 @@
 package eu.pb4.polydex.api.v1.hover;
 
 import eu.pb4.polydex.impl.PlayerInterface;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.NonExtendable
 public interface PolydexTarget {
-    ServerPlayerEntity player();
+    ServerPlayer player();
     @Nullable
     HitResult hitResult();
     BlockState blockState();
@@ -30,7 +30,7 @@ public interface PolydexTarget {
 
     HoverSettings settings();
 
-    static PolydexTarget get(ServerPlayerEntity player) {
-        return ((PlayerInterface) player.networkHandler).polydex_getTarget();
+    static PolydexTarget get(ServerPlayer player) {
+        return ((PlayerInterface) player.connection).polydex_getTarget();
     }
 }

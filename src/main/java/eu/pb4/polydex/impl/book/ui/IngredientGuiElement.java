@@ -7,12 +7,11 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.SlotActionType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.world.item.ItemStack;
 
 public class IngredientGuiElement implements GuiElementInterface, GuiElementInterface.ClickCallback {
     protected final PolydexStack<?>[] items;
@@ -58,7 +57,7 @@ public class IngredientGuiElement implements GuiElementInterface, GuiElementInte
     }
 
     @Override
-    public void click(int i, ClickType clickType, SlotActionType slotActionType, SlotGuiInterface slotGuiInterface) {
+    public void click(int i, ClickType clickType, net.minecraft.world.inventory.ClickType slotActionType, SlotGuiInterface slotGuiInterface) {
         boolean sound = false;
         if (clickType.isLeft) {
             sound = PolydexPageUtils.openRecipeListUi(slotGuiInterface.getPlayer(), this.items[this.frame], slotGuiInterface::open);

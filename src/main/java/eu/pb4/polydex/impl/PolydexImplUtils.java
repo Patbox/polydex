@@ -6,23 +6,23 @@ import eu.pb4.polydex.impl.book.ui.IngredientGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public class PolydexImplUtils {
-    public static final Text DEFAULT_SEPARATOR = Text.literal(" | ").formatted(Formatting.DARK_GRAY);
-    public static final Text SPACE_SEPARATOR = Text.literal(" ");
+    public static final Component DEFAULT_SEPARATOR = Component.literal(" | ").withStyle(ChatFormatting.DARK_GRAY);
+    public static final Component SPACE_SEPARATOR = Component.literal(" ");
 
-    public static Text mergeText(Collection<Text> texts, Text separator) {
-        var out = Text.empty();
+    public static Component mergeText(Collection<Component> texts, Component separator) {
+        var out = Component.empty();
 
         var iterator = texts.iterator();
 
@@ -37,8 +37,8 @@ public class PolydexImplUtils {
         return out;
     }
 
-    public static Text mergeText(Collection<Text> texts) {
-        var out = Text.empty();
+    public static Component mergeText(Collection<Component> texts) {
+        var out = Component.empty();
 
         var iterator = texts.iterator();
 
@@ -80,7 +80,7 @@ public class PolydexImplUtils {
         if (ingredient == null) {
             return List.of();
         }
-        return ingredient.getMatchingItems().map(ItemStack::new).toList();
+        return ingredient.items().map(ItemStack::new).toList();
     }
 
 
