@@ -48,6 +48,7 @@ public class MainIndexGui extends ExtendedGui {
                         ? InternalPageTextures.MAIN_INVENTORY
                         : InternalPageTextures.MAIN
         );
+        this.setText(Component.translatable("text.polydex.index_title"));
     }
 
     @Override
