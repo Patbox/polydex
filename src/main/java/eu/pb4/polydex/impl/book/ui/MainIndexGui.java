@@ -43,8 +43,11 @@ public class MainIndexGui extends ExtendedGui {
         this.indexLayerView = this.addLayer(this.indexLayer, 0, 6);
         this.indexLayerView.setZIndex(0);
 
-        this.setOverlayTexture(InternalPageTextures.MAIN_INVENTORY);
-        this.setText(Component.translatable("text.polydex.index_title"));
+        this.setOverlayTexture(
+                this.indexLayer.state.type == NamespaceLayer.Type.INVENTORY
+                        ? InternalPageTextures.MAIN_INVENTORY
+                        : InternalPageTextures.MAIN
+        );
     }
 
     @Override

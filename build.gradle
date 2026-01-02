@@ -18,7 +18,7 @@ loom {
 
 repositories {
 	maven { url = "https://maven.fabricmc.net/" }
-	maven { url = "https://maven.nucleoid.xyz/" }
+	maven { url = "https://maven.nucleoid.xyz/releases/" }
 	maven { url = 'https://jitpack.io' }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	maven { url 'https://maven.blamejared.com' }
