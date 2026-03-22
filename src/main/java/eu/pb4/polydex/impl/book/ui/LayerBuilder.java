@@ -9,7 +9,6 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.layered.Layer;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,7 @@ public class LayerBuilder extends Layer implements PageBuilder {
 
     @Override
     public void set(int x, int y, ItemStack... stack) {
-        this.setSlot(index(x, y), new AnimatedGuiElement(stack, 20, false, GuiElementInterface.EMPTY_CALLBACK));
+        this.setSlot(index(x, y), new AnimatedGuiElement(stack, 20, false, GuiElement.EMPTY_CALLBACK));
     }
 
     @Override

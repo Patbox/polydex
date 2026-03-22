@@ -31,6 +31,7 @@ public class TransmuteRecipePage extends AbstractCraftingRecipePage<TransmuteRec
 
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
-        return ((TransmuteRecipeAccessor) this.recipe).getResult().apply(entry != null && entry.stack().getBacking() instanceof ItemStack stack ? stack : Items.STONE.getDefaultInstance());
+        return TransmuteRecipe.createWithOriginalComponents(((TransmuteRecipeAccessor) this.recipe).getResult(),
+                        entry != null && entry.stack().getBacking() instanceof ItemStack stack ? stack : Items.STONE.getDefaultInstance());
     }
 }

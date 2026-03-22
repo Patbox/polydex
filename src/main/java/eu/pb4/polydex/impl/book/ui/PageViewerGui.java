@@ -8,7 +8,7 @@ import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.AnimatedGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.SimpleGuiElement;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -103,7 +103,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
         var pageEntry = this.pages.get(this.page);
         var t = pageEntry.texture(this.getPlayer());
         this.setTexture(t);
-        this.displayLayer.clear(t != null ? filler() : GuiUtils.FILLER);
+        this.displayLayer.clear(t != null ? filler() : GuiUtils.FILLER.build());
         pageEntry.createPage(this.entry, this.getPlayer(), this.displayLayer);
         this.setSlot(PAGE_SIZE, pageEntry.typeIcon(this.entry, this.getPlayer()));
         if (this.pages.size() > 1) {
@@ -181,7 +181,7 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
         }
 
         @Override
-        protected GuiElementInterface getElement(int id) {
+        protected GuiElement getElement(int id) {
             if (id < groupedPages.size()) {
                 var group = groupedPages.get(id);
 
@@ -190,12 +190,12 @@ public class PageViewerGui extends ExtendedGui implements PageAware {
                     list.add(iconGetter.getIcon(page, entry, player));
                 }
 
-                return new AnimatedGuiElement(list.toArray(new ItemStack[0]), 10, false, (x, type, z) -> {
+                return new AnimatedGuiElement(list.toArray(new ItemStack[0]), 10, false, (x, type, z, _) -> {
                     PageViewerGui.this.setPage(group.index);
                     GuiUtils.playClickSound(this.player);
                 });
             }
-            return GuiElement.EMPTY;
+            return SimpleGuiElement.EMPTY;
         }
     }
 }

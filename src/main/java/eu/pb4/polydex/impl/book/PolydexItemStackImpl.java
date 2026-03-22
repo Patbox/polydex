@@ -162,7 +162,7 @@ public class PolydexItemStackImpl implements PolydexStack<ItemStack> {
 
     public Stream<TagKey<?>> streamTags() {
         //noinspection unchecked
-        return (Stream<TagKey<?>>) (Object) this.stack.getItemHolder().tags();
+        return (Stream<TagKey<?>>) (Object) this.stack.typeHolder().tags();
     }
 
     @Override

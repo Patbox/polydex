@@ -59,6 +59,8 @@ public class PolydexConfigImpl {
     public boolean displayMiningProgress = true;
     public boolean displayEntity = true;
     public boolean displayEntityHealth = true;
+    @SerializedName(value = "display_true_mob_effects_icons")
+    public boolean displayTrueMobEffectIcons = false;
 
     public static class GlobalSettings implements HoverSettings {
         @SerializedName("display_type")
@@ -104,6 +106,10 @@ public class PolydexConfigImpl {
 
 
     public static PolydexConfigImpl loadOrCreateConfig(HolderLookup.Provider lookup) {
+        if (PolydexImpl.embeddedMode) {
+            return new PolydexConfigImpl();
+        }
+
         try {
             Gson GSON = new GsonBuilder()
                     .disableHtmlEscaping().setLenient().setPrettyPrinting()
@@ -134,6 +140,10 @@ public class PolydexConfigImpl {
     }
 
     public static void saveConfig(PolydexConfigImpl config, HolderLookup.Provider lookup) {
+        if (PolydexImpl.embeddedMode) {
+            return;
+        }
+
         File configFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "polydex.json");
         try {
             Gson GSON = new GsonBuilder()

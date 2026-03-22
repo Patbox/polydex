@@ -14,7 +14,6 @@ import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.impl.book.ui.MainIndexGui;
 import eu.pb4.polydex.impl.book.ui.SearchGui;
 import eu.pb4.polydex.impl.display.PolydexTargetImpl;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -22,9 +21,12 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionLevel;
+
 import java.util.List;
 import java.util.Locale;
 
+import static eu.pb4.polydex.impl.PolydexImpl.id;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -32,10 +34,14 @@ public class Commands {
     public static final DynamicCommandExceptionType INVALID_ARGUMENT = new DynamicCommandExceptionType((x) -> Component.translatable("argument.enum.invalid", x));
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, net.minecraft.commands.Commands.CommandSelection environment) {
+        if (PolydexImpl.embeddedMode) {
+            return;
+        }
+
         dispatcher.register(literal("polydex")
                 .executes((ctx) -> Commands.openIndex(ctx, -1))
                 .then(literal("hover")
-                        .requires(Permissions.require("polydex.display", 0).and((ctx) -> PolydexImpl.config.displayEnabled))
+                        .requires(FabricPermissionBridge.require(id("display"), PermissionLevel.ALL).and((ctx) -> PolydexImpl.config.displayEnabled))
                         .then(literal("style")
                                 .then(argument("style", IdentifierArgument.id())
                                         .suggests((context, builder) -> SharedSuggestionProvider.suggestResource(PolydexImpl.DISPLAYS.keySet(), builder))
@@ -56,14 +62,14 @@ public class Commands {
                 )
 
                 .then(literal("page")
-                        .requires(Permissions.require("polydex.page", 0))
+                        .requires(FabricPermissionBridge.require(id("page"), PermissionLevel.ALL))
                         .then(argument("number", IntegerArgumentType.integer(1))
                                 .executes((ctx) -> Commands.openIndex(ctx, (IntegerArgumentType.getInteger(ctx, "number") - 1)))
                         )
                 )
 
                 .then(literal("search")
-                        .requires(Permissions.require("polydex.search", 0).and(x -> PolydexImpl.config.enableSearch))
+                        .requires(FabricPermissionBridge.require(id("search"), PermissionLevel.ALL).and(x -> PolydexImpl.config.enableSearch))
                         .executes(ctx -> Commands.openSearch(ctx, ""))
                         .then(argument("query", StringArgumentType.greedyString())
                                 .executes(ctx -> Commands.openSearch(ctx, StringArgumentType.getString(ctx, "query"))))
@@ -71,7 +77,7 @@ public class Commands {
                 )
 
                 .then(literal("open_page")
-                        .requires(Permissions.require("polydex.open_page", 0))
+                        .requires(FabricPermissionBridge.require(id("open_page"), PermissionLevel.ALL))
                         .then(argument("page", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.ID_TO_PAGE.keySet()) {
@@ -86,7 +92,7 @@ public class Commands {
                         )
                 )
                 .then(literal("entry_usage")
-                        .requires(Permissions.require("polydex.open_entry", 0))
+                        .requires(FabricPermissionBridge.require(id("open_entry"), PermissionLevel.ALL))
                         .then(argument("entry", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.ITEM_ENTRIES.nonEmptyById().keySet()) {
@@ -101,7 +107,7 @@ public class Commands {
                         )
                 )
                 .then(literal("entry_result")
-                        .requires(Permissions.require("polydex.open_entry", 0))
+                        .requires(FabricPermissionBridge.require(id("open_entry"), PermissionLevel.ALL))
                         .then(argument("entry", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.ITEM_ENTRIES.nonEmptyById().keySet()) {
@@ -117,7 +123,7 @@ public class Commands {
                 )
 
                 .then(literal("category")
-                        .requires(Permissions.require("polydex.category", 0))
+                        .requires(FabricPermissionBridge.require(id("category"), PermissionLevel.ALL))
                         .then(argument("category", IdentifierArgument.id())
                                 .suggests((context, builder) -> {
                                     for (var id : PolydexImpl.CATEGORY_BY_ID.keySet()) {
@@ -132,7 +138,7 @@ public class Commands {
                         )
                 )
                 .then(literal("reload")
-                        .requires(Permissions.require("polydex.reload", 3))
+                        .requires(FabricPermissionBridge.require(id("reload"), PermissionLevel.ADMINS))
                         .executes(Commands::reload)
                 )
                 .then(literal("about").executes(Commands::about))

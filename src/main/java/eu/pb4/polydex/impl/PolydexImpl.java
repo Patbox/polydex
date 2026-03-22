@@ -17,14 +17,14 @@ import eu.pb4.polydex.impl.book.view.PotionRecipePage;
 import eu.pb4.polydex.impl.book.view.ToolUseOnBlockPage;
 import eu.pb4.polydex.impl.search.VanillaLanguageDownloader;
 import eu.pb4.polydex.mixin.*;
-import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
+import eu.pb4.polymer.core.api.item.PolymerCreativeModeTabUtils;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
@@ -35,8 +35,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.contents.objects.AtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -80,6 +83,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class PolydexImpl {
+    public static boolean embeddedMode = true;
+
     private static final boolean POLYMER_CORE_LOADED = FabricLoader.getInstance().isModLoaded("polymer-core");
     public static final NodeParser PARSER = NodeParser.builder().simplifiedTextFormat().quickText().staticPreParsing().build();
     public static final Map<Identifier, Function<PolydexTarget, HoverDisplay>> DISPLAYS = new HashMap<>();
@@ -117,9 +122,9 @@ public class PolydexImpl {
     public static final Map<Item, Function<ItemStack, @Nullable PolydexEntry>> ITEM_ENTRY_CREATOR = new HashMap<>();
     private static final Comparator<PolydexPage> PAGE_SORT = Comparator.<PolydexPage>comparingInt((x) -> -x.priority()).thenComparing(PolydexPage::sortingId).thenComparing(PolydexPage::identifier);
     private static final Map<String, Component> MOD_NAMES = new HashMap<>();
-    public static Codec<ItemStack> ITEM_STACK_CODEC = ItemStack.STRICT_CODEC;
+    public static Codec<ItemStack> ITEM_STACK_CODEC = ItemStack.OPTIONAL_CODEC;
     public static Codec<Component> TEXT = Codec.either(Codec.STRING, ComponentSerialization.CODEC)
-            .xmap(either -> either.map(x -> PARSER.parseText(x, ParserContext.of()), Function.identity()), Either::right);
+            .xmap(either -> either.map(x -> PARSER.parseComponent(x, ParserContext.of()), Function.identity()), Either::right);
     public static PolydexConfigImpl config = new PolydexConfigImpl();
     @Nullable
     private static CompletableFuture<Void> cacheBuilding = null;
@@ -195,8 +200,8 @@ public class PolydexImpl {
         }
 
         if (POLYMER_CORE_LOADED) {
-            for (var group : PolymerItemGroupUtils.REGISTRY) {
-                var data = new ItemGroupData(PolymerItemGroupUtils.getId(group), group, context.enabledFeatures());
+            for (var group : PolymerCreativeModeTabUtils.REGISTRY) {
+                var data = new ItemGroupData(PolymerCreativeModeTabUtils.getId(group), group, context.enabledFeatures());
                 ((CreativeModeTabAccessor) group).getDisplayItemsGenerator().accept(context, data);
                 var tmp = new ArrayList<>(data.stacks);
                 data.stacks.clear();
@@ -211,13 +216,13 @@ public class PolydexImpl {
     }
 
     public static void callItemGroupEvents(Identifier id, CreativeModeTab itemGroup, List<ItemStack> parentTabStacks, List<ItemStack> searchTabStacks, CreativeModeTab.ItemDisplayParameters context) {
-        FabricItemGroupEntries fabricCollector = new FabricItemGroupEntries(context, parentTabStacks, searchTabStacks);
+        var fabricCollector = new FabricCreativeModeTabOutput(context, parentTabStacks, searchTabStacks);
         try {
-            ItemGroupEvents.modifyEntriesEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, id)).invoker().modifyEntries(fabricCollector);
+            CreativeModeTabEvents.modifyOutputEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, id)).invoker().modifyOutput(fabricCollector);
         } catch (Throwable ignored) {}
 
         try {
-            ItemGroupEvents.MODIFY_ENTRIES_ALL.invoker().modifyEntries(itemGroup, fabricCollector);
+            CreativeModeTabEvents.MODIFY_OUTPUT_ALL.invoker().modifyOutput(itemGroup, fabricCollector);
         } catch (Throwable e) {
 
         }
@@ -462,11 +467,16 @@ public class PolydexImpl {
                     }
 
                     for (var effect : livingEntity.getActiveEffects()) {
-                        effects.add(Component.literal("⚗").setStyle(net.minecraft.network.chat.Style.EMPTY.withColor(effect.getEffect().value().getColor())));
+                        if (config.displayTrueMobEffectIcons) {
+                            effects.add(Component.object(new AtlasSprite(AtlasIds.GUI, effect.getEffect().unwrapKey().orElseThrow().identifier().withPrefix("mob_effect/")))
+                                    .setStyle(Style.EMPTY.withShadowColor(0)));
+                        } else {
+                            effects.add(Component.literal("⚗").setStyle(Style.EMPTY.withColor(effect.getEffect().value().getColor())));
+                        }
                     }
 
                     if (!effects.isEmpty()) {
-                        displayBuilder.setComponent(HoverDisplayBuilder.EFFECTS, PolydexImplUtils.mergeText(effects, PolydexImplUtils.SPACE_SEPARATOR));
+                        displayBuilder.setComponent(HoverDisplayBuilder.EFFECTS, PolydexImplUtils.mergeText(effects, config.displayTrueMobEffectIcons ? Component.empty() : PolydexImplUtils.SPACE_SEPARATOR));
                     }
                 }
             }
@@ -511,9 +521,9 @@ public class PolydexImpl {
             }
 
             if (config.displayAdditional && target.blockEntity() instanceof AbstractFurnaceBlockEntity furnace) {
-                displayBuilder.setComponent(HoverDisplayBuilder.INPUT, PolydexPageUtils.createText(furnace.getItem(0)));
-                displayBuilder.setComponent(HoverDisplayBuilder.FUEL, PolydexPageUtils.createText(furnace.getItem(1)));
-                displayBuilder.setComponent(HoverDisplayBuilder.OUTPUT, PolydexPageUtils.createText(furnace.getItem(2)));
+                displayBuilder.setComponent(HoverDisplayBuilder.INPUT, PolydexPageUtils.createCountedComponent(furnace.getItem(0)));
+                displayBuilder.setComponent(HoverDisplayBuilder.FUEL, PolydexPageUtils.createCountedComponent(furnace.getItem(1)));
+                displayBuilder.setComponent(HoverDisplayBuilder.OUTPUT, PolydexPageUtils.createCountedComponent(furnace.getItem(2)));
             }
 
             if (PolydexImpl.config.displayMiningProgress && target.isMining()) {
@@ -778,7 +788,7 @@ public class PolydexImpl {
                         var obj = val.getAsObject();
                         Component display;
                         if (obj.containsKey("name")) {
-                            display = PARSER.parseText(obj.get("name").getAsString(), ParserContext.of());
+                            display = PARSER.parseComponent(obj.get("name").getAsString(), ParserContext.of());
                         } else {
                             display = Component.literal(mod.getMetadata().getName());
                         }

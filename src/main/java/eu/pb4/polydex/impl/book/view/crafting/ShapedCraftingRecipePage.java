@@ -26,6 +26,6 @@ public final class ShapedCraftingRecipePage extends AbstractCraftingRecipePage<S
 
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
-        return ((ShapedRecipeAccessor) this.recipe).getResult().copy();
+        return ((ShapedRecipeAccessor) this.recipe).getResult().create();
     }
 }

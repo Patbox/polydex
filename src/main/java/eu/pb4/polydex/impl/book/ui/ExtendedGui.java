@@ -2,6 +2,7 @@ package eu.pb4.polydex.impl.book.ui;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.sgui.api.elements.SimpleGuiElement;
 import eu.pb4.sgui.api.gui.layered.LayeredGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -117,6 +118,6 @@ public class ExtendedGui extends LayeredGui {
     }
 
     public GuiElement filler() {
-        return PolymerResourcePackUtils.hasMainPack(this.getPlayer()) ? GuiElement.EMPTY : GuiUtils.FILLER;
+        return PolymerResourcePackUtils.hasMainPack(this.getPlayer()) ? SimpleGuiElement.EMPTY : GuiUtils.FILLER.build();
     }
 }

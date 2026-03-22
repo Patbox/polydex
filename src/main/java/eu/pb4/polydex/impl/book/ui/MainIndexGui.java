@@ -7,6 +7,7 @@ import eu.pb4.polydex.impl.PolydexImpl;
 import eu.pb4.polydex.impl.book.InternalPageTextures;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.elements.SimpleGuiElement;
 import eu.pb4.sgui.api.gui.layered.LayerView;
 import java.util.List;
 import java.util.Locale;
@@ -93,7 +94,7 @@ public class MainIndexGui extends ExtendedGui {
                 var item = this.state.entries.get(this.state.showAll).get(id);
 
                 return GuiElementBuilder.from(item.stack().toDisplayItemStack(player))
-                        .setCallback((x, type, z) -> {
+                        .setCallback((type) -> {
                             if ((type.isLeft && item.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && item.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
                                 MainIndexGui.this.close(true);
                                 PageViewerGui.openEntry (player, item, type.isRight, MainIndexGui.this::open);
@@ -103,26 +104,26 @@ public class MainIndexGui extends ExtendedGui {
                         .build();
 
             }
-            return GuiElement.EMPTY;
+            return SimpleGuiElement.EMPTY;
         }
 
         @Override
         protected GuiElement getNavElement(int id) {
             return switch (id) {
                 case 0 -> new GuiElementBuilder(this.state.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
-                        .noDefaults()
+                        
                         .hideDefaultTooltip()
                         .setName(Component.translatable("text.polydex.button.see_" + (this.state.showAll ? "limited" : "everything")))
-                        .setCallback((x, y, z) -> {
+                        .setCallback(() -> {
                             this.state.showAll = !this.state.showAll;
                             this.setPage(this.getPage());
                             GuiUtils.playClickSound(this.player);
                         }).build();
                 case 1 -> new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
-                        .noDefaults()
+                        
                         .hideDefaultTooltip()
                         .setName(Component.translatable("text.polydex.category." + MainIndexGui.this.indexLayer.state.type.name().toLowerCase(Locale.ROOT)))
-                        .setCallback((x, y, z) -> {
+                        .setCallback(() -> {
                             GuiUtils.playClickSound(this.player);
                             MainIndexGui.this.indexLayer.state.type = MainIndexGui.this.indexLayer.state.type.getNext();
                             MainIndexGui.this.indexLayer.updateDisplay();
@@ -138,12 +139,12 @@ public class MainIndexGui extends ExtendedGui {
                 case 4 -> this.getPageAmount() > 1 ? GuiUtils.page(this.player,  this.page + 1, this.getPageAmount()).build() : filler();
                 case 5 -> this.getPageAmount() > 1 ? GuiUtils.nextPage(player, this) : filler();
                 case 7 -> PolydexImpl.config.enableSearch ? new GuiElementBuilder(Items.COMPASS)
-                        .noDefaults()
+                        
                         .setComponent(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.empty(), true))
                         .glow(false)
                         .hideDefaultTooltip()
                         .setName(Component.translatable("text.polydex.button.search"))
-                        .setCallback((x, y, z) -> {
+                        .setCallback(() -> {
                             GuiUtils.playClickSound(this.player);
                             new SearchGui(this.player, "", MainIndexGui.this::open);
                         })
@@ -201,7 +202,7 @@ public class MainIndexGui extends ExtendedGui {
         }
 
         private GuiElement createDirect(ItemStack stack) {
-            return new GuiElement(stack, (x, type, z) -> {
+            return new SimpleGuiElement(stack, (_, type, _, _) -> {
                 var page = PolydexPageUtils.getItemEntryFor(stack);
                 if (page != null && ((type.isLeft && page.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && page.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0))) {
                     MainIndexGui.this.close(true);
@@ -212,7 +213,7 @@ public class MainIndexGui extends ExtendedGui {
         }
 
         private GuiElement createDirect(PolydexEntry page) {
-            return new GuiElement(page.stack().toItemStack(player), (x, type, z) -> {
+            return new SimpleGuiElement(page.stack().toItemStack(player), (_, type, _, _) -> {
                 if ((type.isLeft && page.getVisiblePagesSize(MainIndexGui.this.getPlayer()) > 0) || (type.isRight && page.getVisibleIngredientPagesSize(MainIndexGui.this.getPlayer()) > 0)) {
                     MainIndexGui.this.close(true);
                     PageViewerGui.openEntry(player, page, type.isRight, MainIndexGui.this::open);
@@ -227,15 +228,15 @@ public class MainIndexGui extends ExtendedGui {
                 case LAST_VIEW -> {
                     var list = ((PlayerInterface) player.connection).polydex_lastViewed();
                     if (id >= list.size()) {
-                        yield GuiElement.EMPTY;
+                        yield SimpleGuiElement.EMPTY;
                     }
                     var x = PolydexPageUtils.getEntry(list.get(id));
                     if (x != null) {
                         yield createDirect(x);
                     }
-                    yield GuiElement.EMPTY;
+                    yield SimpleGuiElement.EMPTY;
                 }
-                case INVENTORY -> GuiElement.EMPTY;
+                case INVENTORY -> SimpleGuiElement.EMPTY;
                 default -> getElementTypeSelector(id);
             };
         }
@@ -244,9 +245,9 @@ public class MainIndexGui extends ExtendedGui {
             if (id == 0) {
                 var builder = new GuiElementBuilder(Items.KNOWLEDGE_BOOK)
                         .setName(Component.translatable("text.polydex.display_all_items"))
-                        .noDefaults()
+                        
                         .hideDefaultTooltip()
-                        .setCallback((x, y, z) -> {
+                        .setCallback(() -> {
                             MainIndexGui.this.state.entries = PolydexImpl.ITEM_ENTRIES;
                             MainIndexGui.this.indexLayer.updateDisplay();
                             MainIndexGui.this.mainLayer.setPage(0);
@@ -266,9 +267,9 @@ public class MainIndexGui extends ExtendedGui {
 
                 var builder = GuiElementBuilder.from(item.icon().apply(player))
                         .setName(item.display())
-                        .noDefaults()
+                        
                         .hideDefaultTooltip()
-                        .setCallback((x, y, z) -> {
+                        .setCallback(() -> {
                             MainIndexGui.this.state.entries = item.entries();
                             MainIndexGui.this.indexLayer.updateDisplay();
                             MainIndexGui.this.mainLayer.setPage(0);
@@ -283,7 +284,7 @@ public class MainIndexGui extends ExtendedGui {
 
                 return builder.build();
             }
-            return GuiElement.EMPTY;
+            return SimpleGuiElement.EMPTY;
         }
 
         @Override

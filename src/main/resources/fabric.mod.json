@@ -3,9 +3,7 @@
   "id": "polydex",
   "version": "${version}",
   "name": "Polydex",
-  "provides": [
-    "polydex2"
-  ],
+  "provides": [],
   "description": "Target block/entity tooltip and recipes in one ui mod for servers!",
   "authors": [
     "Patbox"
@@ -30,8 +28,8 @@
   ],
   "accessWidener": "polydex.accesswidener",
   "depends": {
-    "fabricloader": ">=0.12.6",
-    "fabric": ">=0.46.1",
-    "minecraft": ">=1.20"
+    "fabricloader": ">=0.16.4",
+    "fabric-api": "*",
+    "minecraft": ">=26.1-"
   }
 }

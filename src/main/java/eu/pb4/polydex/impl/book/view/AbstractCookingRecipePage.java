@@ -65,6 +65,6 @@ public final class AbstractCookingRecipePage<T extends AbstractCookingRecipe> ex
 
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
-        return ((SingleItemRecipeAccessor) this.recipe).getResult().copy();
+        return ((SingleItemRecipeAccessor) this.recipe).getResult().create();
     }
 }

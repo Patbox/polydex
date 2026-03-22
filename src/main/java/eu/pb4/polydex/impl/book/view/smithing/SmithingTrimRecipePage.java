@@ -7,6 +7,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -41,7 +42,7 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
 
     @Override
     protected SlotDisplay getBaseItem(@Nullable PolydexEntry entry) {
-        return entry != null && getBase().test((ItemStack) entry.stack().getBacking()) ? new SlotDisplay.ItemStackSlotDisplay((ItemStack) entry.stack().getBacking()) : new SlotDisplay.ItemSlotDisplay(Items.IRON_CHESTPLATE);
+        return entry != null && getBase().test((ItemStack) entry.stack().getBacking()) ? new SlotDisplay.ItemStackSlotDisplay(ItemStackTemplate.fromNonEmptyStack((ItemStack) entry.stack().getBacking())) : new SlotDisplay.ItemSlotDisplay(Items.IRON_CHESTPLATE);
     }
 
     @Override
@@ -66,11 +67,11 @@ public class SmithingTrimRecipePage extends AbstractSmithingRecipeView<SmithingT
 
         var baseStack = entry != null && getBase().test((ItemStack) entry.stack().getBacking()) ? (ItemStack) entry.stack().getBacking() : Items.IRON_CHESTPLATE.getDefaultInstance();
         for (var material : PolydexImplUtils.readIngredient(getAddition())) {
-            var optional = TrimMaterials.getFromIngredient(server.registryAccess(), material);
-            if (optional.isPresent()) {
+            var optional = material.get(DataComponents.PROVIDES_TRIM_MATERIAL);
+            if (optional != null) {
                 ItemStack itemStack2 = baseStack.copy();
                 itemStack2.setCount(1);
-                itemStack2.set(DataComponents.TRIM, new ArmorTrim(optional.get(), trim));
+                itemStack2.set(DataComponents.TRIM, new ArmorTrim(optional, trim));
                 list.add(itemStack2);
             }
         }

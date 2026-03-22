@@ -19,6 +19,8 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.*;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.clock.ClockManager;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
@@ -284,6 +286,16 @@ public class FakeWorld extends Level implements LightChunk {
     }
 
     @Override
+    public ClockManager clockManager() {
+        return new ClockManager() {
+            @Override
+            public long getTotalTicks(Holder<WorldClock> definition) {
+                return 0;
+            }
+        };
+    }
+
+    @Override
     public EnvironmentAttributeSystem environmentAttributes() {
         return EnvironmentAttributeSystem.builder().build();
     }
@@ -326,11 +338,6 @@ public class FakeWorld extends Level implements LightChunk {
     @Override
     public FeatureFlagSet enabledFeatures() {
         return this.featureSet;
-    }
-
-    @Override
-    public float getShade(Direction direction, boolean shaded) {
-        return 0;
     }
 
     @Override
@@ -377,26 +384,6 @@ public class FakeWorld extends Level implements LightChunk {
         @Override
         public long getGameTime() {
             return 0;
-        }
-
-        @Override
-        public long getDayTime() {
-            return 0;
-        }
-
-        @Override
-        public boolean isThundering() {
-            return false;
-        }
-
-        @Override
-        public boolean isRaining() {
-            return false;
-        }
-
-        @Override
-        public void setRaining(boolean raining) {
-
         }
 
         @Override

@@ -5,7 +5,7 @@ import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.polydex.impl.book.ui.IngredientGuiElement;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.SimpleGuiElement;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -49,20 +49,20 @@ public class PolydexImplUtils {
         return out;
     }
 
-    public static GuiElementInterface getIngredientDisplay(List<PolydexStack<?>> stacks, @Nullable Consumer<GuiElementBuilder> consumer) {
-        return stacks.isEmpty() ? new GuiElement(ItemStack.EMPTY, GuiElement.EMPTY_CALLBACK) : new IngredientGuiElement(stacks, consumer);
+    public static GuiElement getIngredientDisplay(List<PolydexStack<?>> stacks, @Nullable Consumer<GuiElementBuilder> consumer) {
+        return stacks.isEmpty() ? new SimpleGuiElement(ItemStack.EMPTY, GuiElement.EMPTY_CALLBACK) : new IngredientGuiElement(stacks, consumer);
     }
 
-    public static GuiElementInterface getIngredientDisplay(Ingredient ingredient) {
+    public static GuiElement getIngredientDisplay(Ingredient ingredient) {
         var stacks = PolydexImplUtils.readIngredient(ingredient);
         return getIngredientDisplay(stacks);
     }
 
-    public static GuiElementInterface getIngredientDisplay(ItemStack[] stacks) {
+    public static GuiElement getIngredientDisplay(ItemStack[] stacks) {
         return getIngredientDisplay(List.of(stacks));
     }
 
-    public static GuiElementInterface getIngredientDisplay(Collection<ItemStack> stacks) {
+    public static GuiElement getIngredientDisplay(Collection<ItemStack> stacks) {
         var list = new ArrayList<PolydexStack<?>>(stacks.size());
         for (var stack : stacks) {
             list.add(PolydexStack.of(stack));
@@ -71,7 +71,7 @@ public class PolydexImplUtils {
         return getIngredientDisplay(list, null);
     }
 
-    public static GuiElementInterface getIngredientDisplay(PolydexIngredient<?> ingredient, Consumer<GuiElementBuilder> consumer) {
+    public static GuiElement getIngredientDisplay(PolydexIngredient<?> ingredient, Consumer<GuiElementBuilder> consumer) {
         //noinspection unchecked
         return getIngredientDisplay((List<PolydexStack<?>>) (Object) ingredient.asStacks(), consumer);
     }

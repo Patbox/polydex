@@ -56,7 +56,7 @@ public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPack
     @Inject(method = "<init>", at = @At("TAIL"))
     private void polydex_create(MinecraftServer server, Connection connection, ServerPlayer player, CommonListenerCookie clientData, CallbackInfo ci) {
         //noinspection ConstantConditions
-        if (((Object) this).getClass() == ServerGamePacketListenerImpl.class) {
+        if (((Object) this).getClass() == ServerGamePacketListenerImpl.class && !PolydexImpl.embeddedMode) {
             this.polydex_target = new PolydexTargetImpl((ServerGamePacketListenerImpl) (Object) this);
 
             if (PolydexImpl.config.displayEnabled) {
@@ -133,6 +133,7 @@ public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPack
         this.polydex_tick++;
     }
 
+    @Unique
     private void polydex_update() {
         this.polydex_target.updateRaycast();
 

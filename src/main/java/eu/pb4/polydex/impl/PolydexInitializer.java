@@ -9,10 +9,8 @@ import eu.pb4.polydex.impl.book.view.*;
 import eu.pb4.polydex.impl.book.view.crafting.ShapedCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.ShapelessCraftingRecipePage;
 import eu.pb4.polydex.impl.book.view.crafting.TransmuteRecipePage;
-import eu.pb4.polydex.impl.book.view.crafting.TippedArrowRecipePage;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTransformRecipeView;
 import eu.pb4.polydex.impl.book.view.smithing.SmithingTrimRecipePage;
-import eu.pb4.polydex.impl.compat.LibMultiPartCompatibility;
 import eu.pb4.polydex.impl.display.BossbarTargetDisplay;
 import eu.pb4.polydex.impl.display.NoopTargetDisplay;
 import eu.pb4.polydex.impl.display.SidebarTargetDisplay;
@@ -39,7 +37,6 @@ import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraft.world.item.crafting.TippedArrowRecipe;
 import net.minecraft.world.item.crafting.TransmuteRecipe;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
@@ -64,7 +61,6 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerRecipeViewer(ShapedRecipe.class, ShapedCraftingRecipePage::new);
         PolydexPage.registerRecipeViewer(ShapelessRecipe.class, ShapelessCraftingRecipePage::new);
         PolydexPage.registerRecipeViewer(TransmuteRecipe.class, TransmuteRecipePage::new);
-        PolydexPage.registerRecipeViewer(TippedArrowRecipe.class, TippedArrowRecipePage::new);
 
         PolydexPage.registerRecipeViewer(BlastingRecipe.class, AbstractCookingRecipePage.of(Items.BLAST_FURNACE));
         PolydexPage.registerRecipeViewer(SmeltingRecipe.class, AbstractCookingRecipePage.of(Items.FURNACE));
@@ -89,13 +85,14 @@ public class PolydexInitializer implements ModInitializer {
         HoverDisplayBuilder.register(PolydexImpl::defaultBuilder);
 
         if (FabricLoader.getInstance().isModLoaded("libmultipart")) {
-            LibMultiPartCompatibility.register();
+            //LibMultiPartCompatibility.register();
         }
     }
 
     @Override
     public void onInitialize() {
-        GenericModInfo.build(FabricLoader.getInstance().getModContainer("polydex").get());
+        var modContainer = FabricLoader.getInstance().getModContainer("polydex").orElseThrow();
+        GenericModInfo.build(modContainer);
         CommandRegistrationCallback.EVENT.register(Commands::register);
         ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(Event.DEFAULT_PHASE, EVENT_ID);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.addPhaseOrdering(Event.DEFAULT_PHASE, EVENT_ID);
@@ -120,5 +117,6 @@ public class PolydexInitializer implements ModInitializer {
         });
 
         init();
+        PolydexImpl.embeddedMode &= modContainer.getContainingMod().isPresent();
     }
 }

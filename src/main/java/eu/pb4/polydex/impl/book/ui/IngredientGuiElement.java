@@ -4,16 +4,17 @@ import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
-import eu.pb4.sgui.api.gui.GuiInterface;
-import eu.pb4.sgui.api.gui.SlotGuiInterface;
+import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.sgui.api.gui.GuiLike;
+import eu.pb4.sgui.api.gui.SlotBasedGui;
+import net.minecraft.world.inventory.ContainerInput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.world.item.ItemStack;
 
-public class IngredientGuiElement implements GuiElementInterface, GuiElementInterface.ClickCallback {
+public class IngredientGuiElement implements GuiElement, GuiElement.ClickCallback {
     protected final PolydexStack<?>[] items;
     @Nullable
     private final Consumer<GuiElementBuilder> consumer;
@@ -26,7 +27,7 @@ public class IngredientGuiElement implements GuiElementInterface, GuiElementInte
         this.consumer = consumer;
     }
 
-    public ItemStack getItemStackForDisplay(GuiInterface gui) {
+    public ItemStack getItemStackForDisplay(GuiLike gui) {
         int cFrame = this.frame;
         ++this.tick;
         if (this.tick >= 20) {
@@ -57,7 +58,7 @@ public class IngredientGuiElement implements GuiElementInterface, GuiElementInte
     }
 
     @Override
-    public void click(int i, ClickType clickType, net.minecraft.world.inventory.ClickType slotActionType, SlotGuiInterface slotGuiInterface) {
+    public void click(int i, ClickType clickType, ContainerInput slotActionType, SlotBasedGui slotGuiInterface) {
         boolean sound = false;
         if (clickType.isLeft) {
             sound = PolydexPageUtils.openRecipeListUi(slotGuiInterface.getPlayer(), this.items[this.frame], slotGuiInterface::open);

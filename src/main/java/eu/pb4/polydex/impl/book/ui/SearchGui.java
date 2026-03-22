@@ -57,8 +57,8 @@ public class SearchGui extends AnvilInputGui implements PageAware {
         if (this.searching == null && this.searchDelayTimer < 0) {
             if (hasSearchIcon) {
                 this.setSlot(1, GuiUtils.fillerStack(player));
-                if (this.screenHandler != null) {
-                    this.screenHandler.setRemoteSlot(2, ItemStack.EMPTY);
+                if (this.wrappedMenu != null) {
+                    this.wrappedMenu.setRemoteSlot(2, ItemStack.EMPTY);
                 }
             }
             hasSearchIcon = false;
@@ -66,14 +66,13 @@ public class SearchGui extends AnvilInputGui implements PageAware {
         }
 
         this.setSlot(1, new GuiElementBuilder(Items.COMPASS)
-                .noDefaults()
                 .setComponent(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.empty(), true))
                 .glow(false)
                 .hideDefaultTooltip()
                 .setName(Component.translatable("text.polydex.searching").append(".".repeat(this.searchTime / 5))));
 
-        if (!hasSearchIcon && this.screenHandler != null) {
-            this.screenHandler.setRemoteSlot(2, ItemStack.EMPTY);
+        if (!hasSearchIcon && this.wrappedMenu != null) {
+            this.wrappedMenu.setRemoteSlot(2, ItemStack.EMPTY);
         }
         hasSearchIcon = true;
     }
@@ -81,17 +80,17 @@ public class SearchGui extends AnvilInputGui implements PageAware {
     @Override
     public void onInput(String input) {
         super.onInput(input);
-        if (this.screenHandler != null) {
-            this.screenHandler.setRemoteSlot(2, ItemStack.EMPTY);
+        if (this.wrappedMenu != null) {
+            this.wrappedMenu.setRemoteSlot(2, ItemStack.EMPTY);
         }
 
 
         var itemStack = GuiUtils.fillerStack(player).getItemStack().copy();
         itemStack.set(DataComponents.CUSTOM_NAME, Component.literal(input));
         itemStack.set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, ReferenceSortedSets.emptySet()));
-        this.setSlot(0, itemStack, Objects.requireNonNull(this.getSlot(0)).getGuiCallback());
-        if (this.screenHandler != null) {
-            this.screenHandler.setRemoteSlot(0, itemStack.copy());
+        this.setSlot(0, itemStack, Objects.requireNonNull(this.getGuiElement(0)).getGuiCallback());
+        if (this.wrappedMenu != null) {
+            this.wrappedMenu.setRemoteSlot(0, itemStack.copy());
         }
         if (!input.isEmpty() && input.equals(this.currentInput)) {
             return;
@@ -146,12 +145,12 @@ public class SearchGui extends AnvilInputGui implements PageAware {
     }
 
     @Override
-    public void onClose() {
+    public void onRemoved() {
         if (this.searching != null) {
             this.searching.cancel(true);
             this.searching = null;
         }
-        super.onClose();
+        super.onRemoved();
     }
 
     @Override
@@ -160,7 +159,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
         var itemStack = GuiUtils.fillerStack(player).getItemStack().copy();
         itemStack.set(DataComponents.CUSTOM_NAME, Component.literal(input));
         itemStack.set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, ReferenceSortedSets.emptySet()));
-        this.setSlot(0, itemStack, Objects.requireNonNull(this.getSlot(0)).getGuiCallback());
+        this.setSlot(0, itemStack, Objects.requireNonNull(this.getGuiElement(0)).getGuiCallback());
     }
 
     public void updateDisplay() {
@@ -173,7 +172,7 @@ public class SearchGui extends AnvilInputGui implements PageAware {
             for (; i < size; i++) {
                 var entry = entries.get(i + offset);
                 var b = GuiElementBuilder.from(entry.stack().toDisplayItemStack(player))
-                        .setCallback((x, type, z) -> {
+                        .setCallback((type) -> {
                             if ((type.isLeft && entry.getVisiblePagesSize(player) > 0) || (type.isRight && entry.getVisibleIngredientPagesSize(player) > 0)) {
                                 this.close(true);
                                 PageViewerGui.openEntry(player, entry, type.isRight, this::open);
@@ -188,17 +187,16 @@ public class SearchGui extends AnvilInputGui implements PageAware {
             }
         }
 
-        var filler = GuiUtils.hasTexture(player) ? GuiUtils.EMPTY : GuiUtils.FILLER;
+        var filler = GuiUtils.hasTexture(player) ? GuiUtils.EMPTY : GuiUtils.FILLER.build();
         for (int i = 0; i < 9; i++) {
             this.setSlot(PAGE_SIZE + 3 + i, filler);
         }
 
 
         this.setSlot(PAGE_SIZE + 3, new GuiElementBuilder(this.state.showAll ? Items.SLIME_BALL : Items.MAGMA_CREAM)
-                .noDefaults()
                 .hideDefaultTooltip()
                 .setName(Component.translatable("text.polydex.button.see_" + (this.state.showAll ? "limited" : "everything")))
-                .setCallback((x, y, z) -> {
+                .setCallback(() -> {
                     this.state.showAll = !this.state.showAll;
                     this.setPage(this.getPage());
                     GuiUtils.playClickSound(this.player);

@@ -1,6 +1,6 @@
 package eu.pb4.polydex.impl.compat;
 
-import alexiil.mc.lib.multipart.api.AbstractPart;
+/*import alexiil.mc.lib.multipart.api.AbstractPart;
 import alexiil.mc.lib.multipart.api.MultipartUtil;
 import alexiil.mc.lib.multipart.impl.LibMultiPart;
 import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
@@ -52,4 +52,4 @@ public class LibMultiPartCompatibility {
         }
         return false;
     }
-}
+}*/

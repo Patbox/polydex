@@ -37,7 +37,7 @@ public class PolydexPageUtils {
         return identifier.withPrefix("recipe/");
     }
 
-    public static Component createText(ItemStack stack) {
+    public static Component createCountedComponent(ItemStack stack) {
         if (stack.isEmpty()) {
             return Component.translatable("text.polydex.empty");
         } else if (stack.getCount() == 1) {
@@ -74,6 +74,15 @@ public class PolydexPageUtils {
     @Nullable
     public static List<PolydexPage> getPagesForCategory(PolydexCategory category) {
         return PolydexImpl.CATEGORY_TO_PAGES.getOrDefault(category, List.of());
+    }
+
+    public static Iterable<PolydexCategory> getAllCategories() {
+        return PolydexImpl.CATEGORY_BY_ID.values();
+    }
+
+    @Nullable
+    public static PolydexCategory getCategoryById(Identifier identifier) {
+        return PolydexImpl.CATEGORY_BY_ID.get(identifier);
     }
 
     public static boolean openCategoryUi(ServerPlayer player, PolydexCategory category, @Nullable Runnable closeCallback) {
@@ -220,26 +229,6 @@ public class PolydexPageUtils {
         }
 
         return false;
-    }
-
-
-    @Deprecated
-    public static Event<Runnable> BEFORE_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
-        for (var r : x) {
-            r.run();
-        }
-    });
-    @Deprecated
-    public static Event<Runnable> AFTER_LOADING = EventFactory.createArrayBacked(Runnable.class, x -> () -> {
-        for (var r : x) {
-            r.run();
-        }
-    });
-
-
-    static {
-        BEFORE_PAGE_LOADING.register((s) -> BEFORE_LOADING.invoker().run());
-        AFTER_PAGE_LOADING.register((s) -> AFTER_LOADING.invoker().run());
     }
 
     public static String formatChanceAmount(float chance) {
