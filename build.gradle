@@ -71,6 +71,7 @@ dependencies {
 	compileOnly "eu.pb4:polymer-core:${project.polymer_version}"
 	localRuntime "eu.pb4:polymer-autohost:${project.polymer_version}"
 	//modCompileOnly "dev.emi:emi-fabric:1.0.10+1.20.1"
+	compileOnly "me.lucko:fabric-permissions-api:0.7.0"
 
 
 	//modLocalRuntime 'maven.modrinth:goml-reserved:1.5.0-beta.1'
