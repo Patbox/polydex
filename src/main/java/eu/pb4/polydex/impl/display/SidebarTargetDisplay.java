@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.numbers.BlankFormat;
 
 public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
     private final PolydexTarget target;
@@ -16,6 +17,7 @@ public class SidebarTargetDisplay extends Sidebar implements HoverDisplay {
     public SidebarTargetDisplay(PolydexTarget target) {
         super(Priority.HIGH);
         this.target = target;
+        this.setDefaultNumberFormat(BlankFormat.INSTANCE);
         this.addPlayer(target.player());
     }
 

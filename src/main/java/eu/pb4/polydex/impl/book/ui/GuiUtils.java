@@ -17,11 +17,11 @@ import net.minecraft.world.item.Items;
 
 public class GuiUtils {
     public static final GuiElement EMPTY = SimpleGuiElement.EMPTY;
-    public static final GuiElementBuilder EMPTY_STACK = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
+    public static final GuiElementBuilder EMPTY_STACK = new GuiElementBuilder(Items.STAINED_GLASS_PANE.white())
             .setName(Component.empty())
             .model(requestModel("empty"))
             .hideTooltip();
-    public static final GuiElementBuilder FILLER = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE)
+    public static final GuiElementBuilder FILLER = new GuiElementBuilder(Items.STAINED_GLASS_PANE.white())
             .setName(Component.empty())
             .hideTooltip();
     private static final Identifier BACK_TEXTURE = requestModel("back");
