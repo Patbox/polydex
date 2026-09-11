@@ -7,6 +7,7 @@ import eu.pb4.polydex.api.v1.recipe.PolydexStack;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.PotionIngredient;
 
 public class PolydexIngredientImpl implements PolydexIngredient<ItemStack> {
     private static final Interner<PolydexIngredientImpl> INTERNER = Interners.newWeakInterner();

@@ -28,16 +28,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.BlastingRecipe;
-import net.minecraft.world.item.crafting.CampfireCookingRecipe;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.minecraft.world.item.crafting.SmithingTransformRecipe;
-import net.minecraft.world.item.crafting.SmithingTrimRecipe;
-import net.minecraft.world.item.crafting.SmokingRecipe;
-import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraft.world.item.crafting.TransmuteRecipe;
+import net.minecraft.world.item.crafting.*;
 
 import static eu.pb4.polydex.impl.PolydexImpl.id;
 
@@ -55,7 +46,6 @@ public class PolydexInitializer implements ModInitializer {
         HoverDisplay.register(id("bossbar"), BossbarTargetDisplay::new);
         HoverDisplay.register(id("sidebar"), SidebarTargetDisplay::new);
 
-        PolydexPage.register(PolydexImpl::potionRecipe);
         PolydexPage.register(PolydexImpl::blockInteractions);
 
         PolydexPage.registerRecipeViewer(ShapedRecipe.class, ShapedCraftingRecipePage::new);
@@ -69,6 +59,8 @@ public class PolydexInitializer implements ModInitializer {
         PolydexPage.registerRecipeViewer(SmithingTrimRecipe.class, SmithingTrimRecipePage::new);
         PolydexPage.registerRecipeViewer(SmithingTransformRecipe.class, SmithingTransformRecipeView::new);
         PolydexPage.registerRecipeViewer(StonecutterRecipe.class, StonecuttingRecipePage::new);
+
+        PolydexPage.registerRecipeViewer(BrewingRecipe.class, BrewingRecipePage::new);
 
         PolydexPage.register(PolydexImpl::addCustomPages);
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {

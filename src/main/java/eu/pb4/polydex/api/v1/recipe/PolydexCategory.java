@@ -14,7 +14,7 @@ public interface PolydexCategory {
     PolydexCategory CAMPFIRE_COOKING = of(RecipeType.CAMPFIRE_COOKING);
     PolydexCategory STONECUTTING = of(RecipeType.STONECUTTING);
     PolydexCategory SMITHING = of(RecipeType.SMITHING);
-    PolydexCategory BREWING = of(Identifier.parse("brewing"));
+    PolydexCategory BREWING = of(RecipeType.BREWING);
     PolydexCategory TOOL_INTERACTION = of(Identifier.parse("tool_interaction"));
     PolydexCategory CUSTOM = of(Identifier.parse("polydex:custom"));
 

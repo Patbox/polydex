@@ -28,10 +28,9 @@ public class LayerBuilder extends Layer implements PageBuilder {
     public LayerBuilder(ServerPlayer player) {
         super(5, 9);
         this.player = player;
-        this.context = new ContextMap.Builder()
-                .withParameter(SlotDisplayContext.FUEL_VALUES, player.level().fuelValues())
-                .withParameter(SlotDisplayContext.REGISTRIES, player.level().registryAccess())
-                .create(SlotDisplayContext.CONTEXT);
+        this.context = ContextMap.builder()
+                .set(SlotDisplayContext.REGISTRIES, player.level().registryAccess())
+                .buildAndValidate(SlotDisplayContext.CONTEXT);
     }
 
     @Override

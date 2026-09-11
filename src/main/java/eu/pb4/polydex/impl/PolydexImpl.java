@@ -13,8 +13,6 @@ import eu.pb4.polydex.api.v1.hover.HoverDisplayBuilder;
 import eu.pb4.polydex.api.v1.hover.PolydexTarget;
 import eu.pb4.polydex.impl.book.view.CustomPage;
 import eu.pb4.polydex.impl.book.view.DebugPage;
-import eu.pb4.polydex.impl.book.view.PotionRecipePage;
-import eu.pb4.polydex.impl.book.view.ToolUseOnBlockPage;
 import eu.pb4.polydex.impl.search.VanillaLanguageDownloader;
 import eu.pb4.polydex.mixin.*;
 import eu.pb4.polymer.core.api.item.PolymerCreativeModeTabUtils;
@@ -30,8 +28,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.arguments.item.ItemParser;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -59,17 +55,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackLinkedSet;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.context.DirectionalPlaceContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -404,24 +396,6 @@ public class PolydexImpl {
         }
     }
 
-    public static void potionRecipe(MinecraftServer server, Consumer<PolydexPage> consumer) {
-        var itemRecipes = ((PotionBrewingAccessor) server.potionBrewing()).getContainerMixes();
-        var potionRecipes = ((PotionBrewingAccessor) server.potionBrewing()).getPotionMixes();
-
-        for (var recipe : itemRecipes) {
-            consumer.accept(new PotionRecipePage.ItemBase(Identifier.parse("minecraft:brewing/item/"
-                    + recipe.from().unwrapKey().get().identifier().toDebugFileName() + "/" + recipe.to().unwrapKey().get().identifier().toDebugFileName()), recipe));
-        }
-
-        for (var recipe : potionRecipes) {
-            consumer.accept(new PotionRecipePage.PotionBase(Identifier.parse("minecraft:brewing/potion/"
-                    + recipe.from().unwrapKey().get().identifier().toDebugFileName() + "/" + recipe.to().unwrapKey().get().identifier().toDebugFileName()),
-                    recipe));
-        }
-
-
-    }
-
     public static void defaultBuilder(HoverDisplayBuilder displayBuilder) {
         var target = displayBuilder.getTarget();
         var entity = target.entity();
@@ -600,11 +574,27 @@ public class PolydexImpl {
     }
 
     public static void blockInteractions(MinecraftServer server, Consumer<PolydexPage> polydexPageConsumer) {
-        var items = server.registryAccess().lookupOrThrow(Registries.ITEM);
-        var axes = PolydexIngredient.of(Ingredient.of(items.getOrThrow(ItemTags.AXES)));
-        var shovels = PolydexIngredient.of(Ingredient.of(items.getOrThrow(ItemTags.SHOVELS)));
-        var hoes = PolydexIngredient.of(Ingredient.of(items.getOrThrow(ItemTags.HOES)));
-        {
+        /*var items = server.registryAccess().lookupOrThrow(Registries.ITEM);
+
+        for (var transformer : server.registryAccess().lookupOrThrow(Registries.BLOCK_TRANSFORMER).asHolderIdMap()) {
+            var tools = items.componentLookup().findAll(DataComponents.BLOCK_TRANSFORMER, transformer);
+
+            if (tools.isEmpty()) {
+                continue;
+            }
+            var map = new Reference2ObjectOpenHashMap<Item, LinkedHashSet<Item>>();
+
+            for (var transform : transformer.value().transforms()) {
+                var a = transform.blockStateProvider().value().getOptionalState();
+                var b = entry.getValue().asItem();
+                if (a != null && b != null) {
+                    map.computeIfAbsent(b, (c) -> new LinkedHashSet<>()).add(a);
+                }
+            }
+        }*/
+
+
+        /*{
             var map = new Reference2ObjectOpenHashMap<Item, LinkedHashSet<Item>>();
             for (var entry : AxeItemAccessor.getSTRIPPABLES().entrySet()) {
                 var a = entry.getKey().asItem();
@@ -680,7 +670,7 @@ public class PolydexImpl {
             }
         } catch (Throwable e) {
 
-        }
+        }*/
 
 
     }

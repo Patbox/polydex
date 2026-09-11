@@ -1,9 +1,12 @@
 package eu.pb4.polydex.api.v1.recipe;
 
 import eu.pb4.polydex.impl.book.PolydexIngredientImpl;
+import eu.pb4.polydex.impl.book.PolydexPotionIngredientImpl;
+import net.minecraft.world.item.crafting.PotionIngredient;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.world.item.ItemStack;
@@ -60,5 +63,12 @@ public interface PolydexIngredient<T> {
             return PolydexStack.EMPTY_STACK;
         }
         return PolydexIngredientImpl.of(ingredient, count, chance);
+    }
+
+    static PolydexIngredient<ItemStack> of(PotionIngredient ingredient) {
+        if (ingredient == null) {
+            return PolydexStack.EMPTY_STACK;
+        }
+        return PolydexPotionIngredientImpl.of(ingredient, 1, 1);
     }
 }

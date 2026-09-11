@@ -1,8 +1,8 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version '1.15.+'
 	id 'maven-publish'
-	id "com.modrinth.minotaur" version "2.+"
-	id 'com.matthewprenger.cursegradle' version '1.4.0'
+	id "me.modmuss50.mod-publish-plugin" version "2.2.0"
+
 }
 
 base {
@@ -134,48 +134,39 @@ publishing {
 	}
 }
 
+publishMods {
+	changelog = System.getenv("CHANGELOG")
+	type = project.mod_version.contains("-") ? BETA : STABLE
+	file = jar.archiveFile
+	modLoaders.add("fabric")
 
-curseforge {
 	if (System.getenv("CURSEFORGE")) {
-		apiKey = System.getenv("CURSEFORGE")
+		curseforge {
+			projectId = "580643"
+			accessToken = System.getenv("CURSEFORGE")
+			client = true
+			server = true
 
-		project {
-			id = "580643"
-			releaseType = "release"
-			changelog = System.getenv("CHANGELOG")
-			changelogType = "markdown"
-			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
-			addGameVersion "Fabric"
-			mainArtifact(jar.archiveFile)
-
-			afterEvaluate {
-				uploadTask.dependsOn("jar")
+			minecraftVersions.add((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
+			for (String a : project.mc_extra_supported.split(",")) {
+				if (!a.strip().isEmpty()) {
+					minecraftVersions.add(a.strip())
+				}
 			}
 		}
 	}
 
-	options {
-		forgeGradleIntegration = false
-	}
+	if (System.getenv("MODRINTH")) {
+		modrinth {
+			accessToken = System.getenv("MODRINTH")
+			projectId = 'm5NB7FJE'
 
-	jar {
-		finalizedBy project.tasks.curseforge
-	}
-}
-
-if (System.getenv("MODRINTH")) {
-	modrinth {
-		token = System.getenv("MODRINTH")
-		projectId = 'm5NB7FJE'
-		versionNumber = "" + version
-		changelog = System.getenv("CHANGELOG")
-		// On fabric, use 'remapJar' instead of 'jar'
-		uploadFile = jar
-		gameVersions = [((String) project.minecraft_version)]
-		loaders = ["fabric"]
-	}
-
-	jar {
-		finalizedBy project.tasks.modrinth
+			minecraftVersions.add(project.minecraft_version);
+			for (String a : project.mc_extra_supported.split(",")) {
+				if (!a.strip().isEmpty()) {
+					minecraftVersions.add(a.strip())
+				}
+			}
+		}
 	}
 }

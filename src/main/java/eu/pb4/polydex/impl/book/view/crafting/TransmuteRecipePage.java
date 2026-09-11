@@ -14,9 +14,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class TransmuteRecipePage extends AbstractCraftingRecipePage<TransmuteRecipe> {
+    private final PolydexIngredient<ItemStack> inputIngredient;
+    private final boolean changesType;
 
     public TransmuteRecipePage(RecipeHolder<TransmuteRecipe> recipe) {
         super(recipe);
+        this.inputIngredient = PolydexIngredient.of(((TransmuteRecipeAccessor) recipe.value()).getInput());
+        this.changesType = ((TransmuteRecipeAccessor) recipe.value()).getResult().item().isPresent();
     }
 
     @Override
@@ -31,7 +35,16 @@ public class TransmuteRecipePage extends AbstractCraftingRecipePage<TransmuteRec
 
     @Override
     public ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server) {
-        return TransmuteRecipe.createWithOriginalComponents(((TransmuteRecipeAccessor) this.recipe).getResult(),
-                        entry != null && entry.stack().getBacking() instanceof ItemStack stack ? stack : Items.STONE.getDefaultInstance());
+        var e = entry != null && entry.stack().getBacking() instanceof ItemStack stack ? stack : Items.STONE.getDefaultInstance();
+        return TransmuteRecipe.createWithOriginalComponents(((TransmuteRecipeAccessor) this.recipe).getResult().resolve(e.typeHolder()), e);
+    }
+
+    @Override
+    public boolean isOwner(MinecraftServer server, PolydexEntry entry) {
+        if (this.changesType) {
+            return super.isOwner(server, entry);
+        }
+
+        return this.inputIngredient.matches(entry.stack(), false);
     }
 }

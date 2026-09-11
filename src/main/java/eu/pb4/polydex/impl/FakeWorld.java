@@ -19,6 +19,7 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.*;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.clock.ClockInstance;
 import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.damagesource.DamageSource;
@@ -26,7 +27,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -34,7 +34,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -179,16 +178,14 @@ public class FakeWorld extends Level implements LightChunk {
         }
     };
     private final RecipeAccess recipeManager;
-    private final PotionBrewing brewingRecipeRegistry;
     private final TickRateManager tickManager = new TickRateManager();
     private final FeatureFlagSet featureSet;
 
     public FakeWorld(WritableLevelData properties, ResourceKey<Level> registryRef, RegistryAccess manager,
-                      PotionBrewing brewingRecipeRegistry, FeatureFlagSet featureSet,
+                      FeatureFlagSet featureSet,
                       RecipeAccess recipeManager, Holder<DimensionType> dimensionType,
                       boolean isClient, boolean debugWorld, long seed) {
         super(properties, registryRef, manager, dimensionType, isClient, debugWorld, seed, 0);
-        this.brewingRecipeRegistry = brewingRecipeRegistry;
         this.recipeManager = recipeManager;
         this.featureSet = featureSet;
     }
@@ -198,7 +195,6 @@ public class FakeWorld extends Level implements LightChunk {
                 new FakeWorldProperties(),
                 ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath("polydex", "fake_world")),
                 server.registryAccess(),
-                server.potionBrewing(),
                 server.overworld().enabledFeatures(),
                 server.getRecipeManager(),
                 Holder.direct(server.overworld().dimensionType()),
@@ -289,8 +285,28 @@ public class FakeWorld extends Level implements LightChunk {
     public ClockManager clockManager() {
         return new ClockManager() {
             @Override
-            public long getTotalTicks(Holder<WorldClock> definition) {
-                return 0;
+            public ClockInstance getInstance(Holder<WorldClock> definition) {
+                return new ClockInstance() {
+                    @Override
+                    public long totalTicks() {
+                        return 0;
+                    }
+
+                    @Override
+                    public float partialTick() {
+                        return 0;
+                    }
+
+                    @Override
+                    public float rate() {
+                        return 0;
+                    }
+
+                    @Override
+                    public boolean isPaused() {
+                        return false;
+                    }
+                };
             }
         };
     }
@@ -323,16 +339,6 @@ public class FakeWorld extends Level implements LightChunk {
     @Override
     public void gameEvent(Holder<GameEvent> event, Vec3 emitterPos, GameEvent.Context emitter) {
 
-    }
-
-    @Override
-    public PotionBrewing potionBrewing() {
-        return null;
-    }
-
-    @Override
-    public FuelValues fuelValues() {
-        return null;
     }
 
     @Override

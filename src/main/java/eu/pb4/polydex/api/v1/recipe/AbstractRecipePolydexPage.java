@@ -22,8 +22,12 @@ public abstract class AbstractRecipePolydexPage<T extends Recipe<?>> implements 
         this.recipe = recipe.value();
         this.recipeId = recipe.id();
         this.identifier = PolydexPageUtils.identifierFromRecipe(recipe.id().identifier());
+        this.ingredients = getIngredientsFromRecipe(recipe);
+    }
+
+    protected List<PolydexIngredient<?>> getIngredientsFromRecipe(RecipeHolder<T> recipe) {
         //noinspection unchecked
-        this.ingredients = (List<PolydexIngredient<?>>) (Object) recipe.value().placementInfo().ingredients().stream().map(PolydexIngredient::of).toList();
+        return (List<PolydexIngredient<?>>) (Object) recipe.value().placementInfo().ingredients().stream().map(PolydexIngredient::of).toList();
     }
 
     public abstract ItemStack getOutput(@Nullable PolydexEntry entry, MinecraftServer server);
